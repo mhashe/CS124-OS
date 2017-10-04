@@ -1,6 +1,7 @@
 CFLAGS = -Wall -g
 
-OBJS = mysh.o token.o
+OBJS = mysh.o 
+# Include token.o once tokenizer complete
 
 all: mysh
 
