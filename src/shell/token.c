@@ -7,15 +7,25 @@
 #include <assert.h>
 
 /*
+ * copy src[word_start:word_start+word_size] into dest[i] as a null term string
+ */ 
+void copy_comm(char** dest, char* src, int word_start, int word_size, int i) {
+    dest[i] = (char*) malloc(word_size * sizeof(char));
+    strncpy(dest[i], src + word_start, word_size);
+    dest[i][word_size-1] = '\0';
+}
+
+
+/*
  * tokenizes a string for command parsing
  *
  * commands: command to be parsed
  *
  * ret: array of char pointers (strings) of tokenized values
  */
-
 // TODO handle errors everywhere
 // TODO remove repeated code
+// TODO handle integer file descriptor
 char** tokenize(char* commands) {
     // TODO: remove magic number
     char** toRet = (char**)calloc(1024, sizeof(char*));
@@ -40,9 +50,7 @@ char** tokenize(char* commands) {
             word_size = i - word_start + 1;
 
             // copy into buffer
-            toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
-            strncpy(toRet[comm_num], commands + word_start, word_size);
-            toRet[comm_num][word_size-1] = '\0';
+            copy_comm(toRet, commands, word_start, word_size, comm_num);
             
             // advance to next command space
             comm_num++;
@@ -67,9 +75,7 @@ char** tokenize(char* commands) {
                 word_size = i - word_start + 1;
 
                 // copy into buffer
-                toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
-                strncpy(toRet[comm_num], commands + word_start, word_size);
-                toRet[comm_num][word_size-1] = '\0';
+                copy_comm(toRet, commands, word_start, word_size, comm_num);
                 
                 // advance to next command space
                 comm_num++;
@@ -85,9 +91,7 @@ char** tokenize(char* commands) {
             }
 
             // copy into buffer
-            toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
-            strncpy(toRet[comm_num], commands + i, word_size);
-            toRet[comm_num][word_size-1] = '\0';
+            copy_comm(toRet, commands, i, word_size, comm_num);
 
             // advance to next command space
             comm_num++;
@@ -102,9 +106,7 @@ char** tokenize(char* commands) {
             word_size = i - word_start + 1;
 
             // copy into buffer
-            toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
-            strncpy(toRet[comm_num], commands + word_start, word_size);
-            toRet[comm_num][word_size-1] = '\0';
+            copy_comm(toRet, commands, word_start, word_size, comm_num);
             
             // advance to next command space
             comm_num++;
@@ -121,9 +123,7 @@ char** tokenize(char* commands) {
             word_size = i - word_start + 1;
 
             // copy into buffer
-            toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
-            strncpy(toRet[comm_num], commands + word_start, word_size);
-            toRet[comm_num][word_size-1] = '\0';
+            copy_comm(toRet, commands, word_start, word_size, comm_num);
             
             break;
 
@@ -141,7 +141,7 @@ char** tokenize(char* commands) {
 // for testing purposes
 // TODO remove
 int main() {
-    char* command = "echo \"cat < Makefile\" > foo.txt";
+    char* command = " echo bar abc def >> foo.txt";
     char** comms = tokenize(command);
 
     char* comm;
