@@ -6,6 +6,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include "token.h"
+
 /*
  * copy src[word_start:word_start+word_size] into dest[i] as a null term string
  */ 

@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <limits.h>
 
+#include "token.h"
+
 #define MAX_SIZE	1024	// Max size of input
 
 int main(int argc, char *argv[])
