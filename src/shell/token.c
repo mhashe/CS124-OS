@@ -14,37 +14,46 @@
  * ret: array of char pointers (strings) of tokenized values
  */
 
+// TODO: handle errors everywhere
 char** tokenize(char* commands) {
     // TODO: remove magic number
     char** toRet = (char**)calloc(1024, sizeof(char*));
-    // TODO: handle errors from calloc
 
-    char* word;
-    char* prev_word = commands;
-    int comm_i = 0;
-    int last_word = 0;
-    // tokenize on spaces
+    int i = 0;
+    int word_start = 0;
+    int comm_num = 0;
+    int word_size;
 
     while(1) {
-        word = strchrnul(prev_word, ' ');
-        if (*word == '\0') {
-            last_word = 1;
+        char ch = commands[i];
+        if (ch == ' ') {
+            // + 1 for null termination
+            word_size = i - word_start + 1;
+
+            toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
+            strncpy(toRet[comm_num], commands + word_start, word_size);
+            toRet[comm_num][word_size-1] = '\0';
+            
+            comm_num++;
+            
+            // skip repeated spaces
+            while (commands[i] == ' ') {
+                i++;
+            }
+            word_start = i;
+        } else if (ch == '\0') {
+            // + 1 for null termination
+            word_size = i - word_start + 1;
+
+            toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
+            strncpy(toRet[comm_num], commands + word_start, word_size);
+            toRet[comm_num][word_size-1] = '\0';
+            
+            break;
+        } else {
+            i++;
         }
 
-        // + 1 for null termination
-        int word_size = word - prev_word + 1;
-        // TODO handle malloc return
-        toRet[comm_i] = (char*) malloc(word_size * sizeof(char));
-        // TODO handle return
-        strncpy(toRet[comm_i], prev_word, word_size);
-        toRet[comm_i][word_size-1] = '\0';
-
-        // skip the token
-        prev_word = word + 1;
-        comm_i++;
-
-        if (last_word) 
-            break;
     }
 
 
@@ -55,7 +64,7 @@ char** tokenize(char* commands) {
 // for testing purposes
 // TODO remove
 int main() {
-    char* command = "echo    hi";
+    char* command = "echo     hi";
     char** comms = tokenize(command);
 
     char* comm;
