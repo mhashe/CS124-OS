@@ -1,0 +1,118 @@
++-------------------------------------------------------------+
+| TESTING NOTES:                                              |
+|   Don't expect that commands like "vim" or "less" will work |
+|   without errors!  The students' shells won't offer all the |
+|   standard terminal capabilities, so one would expect that  |
+|   some errors will occur with these programs.               |
+|                                                             |
+|   Student shells *should* be able to run scripts from the   |
+|   command-line (anything that specifies a shebang line as   |
+|   the first line of the script), like Python files, Bash    |
+|   scripts, etc.  Sometimes they are unable to do so though. |
+|   ("shebang":  https://en.wikipedia.org/wiki/Shebang_(Unix) |
++-------------------------------------------------------------+
+
+1.  Try a simple command
+
+  echo SUCCESS
+
+2.  Make sure double-quotes are handled properly (shouldn't print " chars)
+
+  echo "SUCCESS"
+
+  echo "   SUCCESS"     <-- Should print SUCCESS, but indented 3 spaces
+
+3.  Try some simple forking (these should all print SUCCESS)
+
+  echo SUCCESS | grep SUCCESS
+  echo SUCCESS | grep SUCCESS | grep -v FAILURE | grep SUCCESS
+
+  These should also work:
+
+  echo SUCCESS|grep SUCCESS
+  echo SUCCESS|grep SUCCESS|grep -v FAILURE|grep SUCCESS
+
+4.  Check process termination is handled correctly when piping.
+    These should pause for 5 seconds, print "hello", and THEN show
+    the command prompt.  If the command prompt shows up before hello,
+    then they don't handle process termination correctly.  (Feel free to
+    add more cats in, if you happen to be a cat person.)
+
+  echo hello | cat | sleepycat 5
+  echo hello | sleepycat 5 | cat
+
+  echo hello|cat|sleepycat 5
+  echo hello|sleepycat 5|cat
+
+5.  These should all print the "rm -f ..." line from the Makefile.
+
+  cat Makefile | grep "f *"
+  grep "f *" < Makefile
+  grep "f *"<Makefile
+  grep "f *" Makefile
+
+6.  More good tests of quotes:
+
+  grep "all " Makefile  <-- Should print out 2 lines, not 3
+
+  echo "cat < Makefile" > foo.txt
+  cat foo.txt           <-- Should have the command, verbatim
+
+  echo "cat < Makefile | grep all" > foo.txt
+  cat foo.txt           <-- Should have the command, verbatim
+
++-----------------------------------------------------------------+
+| ERROR TESTING:                                                  |
+|   Ideally, when the shell generates an error, it will print a   |
+|   reasonable error message and then wait for another command.   |
+|   A bad shell will just explode.                                |
++-----------------------------------------------------------------+
+
+5.  Try to make and run a script (may or may not work...)
+
+  cat Makefile          <-- Should print the makefile
+
+  # MAKE SURE THERE ISN'T ALREADY A test.sh FILE THEY CREATED...
+  echo cat Makefile > test.sh
+  chmod a+x test.sh
+  ./test.sh             <-- Should also print the makefile
+
+  If this one fails, it's not a big deal - but, it will allow you to
+  see if they have error-handling in place
+
+6.  Try an invalid command
+
+  blablabla             <-- Should print some kind of error
+
+7.  Try redirecting a nonexistent file into stdin
+
+  cat < Makefile        <-- Should print the makefile
+  cat < blablabla       <-- Should print some kind of error
+
+8.  Try redirecting to an existing directory for stdout
+
+  mkdir tmp
+  cat Makefile > tmp    <-- Should print some kind of error
+
+9.  Try running a piped command sequence with a bad command
+
+  cat Makefile | blablabla
+
++-----------------------------------------------------------+
+| EXTRA CREDIT:  >> (append)                                |
+|   There isn't much to test here, so just give it a whirl. |
++-----------------------------------------------------------+
+
+1.  A simple append test:
+
+  echo "SUCCESS" > foo.txt
+  echo "huh?" >> foo.txt
+  echo bar abc def >> foo.txt
+  cat foo.txt
+
+2.  Redirecting standard error:
+
+  The utility "outerr" in this directory can be used to exercise
+  this functionality.  It prints "stdout" to stdout, and "stderr"
+  to stderr.
+
