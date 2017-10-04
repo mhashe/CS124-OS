@@ -76,8 +76,13 @@ char** tokenize(char* commands) {
             }
 
             // special character and null termination
-            // TODO treat append redirection character
-            word_size = 2;
+
+            // treat appending special character
+            if (ch == '>' && commands[i+1] == '>') {
+                word_size = 3;
+            } else {
+                word_size = 2;
+            }
 
             // copy into buffer
             toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
@@ -88,8 +93,8 @@ char** tokenize(char* commands) {
             comm_num++;
 
             // onto the next one 
-            // TODO treat append redirection character
-            i++;
+            // -1 to ignore the null termination character
+            i += word_size - 1;
             word_start = i;
 
         } else if (ch == ' ') {
@@ -136,7 +141,7 @@ char** tokenize(char* commands) {
 // for testing purposes
 // TODO remove
 int main() {
-    char* command = "echo SUCCESS|grep SUCCESS|grep -v FAILURE|grep SUCCESS";
+    char* command = "echo \"cat < Makefile\" > foo.txt";
     char** comms = tokenize(command);
 
     char* comm;
