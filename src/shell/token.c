@@ -14,7 +14,8 @@
  * ret: array of char pointers (strings) of tokenized values
  */
 
-// TODO: handle errors everywhere
+// TODO handle errors everywhere
+// TODO remove repeated code
 char** tokenize(char* commands) {
     // TODO: remove magic number
     char** toRet = (char**)calloc(1024, sizeof(char*));
@@ -26,30 +27,97 @@ char** tokenize(char* commands) {
 
     while(1) {
         char ch = commands[i];
-        if (ch == ' ') {
+        if (ch =='\"') {
+            // treat everything until closing quote as a string
+
+            i = (int)(strchr(commands + i + 1, '\"') - commands);
+
+            // TODO handle when quotes happen in middle eg hel"hi"lo
+            // skip the starting quote
+            word_start++;
+
             // + 1 for null termination
             word_size = i - word_start + 1;
 
+            // copy into buffer
             toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
             strncpy(toRet[comm_num], commands + word_start, word_size);
             toRet[comm_num][word_size-1] = '\0';
             
+            // advance to next command space
             comm_num++;
-            
-            // skip repeated spaces
-            while (commands[i] == ' ') {
-                i++;
-            }
+
+            // onto the next one 
+            i++;
             word_start = i;
-        } else if (ch == '\0') {
+
+        } else if (ch == '|' || ch == '<' || ch == '>') {
+            // if have a redirection character, end the word now and treat it
+
             // + 1 for null termination
             word_size = i - word_start + 1;
 
+            // copy into buffer
+            toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
+            strncpy(toRet[comm_num], commands + word_start, word_size);
+            toRet[comm_num][word_size-1] = '\0';
+            
+            // advance to next command space
+            comm_num++;
+
+            // special character and null termination
+            // TODO treat append redirection character
+            word_size = 2;
+
+            // copy into buffer
+            toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
+            strncpy(toRet[comm_num], commands + i, word_size);
+            toRet[comm_num][word_size-1] = '\0';
+
+            // advance to next command space
+            comm_num++;
+
+            // onto the next one 
+            // TODO treat append redirection character
+            i++;
+            word_start = i;
+
+        } else if (word_start == i && ch == ' ') {
+            // skip repeated spaces
+
+            i++;
+            word_start = i;
+
+        } else if (ch == ' ') {
+            // + 1 for null termination
+            word_size = i - word_start + 1;
+
+            // copy into buffer
+            toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
+            strncpy(toRet[comm_num], commands + word_start, word_size);
+            toRet[comm_num][word_size-1] = '\0';
+            
+            // advance to next command space
+            comm_num++;
+            
+            // onto the next one 
+            i++;
+            word_start = i;
+
+        } else if (ch == '\0') {
+            if (commands[word_start] == '\0')
+                break;
+
+            // + 1 for null termination
+            word_size = i - word_start + 1;
+
+            // copy into buffer
             toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
             strncpy(toRet[comm_num], commands + word_start, word_size);
             toRet[comm_num][word_size-1] = '\0';
             
             break;
+
         } else {
             i++;
         }
@@ -64,7 +132,7 @@ char** tokenize(char* commands) {
 // for testing purposes
 // TODO remove
 int main() {
-    char* command = "echo     hi";
+    char* command = "echo hi|grep hi";
     char** comms = tokenize(command);
 
     char* comm;
