@@ -51,19 +51,29 @@ char** tokenize(char* commands) {
             i++;
             word_start = i;
 
+        } else if (word_start == i && ch == ' ') {
+            // skip repeated spaces
+
+            i++;
+            word_start = i;
+
         } else if (ch == '|' || ch == '<' || ch == '>') {
             // if have a redirection character, end the word now and treat it
 
-            // + 1 for null termination
-            word_size = i - word_start + 1;
+            // case where we are already in the process of parsing a word,
+            // finish it up then continue
+            if (word_start != i) {
+                // + 1 for null termination
+                word_size = i - word_start + 1;
 
-            // copy into buffer
-            toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
-            strncpy(toRet[comm_num], commands + word_start, word_size);
-            toRet[comm_num][word_size-1] = '\0';
-            
-            // advance to next command space
-            comm_num++;
+                // copy into buffer
+                toRet[comm_num] = (char*) malloc(word_size * sizeof(char));
+                strncpy(toRet[comm_num], commands + word_start, word_size);
+                toRet[comm_num][word_size-1] = '\0';
+                
+                // advance to next command space
+                comm_num++;
+            }
 
             // special character and null termination
             // TODO treat append redirection character
@@ -79,12 +89,6 @@ char** tokenize(char* commands) {
 
             // onto the next one 
             // TODO treat append redirection character
-            i++;
-            word_start = i;
-
-        } else if (word_start == i && ch == ' ') {
-            // skip repeated spaces
-
             i++;
             word_start = i;
 
@@ -132,7 +136,7 @@ char** tokenize(char* commands) {
 // for testing purposes
 // TODO remove
 int main() {
-    char* command = "echo hi|grep hi";
+    char* command = "echo SUCCESS|grep SUCCESS|grep -v FAILURE|grep SUCCESS";
     char** comms = tokenize(command);
 
     char* comm;
