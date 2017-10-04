@@ -138,24 +138,24 @@ char** tokenize(char* commands) {
 }
 
 
-// for testing purposes
-// TODO remove
-int main() {
-    char* command = " echo bar abc def >> foo.txt";
-    char** comms = tokenize(command);
+// // for testing purposes
+// // TODO remove
+// int main() {
+//     char* command = " echo bar abc def >> foo.txt";
+//     char** comms = tokenize(command);
 
-    char* comm;
-    int i = 0;
-    while(1) {
-        comm = comms[i];
-        if (comm == NULL) {
-            break;
-        }
-        printf("%s\n", comm);
-        i++;
+//     char* comm;
+//     int i = 0;
+//     while(1) {
+//         comm = comms[i];
+//         if (comm == NULL) {
+//             break;
+//         }
+//         printf("%s\n", comm);
+//         i++;
 
-    }
+//     }
 
 
-    return 0;
-}
+//     return 0;
+// }

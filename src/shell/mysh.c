@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <limits.h>
 
+#define MAX_SIZE	1024	// Max size of input
+
 int main(int argc, char *argv[])
 {
 	// User ID. Function guaranteed to be successful.
@@ -25,6 +27,17 @@ int main(int argc, char *argv[])
 		return(1);
 	}
 
-	printf("%s\n", uname);
-	printf("%s\n", cwd);
+	while(1) {
+		char commands[MAX_SIZE];
+
+		// Print command prompt
+		printf("%s:%s >>> ", uname, cwd);
+
+		// Wait for input
+		fgets(commands, MAX_SIZE, stdin);
+
+
+	}
+
+	return(0);
 }
