@@ -24,9 +24,8 @@ struct command {
 
 
 /*
- * Sets input_fn and output_fn parameters, if applicable. Assumes commands
- * are well-structure, i.e. at most one redirected input file and one 
- * redirected output file.
+ * Sets input_fn, output_fn, and error_fn parameters, if applicable. Assumes 
+ * commands are well-structured, i.e. at most one redirected file of each type.
  *
  * Inputs:
  *      cmd: A command struct

@@ -58,6 +58,26 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             }
         }
 
+        // Redirected error
+        if (strcmp(pipe_tokens[idx], "2>") == 0) {
+            // Same assumption as above
+            cmd->error_fn = pipe_tokens[idx+1];
+
+            // Create file
+            FILE *fp;
+            fp = fopen(cmd->error_fn, "w");
+            if (fp == NULL) {
+                perror("Error in creating error file");
+                return 1;
+            }
+            if (fclose(fp) == EOF) {
+                // Error with closing file.
+                fprintf(stderr, "Error closing file for redirected file "
+                    "error: %s\n", cmd->error_fn);
+                exit(1);
+            }
+        }
+
         idx += 1;
     }
     return 0;
