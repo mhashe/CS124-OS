@@ -7,8 +7,7 @@
 #include <signal.h>
 
 #include "token.h"
-
-#define MAX_SIZE    1024    // Max size of input
+#include "consts.h"
 
 int main(int argc, char *argv[])
 {
@@ -45,7 +44,7 @@ int main(int argc, char *argv[])
     }
 
     while(1) {
-        char command[MAX_SIZE];
+        char command[MAX_LINE];
 
         // Print command prompt
         printf("%s:%s >>> ", uname, cwd);
@@ -53,7 +52,7 @@ int main(int argc, char *argv[])
         // TODO: Handle SIGINT
 
         // Wait for input
-        if (fgets(command, MAX_SIZE, stdin) == NULL) {
+        if (fgets(command, MAX_LINE, stdin) == NULL) {
             // Received EOF => stdin is closed, no reason for terminal
             printf("\n");
             return 0;
