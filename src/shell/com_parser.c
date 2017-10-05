@@ -8,33 +8,20 @@
 #include "com_parser.h"
 
 
-/*
- * Sets input_fn and output_fn parameters, if applicable. Assumes commands
- * are well-structure, i.e. at most one redirected input file and one 
- * redirected output file.
- *
- * Inputs:
- *      cmd: A command struct
- *      pipe_commands: An array of tokenized commands
- *
- * Returns:
- *      1: Error opening/creating I/O files
- *      0: Normal execution
- * 
- */
-int set_fn(struct command* cmd, char** pipe_commands) {
+int set_fn(struct command* cmd, char** pipe_tokens) {
     // Defaults, overridden if applicable
     cmd->input_fn = NULL;
     cmd->output_fn = NULL;
+    cmd->error_fn = NULL;
 
     // Loop through all commands, look for <, >
     int idx = 0;
-    while (pipe_commands[idx] != NULL) {
+    while (pipe_tokens[idx] != NULL) {
 
         // Redirected input
-        if (strcmp(pipe_commands[idx], "<") == 0) {
+        if (strcmp(pipe_tokens[idx], "<") == 0) {
             // We assume a properly formatted command (i.e., at most one <, >)
-            cmd->input_fn = pipe_commands[idx+1];
+            cmd->input_fn = pipe_tokens[idx+1];
 
             // Ensure that file actually exists, openable
             FILE *fp;
@@ -52,9 +39,9 @@ int set_fn(struct command* cmd, char** pipe_commands) {
         }
 
         // Redirected output
-        if (strcmp(pipe_commands[idx], ">") == 0) {
+        if (strcmp(pipe_tokens[idx], ">") == 0) {
             // Same assumption as above
-            cmd->output_fn = pipe_commands[idx+1];
+            cmd->output_fn = pipe_tokens[idx+1];
 
             // Create file
             FILE *fp;
@@ -71,78 +58,55 @@ int set_fn(struct command* cmd, char** pipe_commands) {
             }
         }
 
+        // Redirected error
+        if (strcmp(pipe_tokens[idx], "2>") == 0) {
+            // Same assumption as above
+            cmd->error_fn = pipe_tokens[idx+1];
+
+            // Create file
+            FILE *fp;
+            fp = fopen(cmd->error_fn, "w");
+            if (fp == NULL) {
+                perror("Error in creating error file");
+                return 1;
+            }
+            if (fclose(fp) == EOF) {
+                // Error with closing file.
+                fprintf(stderr, "Error closing file for redirected file "
+                    "error: %s\n", cmd->error_fn);
+                exit(1);
+            }
+        }
+
         idx += 1;
     }
     return 0;
 }
 
 
-/* Parses a sequence of tokenized arguments (between-pipes, not including any) 
-into a command struct, which it returns. */
-struct command* new_command(char** pipe_commands) {
+struct command* new_command(char** pipe_tokens) {
     struct command *cmd;
     cmd = (struct command *)calloc(1, sizeof(struct command));
-    cmd->input_fn = NULL;
-    cmd->output_fn = NULL;
-    cmd->error_fn = NULL;
+    if (cmd == NULL) {
+        fprintf(stderr, "Calloc failure for allocating command struct.\n");
+        exit(1);
+    }
 
-    int set = set_fn(cmd, pipe_commands);
+    // Set redirected I/O, if applicable
+    int set = set_fn(cmd, pipe_tokens);
     if (set == 1) {
         // Error with redirected I/O
         return NULL;
     }
 
-    cmd->exec_fn = pipe_commands[0];
-    cmd->argv = pipe_commands;
-    cmd->next = NULL; // if there is a command piped from this, this will be changed
+    // Set up for execvp
+    cmd->exec_fn = pipe_tokens[0];
+    cmd->argv = pipe_tokens;
+    cmd->next = NULL; // Potentially changed by piping
     return cmd;
 }
 
 
-/* Parse a sequence of tokenized arguments (including pipes) into a linked-list 
-of commands using split_by_pipe_symbol. */
-struct command* parse_to_chained_commands(char **argv) {
-    struct command* head_cmd;
-    struct command* cmd;
-    char** pipe_commands;
-
-    pipe_commands = split_by_pipe_symbol(argv, 0);
-    if (pipe_commands == NULL) {
-        // No valid command entered
-        head_cmd = NULL;
-        return head_cmd;
-    }
-
-    cmd = new_command(pipe_commands);
-    if (cmd == NULL) {
-        // Invalid I/O redirection
-        return NULL;
-    }
-
-    head_cmd = cmd;
-    
-    int count = 1;
-    while (1) {
-        pipe_commands = split_by_pipe_symbol(argv, count);
-        if (pipe_commands == NULL) {
-            // No more commands
-            break;
-        }
-
-        cmd->next = new_command(pipe_commands);
-        cmd = cmd->next;
-
-        if (cmd == NULL) {
-            // Invalid I/O redirection
-            return NULL;
-        }
-        count += 1;
-    }
-    return head_cmd;
-}
-
-
-/* Returns the arguments of argv between the nth and the (n+1)st pipe symbols. */
 char** split_by_pipe_symbol(char **argv, int n) {
     char *comm;
 
@@ -155,8 +119,9 @@ char** split_by_pipe_symbol(char **argv, int n) {
         lower = 0;
     }
 
+    // Pipe symbols passed thus far
+    int pipes = 0;
     int idx = 1;
-    int pipes = 0; // Pipe symbols passed thus far
     while(1) {
         comm = argv[idx];
 
@@ -192,20 +157,75 @@ char** split_by_pipe_symbol(char **argv, int n) {
 
     // Sanity check
     if ((lower == -1) || (upper == -1)){
-        // Change stderr to some file descriptor?
         fprintf(stderr, "Unexpected error in split_by_pipe_symbol!\n");
         fprintf(stderr, "(lower, upper) = (%d,%d)\n", lower, upper);
         exit(1);
     }
-        // free(com0);
-    // Store relevant commands in new file
-    char** pipe_commands = (char**)calloc(upper - lower + 2, sizeof(char*));
+
+    // Store relevant commands in new array
+    char** pipe_tokens = (char**)calloc(upper - lower + 2, sizeof(char*));
+    if (pipe_tokens == NULL) {
+        fprintf(stderr, "Calloc failure for allocating pipe_tokens array.\n");
+        exit(1);
+    }
 
     for (int i = lower; i <= upper; i++) {
-        pipe_commands[i-lower] = (char*)calloc(strlen(argv[i])+1, sizeof(char));
-        strcpy(pipe_commands[i-lower], argv[i]);
-    }
-    pipe_commands[upper-lower+2] = NULL; // Terminate with a NULL
+        // Copy token into new array
+        pipe_tokens[i-lower] = (char*)calloc(strlen(argv[i])+1, sizeof(char));
+        if (pipe_tokens[i-lower] == NULL) {
+            fprintf(stderr, "Calloc failure for allocating token.\n");
+            exit(1);
+        }
 
-    return pipe_commands;
+        strcpy(pipe_tokens[i-lower], argv[i]);
+    }
+    // Terminate with a NULL
+    pipe_tokens[upper-lower+2] = NULL;
+
+    return pipe_tokens;
+}
+
+
+struct command* parse_to_chained_commands(char **argv) {
+    struct command* head_cmd;
+    struct command* cmd;
+    char** pipe_commands;
+
+    // Get tokens corresponding to 0th command
+    pipe_commands = split_by_pipe_symbol(argv, 0);
+    if (pipe_commands == NULL) {
+        // No valid command entered
+        head_cmd = NULL;
+        return head_cmd;
+    }
+
+    // Create command struct from tokens
+    cmd = new_command(pipe_commands);
+    if (cmd == NULL) {
+        // Invalid I/O redirection - abort parsing, return to prompt.
+        return NULL;
+    }
+
+    head_cmd = cmd;
+    
+    int n = 1;
+    while (1) {
+        // Find tokens corresponding to nth command
+        pipe_commands = split_by_pipe_symbol(argv, n);
+        if (pipe_commands == NULL) {
+            // No more commands
+            break;
+        }
+
+        // Create command struct from tokens
+        cmd->next = new_command(pipe_commands);
+        cmd = cmd->next;
+        if (cmd == NULL) {
+            // Invalid I/O redirection - abort parsing, return to prompt.
+            return NULL;
+        }
+        n += 1;
+    }
+
+    return head_cmd;
 }
