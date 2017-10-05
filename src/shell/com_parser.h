@@ -18,6 +18,10 @@ struct command {
     char *output_fn;
     char *error_fn;
 
+    // Output/error append flags
+    int out_a;
+    int err_a;
+
     // If not null, next refers to the next command (whose out is this cmd's in)
     struct command *next; 
 };

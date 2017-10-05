@@ -14,6 +14,10 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
     cmd->output_fn = NULL;
     cmd->error_fn = NULL;
 
+    // Append flags; set for >> and 2>>
+    cmd->out_a = 0;
+    cmd->err_a = 0;
+
     // Loop through all commands, look for <, >
     int idx = 0;
     while (pipe_tokens[idx] != NULL) {
@@ -58,6 +62,29 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             }
         }
 
+        // Redirected output - append
+        if (strcmp(pipe_tokens[idx], ">>") == 0) {
+            // Same assumption as above
+            cmd->output_fn = pipe_tokens[idx+1];
+
+            // Create file
+            FILE *fp;
+            fp = fopen(cmd->output_fn, "a");
+            if (fp == NULL) {
+                perror("Error in creating output file");
+                return 1;
+            }
+            if (fclose(fp) == EOF) {
+                // Error with closing file.
+                fprintf(stderr, "Error closing file for redirected file "
+                    "output: %s\n", cmd->output_fn);
+                exit(1);
+            }
+
+            // Set append flag
+            cmd->out_a = 1;
+        }
+
         // Redirected error
         if (strcmp(pipe_tokens[idx], "2>") == 0) {
             // Same assumption as above
@@ -76,6 +103,29 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
                     "error: %s\n", cmd->error_fn);
                 exit(1);
             }
+        }
+
+        // Redirected error
+        if (strcmp(pipe_tokens[idx], "2>>") == 0) {
+            // Same assumption as above
+            cmd->error_fn = pipe_tokens[idx+1];
+
+            // Create file
+            FILE *fp;
+            fp = fopen(cmd->error_fn, "a");
+            if (fp == NULL) {
+                perror("Error in creating error file");
+                return 1;
+            }
+            if (fclose(fp) == EOF) {
+                // Error with closing file.
+                fprintf(stderr, "Error closing file for redirected file "
+                    "error: %s\n", cmd->error_fn);
+                exit(1);
+            }
+
+            // Set append flag
+            cmd->err_a = 1;
         }
 
         idx += 1;
