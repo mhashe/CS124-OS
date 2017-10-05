@@ -5,10 +5,13 @@
 #include <limits.h>
 #include <string.h>
 #include <signal.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #include "token.h"
 #include "consts.h"
 #include "com_parser.h"
+#include "mysh.h"
 
 int main(int argc, char *argv[])
 {
@@ -45,22 +48,32 @@ int main(int argc, char *argv[])
     }
 
     while(1) {
-        char command[MAX_LINE];
+        char *line_in;
 
         // Print command prompt
-        printf("%s:%s $ ", uname, cwd);
+        // printf("%s:%s $ ", uname, cwd);
 
-        // TODO: Handle SIGINT
+        // read input
+        line_in = readline("prompt");
 
         // Wait for input
-        if (fgets(command, MAX_LINE, stdin) == NULL) {
+        if (line_in == NULL) {
             // Received EOF => stdin is closed, no reason for terminal
             printf("\n");
             return 0;
         }
 
+        add_history(line_in);
+        HIST_ENTRY* hist = previous_history();
+        if (hist) {
+            printf("%s\n", hist->line);
+            next_history();
+        }
+        
+
         // Tokenize input
-        char** comms = tokenize(command);
+        char** comms = tokenize(line_in);
+
 
         // char* comm;
         // int i = 0;

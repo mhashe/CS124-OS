@@ -2,6 +2,8 @@ CFLAGS = -Wall -g
 
 OBJS = mysh.o token.o com_parser.o
 
+LDFLAGS = -lreadline
+
 all: mysh
 
 mysh: $(OBJS)
