@@ -32,15 +32,7 @@ int fork_and_exec_commands(struct command *cmd) {
         pid_t pid;
         int fd[2];
 
-
-        printf("in fork and exec!\n");
-        printf("%s\n", cmd->exec_fn);
-
-
-
-
         printf("Handling: %s\n", cmd->exec_fn);
-        return -1;
 
         if (cmd->next != NULL) {
             printf("making pipe!\n");

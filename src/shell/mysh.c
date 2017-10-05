@@ -93,29 +93,31 @@ int main(int argc, char *argv[])
         char** comms = tokenize(line_in);
 
         struct command* cmd = parse_to_chained_commands(comms);
-        char **cmds;
-        int idx;
+        // char **cmds;
+        // int idx;
 
-        while (cmd != NULL) {
-            cmds = cmd->argv;
+        // while (cmd != NULL) {
+        //     cmds = cmd->argv;
 
-            idx = 0;
-            while (cmds[idx] != NULL) {
-                printf("%s\n",cmds[idx]);
-                idx += 1;
-            }
-            printf("=====\n");
-            if (cmd->input_fn != NULL) {
-                printf("%s\n", cmd->input_fn);
-            }
-            if (cmd->output_fn != NULL) {
-                printf("%s\n", cmd->output_fn);
-            }
+        //     idx = 0;
+        //     while (cmds[idx] != NULL) {
+        //         printf("%s\n",cmds[idx]);
+        //         idx += 1;
+        //     }
+        //     printf("=====\n");
+        //     if (cmd->input_fn != NULL) {
+        //         printf("%s\n", cmd->input_fn);
+        //     }
+        //     if (cmd->output_fn != NULL) {
+        //         printf("%s\n", cmd->output_fn);
+        //     }
 
-            cmd = cmd->next;
-            printf("\n");
-        }
+        //     cmd = cmd->next;
+        //     printf("\n");
+        // }
+        // if (cmd->next == NULL) 
 
+        printf("command's ex_fn in mysh: %s\n", cmd->exec_fn);
         printf("forking result: %d\n", fork_and_exec_commands(cmd));
 
         // TODO: Free statements
