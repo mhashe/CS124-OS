@@ -29,7 +29,6 @@
 io. It then waits for all of them to finish in the shell process. */
 int fork_and_exec_commands(struct command *cmd) {
     int last_out_fd = -1; // there was no previous fd to take as input
-    struct command *cmd_head = cmd;
 
     // Having spawning processes in an infinite while loop seems dangerous: change?
     while (1) {
@@ -60,9 +59,6 @@ int fork_and_exec_commands(struct command *cmd) {
         }
         if (pid > 0) {
             // we are in the shell process
-
-            // save pid to be closed later
-            cmd->pid = pid;
 
             if (last_out_fd != -1) {
                 // printf("%s: closing last_out_fd\n", cmd->exec_fn);
@@ -100,23 +96,31 @@ int fork_and_exec_commands(struct command *cmd) {
     }
 
     // Make the shell process wait for all child processes to terminate
-    wait_for_commands(cmd_head);
+    wait_for_children();
     // wait(NULL);
     // printf("all child processes are finished\n");
 
     return 0;
 }
 
-void wait_for_commands(struct command *cmd) {
+
+// comment
+void wait_for_children() {
     while (1) {
         int status;
-        while (wait(&status) != cmd->pid);
-        if (cmd->next == NULL) {
-            break;
+        pid_t finished = wait(&status);
+        int exit_status = WEXITSTATUS(status);
+
+        // Only exit code -1 (if cmd doesn't exist) or 0 (successful) are OK
+        if ((exit_status != 0) && (exit_status != 1)) {
+            fprintf(stderr, "Error returned from one of the child processes forked.\n");
         }
-        cmd = cmd->next;
+        if (finished == -1) {
+            return;
+        }
     }
 }
+
 
 /* Executes the command after forking and does the io redirection to stdout, 
 stdin, or stderr if needed. The io redirection is done after forking, so the 
@@ -161,7 +165,7 @@ void execute_command(struct command *cmd) {
 
     
     // The executable has control over the process now, or else:
-    fprintf(stderr, "Failed to exec %s\n", cmd->exec_fn);
+    fprintf(stderr, "%s: command not found\n", cmd->exec_fn);
     exit(1);
 }
 
