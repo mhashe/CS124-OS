@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
         char command[MAX_LINE];
 
         // Print command prompt
-        printf("%s:%s >>> ", uname, cwd);
+        printf("%s:%s $ ", uname, cwd);
 
         // TODO: Handle SIGINT
 
@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
         //     i++;
 
         // }
+
         struct command* cmd = parse_to_chained_commands(comms);
         char **cmds;
         int idx;
@@ -85,6 +86,14 @@ int main(int argc, char *argv[])
                 printf("%s\n",cmds[idx]);
                 idx += 1;
             }
+            printf("=====\n");
+            if (cmd->input_fn != NULL) {
+                printf("%s\n", cmd->input_fn);
+            }
+            if (cmd->output_fn != NULL) {
+                printf("%s\n", cmd->output_fn);
+            }
+
             cmd = cmd->next;
             printf("\n");
         }

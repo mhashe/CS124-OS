@@ -7,28 +7,90 @@
 #include "consts.h"
 #include "com_parser.h"
 
+
 /*
- * Contains the command struct, which is parsed from a sequence of tokens, and 
- * the functions for doing said parsing.
+ * Sets input_fn and output_fn parameters, if applicable. Assumes commands
+ * are well-structure, i.e. at most one redirected input file and one 
+ * redirected output file.
+ *
+ * Inputs:
+ *      cmd: A command struct
+ *      pipe_commands: An array of tokenized commands
+ *
+ * Returns:
+ *      1: Error opening/creating I/O files
+ *      0: Normal execution
+ * 
  */
+int set_fn(struct command* cmd, char** pipe_commands) {
+    // Defaults, overridden if applicable
+    cmd->input_fn = NULL;
+    cmd->output_fn = NULL;
+
+    // Loop through all commands, look for <, >
+    int idx = 0;
+    while (pipe_commands[idx] != NULL) {
+
+        // Redirected input
+        if (strcmp(pipe_commands[idx], "<") == 0) {
+            // We assume a properly formatted command (i.e., at most one <, >)
+            cmd->input_fn = pipe_commands[idx+1];
+
+            // Ensure that file actually exists, openable
+            FILE *fp;
+            fp = fopen(cmd->input_fn, "r");
+            if (fp == NULL) {
+                perror("Error with redirected input file");
+                return 1;
+            }
+            if (fclose(fp) == EOF) {
+                // Error with closing file.
+                fprintf(stderr, "Error closing file for redirected file "
+                    "input: %s\n", cmd->input_fn);
+                exit(1);
+            }
+        }
+
+        // Redirected output
+        if (strcmp(pipe_commands[idx], ">") == 0) {
+            // Same assumption as above
+            cmd->output_fn = pipe_commands[idx+1];
+
+            // Create file
+            FILE *fp;
+            fp = fopen(cmd->output_fn, "w");
+            if (fp == NULL) {
+                perror("Error in creating output file");
+                return 1;
+            }
+            if (fclose(fp) == EOF) {
+                // Error with closing file.
+                fprintf(stderr, "Error closing file for redirected file "
+                    "output: %s\n", cmd->output_fn);
+                exit(1);
+            }
+        }
+
+        idx += 1;
+    }
+    return 0;
+}
 
 
 /* Parses a sequence of tokenized arguments (between-pipes, not including any) 
 into a command struct, which it returns. */
-struct command* new_command(char **pipe_commands) {
+struct command* new_command(char** pipe_commands) {
     struct command *cmd;
     cmd = (struct command *)calloc(1, sizeof(struct command));
     cmd->input_fn = NULL;
     cmd->output_fn = NULL;
     cmd->error_fn = NULL;
 
-    /* TODO:
-        Parse from pipe_commands the filename for input/output/error redirection if they exist.
-        This should be done in a seperate function.
-        This function should check that the files exist. Else, they should 
-        either throw an error or return an error value.? 
-        (If none are found, the default for cmd->input and cmd->ouput are null)
-    */
+    int set = set_fn(cmd, pipe_commands);
+    if (set == 1) {
+        // Error with redirected I/O
+        return NULL;
+    }
 
     cmd->exec_fn = pipe_commands[0];
     cmd->argv = pipe_commands;
@@ -52,6 +114,11 @@ struct command* parse_to_chained_commands(char **argv) {
     }
 
     cmd = new_command(pipe_commands);
+    if (cmd == NULL) {
+        // Invalid I/O redirection
+        return NULL;
+    }
+
     head_cmd = cmd;
     
     int count = 1;
@@ -64,6 +131,11 @@ struct command* parse_to_chained_commands(char **argv) {
 
         cmd->next = new_command(pipe_commands);
         cmd = cmd->next;
+
+        if (cmd == NULL) {
+            // Invalid I/O redirection
+            return NULL;
+        }
         count += 1;
     }
     return head_cmd;
@@ -130,7 +202,7 @@ char** split_by_pipe_symbol(char **argv, int n) {
     char** pipe_commands = (char**)calloc(upper - lower + 2, sizeof(char*));
 
     for (int i = lower; i <= upper; i++) {
-        pipe_commands[i-lower] = (char*)calloc(strlen(argv[1]), sizeof(char));
+        pipe_commands[i-lower] = (char*)calloc(strlen(argv[i])+1, sizeof(char));
         strcpy(pipe_commands[i-lower], argv[i]);
     }
     pipe_commands[upper-lower+2] = NULL; // Terminate with a NULL
