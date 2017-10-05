@@ -2,6 +2,9 @@
 #include <stdio.h> // cout, cin
 #include <stdlib.h>
 #include <assert.h>
+#include <fcntl.h> //open, creat
+#include <sys/types.h> // wait
+#include <sys/wait.h> // wait
 
 #include "consts.h"
 #include "com_parser.h"
@@ -26,25 +29,54 @@ void execute_command(struct command *cmd) {
         dup2(fd0, STDIN_FILENO);
         close(fd0);
     }
-    if (cmd->ouput_fn != NULL) {
+    if (cmd->output_fn != NULL) {
         // creat() is equivalent to open(path, O_WRONLY|O_CREAT|O_TRUNC, mode)
-        int fd1 = create(cmd->output_fn, 0644); // TODO: what mode to use? suggested online: 0644
+        int fd1 = creat(cmd->output_fn, 0644); // TODO: what mode to use? suggested online: 0644
         dup2(fd1, STDOUT_FILENO);
         close(fd1);
     }
     if (cmd->error_fn != NULL) {
-        int fd2 = create(cmd->error_fn, 0644);
+        int fd2 = creat(cmd->error_fn, 0644);
         dup2(fd2, STDERR_FILENO);
         close(fd2);
     }
+    fflush(NULL);
 
     // Execute the command with its arguments
-    execvp(command->exec_fn, command->argv);
+    execvp(cmd->exec_fn, cmd->argv);
     
     // The executable has control over the process now, or else:
-    printf(STDERR_FILENO, "Failed to exec %s\n", cmd->exec_fn);
+    fprintf(stderr, "Failed to exec %s\n", cmd->exec_fn);
     exit(1);
 }
+
+
+int main(int argc, char *argv[]) {
+    // make sure everything is null terminated?
+    char *args[3];
+    char arg = '/';
+    args[0] = "echo";
+    args[1] = "hi";
+    args[2] = NULL;
+    // pid_t pid = fork();
+    // int status;
+    execvp("echo", args);
+    return 0;
+
+    printf("test:\n");
+    struct command cmd;
+    cmd.exec_fn = "/bin/ls";
+    cmd.argv = args;
+    cmd.input_fn = NULL;
+    cmd.output_fn = "";
+    cmd.error_fn = "";
+    cmd.next = NULL;
+    execute_command(&cmd);
+
+    return 0;
+}
+
+
 
 /* Deprecated testing functions
 
@@ -71,14 +103,6 @@ void test_piping() {
     }
 }
 */
-
-int main(int argc, char *argv[]) {
-    printf("test:\n");
-    // test_piping();
-
-    return 0;
-}
-
 
 
 
