@@ -85,9 +85,12 @@ int fork_and_exec_commands(struct command *cmd) {
 
     return 0;
 }
+
 /* Executes the command after forking and does the io redirection to stdout, 
 stdin, or stderr if needed. The io redirection is done after forking, so the 
-redirection is unique to this process/command. */
+redirection is unique to this process/command. Note: creat() is equivalent to 
+open(path, O_WRONLY|O_CREAT|O_TRUNC, mode) and mode 0644 means write 
+permissions are given to only the owner. */
 void execute_command(struct command *cmd) {
     if (cmd->input_fn != NULL) {
         int fd0 = open(cmd->input_fn, O_RDONLY);
@@ -95,13 +98,28 @@ void execute_command(struct command *cmd) {
         close(fd0);
     }
     if (cmd->output_fn != NULL) {
-        // creat() is equivalent to open(path, O_WRONLY|O_CREAT|O_TRUNC, mode)
-        int fd1 = creat(cmd->output_fn, 0644); // TODO: what mode to use? suggested online: 0644
+        int fd1;
+
+        // Append to output if out_a flag is 1, else make empty file
+        if (cmd->out_a) {
+            fd1 = open(cmd->output_fn, O_WROLNLY|O_APPEND);
+        } else {
+            // 
+            fd1 = creat(cmd->output_fn, 0644);        
+        }
         dup2(fd1, STDOUT_FILENO);
         close(fd1);
     }
     if (cmd->error_fn != NULL) {
-        int fd2 = creat(cmd->error_fn, 0644);
+        int fd2;
+
+        // Append to error if err_a flag is 1, else make empty file
+        if (cmd->err_a) {
+            fd2 = open(cmd->output_fn, O_WROLNLY|O_APPEND);
+        }
+        else {
+            fd2 = creat(cmd->error_fn, 0644);
+        }
         dup2(fd2, STDERR_FILENO);
         close(fd2);
     }
