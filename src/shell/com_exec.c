@@ -19,52 +19,6 @@
 
 // TODO: How to figure out when the children processes have finished execution? Get this info
 
-/* Takes in a linked list of commands and executes them while redirecting their 
-io. It then waits for all of them to finish in the shell process. */
-int fork_commands(struct command *cmd) {
-    int last_out_fd = -1; // there was no previous fd to take as input
-
-    while (1) {
-        pid_t pid;
-        int fd[2];
-
-        if (cmd->next != NULL) {
-            if (pipe(fd) < 0)
-                return -1; // pipe error
-        }
-        if ((pid = fork()) < 0) {
-            return -1; // fork error
-        }
-        if (pid > 0) {
-            // we are in the shell process
-            if (last_out_fd != -1) {
-                close(last_out_fd);
-            } 
-            if (cmd->next == NULL) {
-                close(fd[1]);
-                return 0; // we are done forking all commands
-            } else {
-                last_out_fd = fd[1];
-                cmd = cmd->next; // process next command in next iter
-            }
-        }
-        else {
-            // we are in the child process
-            // if there was a previous command, set its out to this one's input
-            if (last_out_fd != -1) {
-                dup2(last_out_fd, STDIN_FILENO);
-                close(last_out_fd);
-            }
-            // if there is a next command, set this one's out to be pipe-input
-            if (cmd->next != NULL) {
-                dup2(fd[1], STDOUT_FILENO);
-                close(fd[1]);
-            }
-            execute_command(cmd);
-        }
-    }
-    return 0;
-}
 
 /* Executes the command after forking and does the io redirection to stdout, 
 stdin, or stderr if needed. The io redirection is done after forking, so the 
@@ -95,14 +49,24 @@ void execute_command(struct command *cmd) {
     exit(1);
 }
 
+void test_single_command() {
+    char *args[3];
+    args[0] = "wc";
+    args[1] = NULL;
+    args[2] = NULL;
+    struct command cmd;
+    cmd.exec_fn = "wc";
+    cmd.argv = args;
+    cmd.input_fn = "notes.out";
+    cmd.output_fn = "count.out";
+    cmd.error_fn = "";
+    cmd.next = NULL;
+    execute_command(&cmd);
+}
 
 int main(int argc, char *argv[]) {
     printf("test:\n");
-
-    // test chaining commands:
-
-
-
+    test_single_command();
     return 0;
 }
 
