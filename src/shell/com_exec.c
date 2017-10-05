@@ -95,7 +95,6 @@ int fork_and_exec_commands(struct command *cmd) {
             }
             // printf("Executing: %s\n", cmd->exec_fn);
             execute_command(cmd);
-            fprintf(stderr, "Failed to exec %s\n", cmd->exec_fn);
             return -1;
         }
     }
