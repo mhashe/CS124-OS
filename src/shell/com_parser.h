@@ -11,6 +11,6 @@ struct command* parse_to_chained_commands(char **argv);
 
 /* Returns the arguments of argv before the first pipe symbol | is found. It 
 modifies argv in place by cropping out the arguments before the first pipe. */
-char** split_by_pipe_symbol(char **argv);
+char** split_by_pipe_symbol(char **argv, int n);
 
 #endif

@@ -1,7 +1,8 @@
 #include <unistd.h> // read, write
-#include <stdio.h> // cout, cin
+#include <stdio.h> // printf
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include "consts.h"
 #include "com_parser.h"
@@ -60,29 +61,96 @@ struct command* new_command(char **argv) {
 of commands using split_by_pipe_symbol. */
 struct command* parse_to_chained_commands(char **argv) {
     struct command *head_cmd;
-    struct command *cmd = new_command(split_by_pipe_symbol(argv));
+    struct command *cmd = new_command(split_by_pipe_symbol(argv, 0));
     head_cmd = cmd;
     
+    int count = 1;
     while (argv[0][0] != '\0') {
-        cmd->next = new_command(split_by_pipe_symbol(argv));
+        cmd->next = new_command(split_by_pipe_symbol(argv, count));
         cmd = cmd->next;
+        count += 1;
     }
     return head_cmd;
 }
 
 
-/* Returns the arguments of argv before the first pipe symbol | is found. It 
-modifies argv in place by cropping out the arguments before the first pipe. */
-char** split_by_pipe_symbol(char **argv) {
-    // TODO
+/* Returns the arguments of argv between the nth and the (n+1)st pipe symbols. */
+char** split_by_pipe_symbol(char **argv, int n) {
+    char *comm;
+
+    // First, find the indexes corresponding to this command
+    int lower = -1;
+    int upper = -1;
+
+    // Start at beginning
+    if (n == 0) {
+        lower = 0;
+    }
+
+    int idx = 1;
+    int pipes = 0; // Pipe symbols passed thus far
+    while(1) {
+        comm = argv[idx];
+
+        // Reached end of array; do more later
+        if (comm == NULL) {
+            upper = idx - 1;
+            break;
+        }
+
+        // Check if pipe symbol
+        if (strcmp("|", comm) == 0) {
+            pipes += 1;
+
+            // Start after this token
+            if (pipes == n) {
+                lower = idx + 1;
+            }
+
+            // Ends before this token
+            if (pipes == n + 1) {
+                upper = idx - 1;
+                break;
+            }
+        }
+
+        idx += 1;
+    }
+
+    // Ensure we found a valid command, i.e. n <= pipes
+    if (n > pipes) {
+        return NULL;
+    }
+
+    // Sanity check
+    if ((lower == -1) || (upper == -1)){
+        // Change stderr to some file descriptor?
+        fprintf(stderr, "Unexpected error in split_by_pipe_symbol!\n");
+        fprintf(stderr, "(lower, upper) = (%d,%d)\n", lower, upper);
+        exit(1);
+    }
+
+    // Store relevant commands in 
+    char** pipe_commands = (char**)calloc(upper - lower + 2, sizeof(char*));
+    for (int i = lower; i <= upper; i++) {
+        pipe_commands[i-lower] = argv[i];
+    }
+    pipe_commands[i-lower] = NULL; // Terminate with a NULL
+
+
+    // printf("%d,%d\n", lower, upper);
+    // for (int i = lower; i <= upper; i++) {
+    //     comm = argv[i];
+    //     printf("%s\n", comm);
+    // }
 
     return argv;
 }
 
 
-/* Tests of com_parser go here. */
-int main() {
-    // TODO
+// /* Tests of com_parser go here. */
+// int main() {
+//     // TODO
 
-    return 0;
-}
+//     return 0;
+// }

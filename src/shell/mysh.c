@@ -8,6 +8,7 @@
 
 #include "token.h"
 #include "consts.h"
+#include "com_parser.h"
 
 int main(int argc, char *argv[])
 {
@@ -61,17 +62,18 @@ int main(int argc, char *argv[])
         // Tokenize input
         char** comms = tokenize(command);
 
-        char* comm;
-        int i = 0;
-        while(1) {
-            comm = comms[i];
-            if (comm == NULL) {
-                break;
-            }
-            printf("%s\n", comm);
-            i++;
+        // char* comm;
+        // int i = 0;
+        // while(1) {
+        //     comm = comms[i];
+        //     if (comm == NULL) {
+        //         break;
+        //     }
+        //     printf("%s\n", comm);
+        //     i++;
 
-        }
+        // }
+        split_by_pipe_symbol(comms, 0);
     }
 
     return 0;

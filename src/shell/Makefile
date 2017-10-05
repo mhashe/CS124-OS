@@ -1,6 +1,6 @@
 CFLAGS = -Wall -g
 
-OBJS = mysh.o token.o
+OBJS = mysh.o token.o com_parser.o
 
 all: mysh
 
