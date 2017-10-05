@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <sys/types.h> // pid_t, wait
+#include <string.h>
 
 #include "com_parser.h"
 
@@ -10,10 +11,17 @@
 // deal with the fact that it may not be the only_command in the terminal by doing nothing (replicate behavior or actual terminal (ie. (ie. exit | echo "hi")))
 int internal_command_handler(struct command *cmd, int only_command) {
     printf("im in internal command handler! %d\n", only_command);
-    if (only_command) {
+    char *cmd_name = cmd->exec_fn;
 
+    // switch statement in c won't work well
+    if (strcmp(cmd_name, "exit") == 0) {
+        if (only_command) {
+            exit(0);
+        }
+    } else if (strcmp(cmd_name, "cd") == 0) {
+        return 0;
     } else {
-        // do nothing to replicate command_handler_behavior
+        return 0;
     }
-    return 0;
+    return 1;
 }
