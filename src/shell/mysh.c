@@ -53,19 +53,23 @@ char* generate_prompt() {
         strncpy(&cwd[1], &copy[strlen(hdir)], strlen(cwd) - strlen(hdir)+1);
     }
 
-    // +1 for :, +3 for _$_, +1 for null termination
-    char* prompt = (char*)calloc(strlen(uname)+1+strlen(cwd)+3+1, sizeof(char));
+    // +1 for :, +3 for _$_, +1 for null termination, +10 for coloring
+    char* prompt = (char*)calloc(strlen(uname)+1+strlen(cwd)+3+(COL_LENGTH*2)+1, 
+        sizeof(char));
     if (prompt == NULL) {
         fprintf(stderr, "Error allocating prompt string.");
         exit(1);
     }
 
     // Move uname, :, cwd into prompt
-    strncpy(prompt, uname, strlen(uname));
-    prompt[strlen(uname)] = ':';
-    strncpy(prompt+strlen(uname)+1, cwd, strlen(cwd));
+    strncpy(prompt, PROMPT_COL, COL_LENGTH);
+    strncpy(prompt+COL_LENGTH, uname, strlen(uname));
+    prompt[COL_LENGTH+strlen(uname)] = ':';
+    strncpy(prompt+COL_LENGTH+strlen(uname)+1, cwd, strlen(cwd));
     // 4 = 3 characters + null-terminator
-    strncpy(prompt+strlen(uname)+1+strlen(cwd), " $ ", 4);
+    strncpy(prompt+COL_LENGTH+strlen(uname)+1+strlen(cwd), " $ ", 3);
+    strncpy(prompt+COL_LENGTH+strlen(uname)+1+strlen(cwd)+3, 
+        COL_RESET, COL_LENGTH+1);
 
     return prompt;
 }
