@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <string.h>
+#include <signal.h>
 
 #include "token.h"
 
@@ -19,7 +20,7 @@ int main(int argc, char *argv[])
     if (!pw)
     {
         perror("Error in getpwuid");
-        return(1);
+        return 1;
     }
     // User name, home directory
     char *uname = pw->pw_name;
@@ -29,7 +30,7 @@ int main(int argc, char *argv[])
     char cwd[PATH_MAX];
     if (getcwd(cwd, sizeof(cwd)) == NULL) {
         perror("Error in getcwd");
-        return(1);
+        return 1;
     }
 
     // If process in home directory of user, change prompt
@@ -53,8 +54,9 @@ int main(int argc, char *argv[])
 
         // Wait for input
         if (fgets(command, MAX_SIZE, stdin) == NULL) {
-            perror("Error in fgets");
-            return(1);
+            // Received EOF => stdin is closed, no reason for terminal
+            printf("\n");
+            return 0;
         }
 
         // Tokenize input
@@ -73,5 +75,5 @@ int main(int argc, char *argv[])
         }
     }
 
-    return(0);
+    return 0;
 }

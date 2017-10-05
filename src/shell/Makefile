@@ -11,4 +11,3 @@ clean:
 	rm -f *.o *~ mysh
 
 .PHONY: all clean
-
