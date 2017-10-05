@@ -14,8 +14,7 @@
 #include "com_exec.h"
 
 
-int main(int argc, char *argv[])
-{
+char* generate_prompt() {
     // User ID. Function guaranteed to be successful.
     uid_t uid = getuid();
 
@@ -24,7 +23,7 @@ int main(int argc, char *argv[])
     if (!pw)
     {
         perror("Error in getpwuid");
-        return 1;
+        return NULL;
     }
     // User name, home directory
     char* uname = pw->pw_name;
@@ -34,28 +33,52 @@ int main(int argc, char *argv[])
     char cwd[PATH_MAX];
     if (getcwd(cwd, sizeof(cwd)) == NULL) {
         perror("Error in getcwd");
-        return 1;
+        return NULL;
     }
 
     // If process in home directory of user, change prompt
     if (strstr(cwd, hdir) != NULL) {
         // Copy to hold cwd
-        char copy[PATH_MAX];
+        char copy[strlen(cwd)];
         strcpy(copy, cwd); // No return value for error conditions
 
         // Replace /home/USER with ~
         cwd[0] = '~';
-        memmove(&cwd[1], &copy[strlen(hdir)], PATH_MAX - strlen(hdir));
+        memmove(&cwd[1], &copy[strlen(hdir)], strlen(cwd) - strlen(hdir));
     }
+
+    // +1 for :, +3 for _$_
+    char* prompt = (char*)calloc(strlen(uname)+1+strlen(cwd)+3, sizeof(char));
+    if (prompt == NULL) {
+        fprintf(stderr, "Error allocating prompt string.");
+        exit(1);
+    }
+
+    // Move uname, :, cwd into prompt
+    memmove(prompt, uname, strlen(uname));
+    prompt[strlen(uname)] = ':';
+    memmove(prompt+strlen(uname)+1, cwd, strlen(cwd));
+    // 4 = 3 characters + null-terminator
+    strncpy(prompt+strlen(uname)+1+strlen(cwd), " $ ", 4);
+
+    return prompt;
+}
+
+int main(int argc, char *argv[])
+{
+    char* prompt;
 
     while(1) {
         char *line_in;
 
-        // Print command prompt
-        // printf("%s:%s $ ", uname, cwd);
+        prompt = generate_prompt();
+        if (prompt == NULL) {
+            fprintf(stderr, "Error generating prompt.\n");
+            return 1;
+        }
 
         // read input
-        line_in = readline("prompt");
+        line_in = readline(prompt);
 
         // Wait for input
         if (line_in == NULL) {
@@ -65,28 +88,9 @@ int main(int argc, char *argv[])
         }
 
         add_history(line_in);
-        HIST_ENTRY* hist = previous_history();
-        if (hist) {
-            printf("%s\n", hist->line);
-            next_history();
-        }
-        
 
         // Tokenize input
         char** comms = tokenize(line_in);
-
-
-        // char* comm;
-        // int i = 0;
-        // while(1) {
-        //     comm = comms[i];
-        //     if (comm == NULL) {
-        //         break;
-        //     }
-        //     printf("%s\n", comm);
-        //     i++;
-
-        // }
 
         struct command* cmd = parse_to_chained_commands(comms);
         char **cmds;

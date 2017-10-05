@@ -4,7 +4,7 @@ OBJS = mysh.o token.o com_parser.o com_exec.o
 
 LDFLAGS = -lreadline
 
-all: mysh
+all: clean mysh
 
 mysh: $(OBJS)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
