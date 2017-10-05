@@ -11,7 +11,14 @@
 #include "token.h"
 #include "consts.h"
 #include "com_parser.h"
+#include "mysh.h"
 
+/*
+ * generates the prompt for the shell
+ * username:cwd $ 
+ *
+ * ret: string containing above prompt
+ */
 char* generate_prompt() {
     // User ID. Function guaranteed to be successful.
     uid_t uid = getuid();
@@ -62,9 +69,28 @@ char* generate_prompt() {
     return prompt;
 }
 
+/*
+ * function to print history to stdout
+ */
+void print_history() {
+    HIST_ENTRY** hist_list = history_list();
+    int i = 0;
+    while (1) {
+        HIST_ENTRY* hist_entry = hist_list[i];
+        if (hist_entry == NULL) {
+            return;
+        }
+        printf("%s\n", hist_entry->line);
+        i++;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     char* prompt;
+
+    // initialize the history
+    using_history();
 
     while(1) {
         char *line_in;
@@ -89,6 +115,9 @@ int main(int argc, char *argv[])
 
         // Tokenize input
         char** comms = tokenize(line_in);
+
+        // free from readline
+        free(line_in);
 
         struct command* cmd = parse_to_chained_commands(comms);
         char **cmds;
