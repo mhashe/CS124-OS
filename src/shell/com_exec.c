@@ -3,12 +3,13 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <fcntl.h> //open, creat
-#include <sys/types.h> // wait
+#include <sys/types.h> // pid_t, wait
 #include <sys/wait.h> // wait
 
 #include "consts.h"
 #include "com_parser.h"
 #include "com_exec.h"
+#include "com_int.h"
 
 /* 
  * Handles forking off and executing a linked list of command that are piped 
@@ -21,6 +22,8 @@
 // TODO: Improve commenting
 // TODO: Either 1. Remove debug info or 2. Make debug mode
 // TODO: Error handling
+// TODO: Free memory from other parts of the program
+// TODO: Handle internal commands
 
 /* Takes in a linked list of commands and executes them while redirecting their 
 io. It then waits for all of them to finish in the shell process. */
@@ -34,7 +37,19 @@ int fork_and_exec_commands(struct command *cmd) {
         int fd[2];
 
         // printf("Handling: %s\n", cmd->exec_fn);
-
+        // Handle command internally if it is internal (pass if it is the only command)
+        if (internal_command_handler(cmd, (cmd->next == NULL) && (last_out_fd == -1))) {
+            if (cmd->next != NULL) {
+                cmd = cmd->next;
+                if (last_out_fd != -1) {
+                    close(last_out_fd);
+                    last_out_fd = -1;
+                }
+            } else {
+                return 0;
+            }
+        }
+        
         if (cmd->next != NULL) {
             // printf("making pipe!\n");
             if (pipe(fd) < 0)
@@ -80,14 +95,13 @@ int fork_and_exec_commands(struct command *cmd) {
             }
             // printf("Executing: %s\n", cmd->exec_fn);
             execute_command(cmd);
-            // fprintf(stderr, "Failed to exec %s\n", cmd->exec_fn);
+            fprintf(stderr, "Failed to exec %s\n", cmd->exec_fn);
             return -1;
         }
     }
 
     // Make the shell process wait for all child processes to terminate
     wait_for_commands(cmd_head);
-    printf("done waiting\n");
     // wait(NULL);
     // printf("all child processes are finished\n");
 
@@ -103,9 +117,6 @@ void wait_for_commands(struct command *cmd) {
         }
         cmd = cmd->next;
     }
-
-    // TODO (also, mysh.c needs to give me num_commands)
-    // Also, do internal commands
 }
 
 /* Executes the command after forking and does the io redirection to stdout, 
@@ -148,6 +159,7 @@ void execute_command(struct command *cmd) {
 
     // Execute the command with its arguments
     execvp(cmd->exec_fn, cmd->argv);
+
     
     // The executable has control over the process now, or else:
     fprintf(stderr, "Failed to exec %s\n", cmd->exec_fn);
