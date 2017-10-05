@@ -108,28 +108,15 @@ char** split_by_pipe_symbol(char **argv, int n) {
         fprintf(stderr, "(lower, upper) = (%d,%d)\n", lower, upper);
         exit(1);
     }
-
-    // Store relevant commands in 
+        // free(com0);
+    // Store relevant commands in new file
     char** pipe_commands = (char**)calloc(upper - lower + 2, sizeof(char*));
+
     for (int i = lower; i <= upper; i++) {
-        pipe_commands[i-lower] = argv[i];
+        pipe_commands[i-lower] = (char*)calloc(strlen(argv[1]), sizeof(char));
+        strcpy(pipe_commands[i-lower], argv[i]);
     }
-    pipe_commands[i-lower] = NULL; // Terminate with a NULL
+    pipe_commands[upper-lower+2] = NULL; // Terminate with a NULL
 
-
-    // printf("%d,%d\n", lower, upper);
-    // for (int i = lower; i <= upper; i++) {
-    //     comm = argv[i];
-    //     printf("%s\n", comm);
-    // }
-
-    return argv;
+    return pipe_commands;
 }
-
-
-// /* Tests of com_parser go here. */
-// int main() {
-//     // TODO
-
-//     return 0;
-// }
