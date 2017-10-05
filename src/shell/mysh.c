@@ -86,6 +86,20 @@ void print_history() {
     }
 }
 
+/*
+ * retrieve history item n and return that string
+ */
+
+char* history_n(int n) {
+    HIST_ENTRY** hist_list = history_list();
+    // one indexed history commands
+    HIST_ENTRY* hist_entry = hist_list[n-1];
+    if (hist_entry == NULL) {
+        return 0;
+    }
+    return hist_entry->line;
+}
+
 int main(int argc, char *argv[])
 {
     char* prompt;
@@ -136,13 +150,34 @@ int main(int argc, char *argv[])
             free(line_in);
         }
 
-        add_history(full_in);
-
         // Tokenize input
         char** comms = tokenize(full_in);
+        int need_to_free = 1;
+
+        if (comms[0] == NULL) {
+            continue;
+        } else if (comms[0][0] == '!' && comms[1] == 0) {
+            // allow for execution of old commands
+            // does not allow for modification
+
+            if (is_number(comms[0], 1, strlen(comms[0]))) {
+                free(full_in);
+                need_to_free = 0;
+
+                int n = atoi(comms[0] + 1);
+                full_in = history_n(n);
+                printf("%s\n", full_in);
+                comms = tokenize(full_in);
+            }
+
+        }
+
+        add_history(full_in);
 
         // free line
-        free(full_in);
+        if (need_to_free) {
+            free(full_in);
+        }
 
         struct command* cmd = parse_to_chained_commands(comms);
 
