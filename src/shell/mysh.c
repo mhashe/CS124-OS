@@ -122,8 +122,6 @@ int main(int argc, char *argv[])
             strcat(line_in, mult_in);
         }
 
-        printf("%s\n", line_in);
-
         add_history(line_in);
 
         // Tokenize input
