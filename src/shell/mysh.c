@@ -11,7 +11,6 @@
 #include "token.h"
 #include "consts.h"
 #include "com_parser.h"
-#include "mysh.h"
 
 int main(int argc, char *argv[])
 {
