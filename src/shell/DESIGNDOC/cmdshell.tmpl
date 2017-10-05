@@ -27,6 +27,18 @@ Michael Hashe <mhashe@caltech.edu>
 >> If you have any preliminary comments on your submission, notes for the
 >> TAs, or extra credit, please include them here.
 
+extra credit:
+multiline commands
+append output redirection (>>)
+redirection using an integer file descriptor (2>)
+advanced redirection: duplicating file-descriptor (2>&1)
+    history command and associated functionality
+    allowed to run old command with !n
+
+extra functionality:
+    replace home directory with ~
+
+
 >> Please cite any offline or online sources you consulted while
 >> preparing your submission, other than the Pintos documentation, course
 >> text, lecture notes, and course instructors.
@@ -45,6 +57,10 @@ which parts.
 
 >> L1: How many hours did each team member spend on this assignment?
    Make sure that each member's total time is listed.
+
+Vaibhav: 
+Nikhil : 
+Michael: 
 
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
@@ -116,7 +132,8 @@ is wrong.
 
 We split the project up into relatively distinct chunks: main loop, tokenizing,
 parsing, execution. The main integration point was the specific structure the
-tokens were parsed into. This was one of the later pieces actually implemented so we designed a basic struct to use for the execution piece.
+tokens were parsed into. This was one of the later pieces actually implemented
+so we designed a basic struct to use for the execution piece.
 
 
 			  SURVEY QUESTIONS
@@ -131,11 +148,20 @@ penalized.  We can't fix things until we know about them.  :-)
 >> In your opinion, was this assignment, or any of the parts of it, too
 >> easy or too hard?  Did it take too long or too little time?
 
+We didn't think there were any particularly difficult or easy parts of the
+assignment. It was overall a pretty good assignment with it taking about the
+proper time.
+
 >> Did you find that working on a particular part of the assignment gave
 >> you greater insight into some aspect of OS design?
 
+Having to install all the file descriptors to redirect inputs and outputs gave a
+lot of insight into how the system actually opens and maintains files.
+
 >> Were there any parts of the assignment that you felt were unnecessarily
 >> tedious or pointless?
+
+Not really.
 
 >> Is there some particular fact or hint we should give students in
 >> future quarters to help them solve the problems?  Conversely, did you
@@ -144,6 +170,10 @@ penalized.  We can't fix things until we know about them.  :-)
 >> Do you have any suggestions for the instructor and/or TAs to more
 >> effectively assist students, either for future quarters or the remaining
 >> projects?
+
+One thing that could be nice is clarifying what edge cases need to be handled.
+One example was that running echo hel"hi"lo prints helhilo which is a little
+odd.
 
 >> Any other comments?
 
