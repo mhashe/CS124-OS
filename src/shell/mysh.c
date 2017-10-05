@@ -87,6 +87,9 @@ int main(int argc, char *argv[])
             return 0;
         }
 
+        // Add multiline functionality
+        // printf("%s\n", line_in[strlen(line_in)-1]);
+
         add_history(line_in);
 
         // Tokenize input
@@ -117,7 +120,6 @@ int main(int argc, char *argv[])
         // }
         // if (cmd->next == NULL) 
 
-        printf("command's ex_fn in mysh: %s\n", cmd->exec_fn);
         printf("forking result: %d\n", fork_and_exec_commands(cmd));
 
         // TODO: Free statements
