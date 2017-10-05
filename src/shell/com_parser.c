@@ -20,6 +20,7 @@ struct command* new_command(char **pipe_commands) {
     cmd = (struct command *)calloc(1, sizeof(struct command));
     cmd->input_fn = NULL;
     cmd->output_fn = NULL;
+    cmd->error_fn = NULL;
 
     /* TODO:
         Parse from pipe_commands the filename for input/output/error redirection if they exist.
