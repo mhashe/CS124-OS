@@ -18,7 +18,67 @@
  */
 
 // TODO: How to figure out when the children processes have finished execution? Get this info
+// TODO: Do more advanced testing
 
+/* Takes in a linked list of commands and executes them while redirecting their 
+io. It then waits for all of them to finish in the shell process. */
+int fork_and_exec_commands(struct command *cmd) {
+    int last_out_fd = -1; // there was no previous fd to take as input
+
+    // Having spawning processes in an infinite while loop seems dangerous: change?
+    while (1) {
+        pid_t pid;
+        int fd[2];
+
+        printf("Handling: %s\n", cmd->exec_fn);
+
+        if (cmd->next != NULL) {
+            printf("making pipe!\n");
+            if (pipe(fd) < 0)
+                return -1; // pipe error
+        }
+        if ((pid = fork()) < 0) {
+            return -1; // fork error
+        }
+        if (pid > 0) {
+            // we are in the shell process
+            usleep(500); // delete this
+            close(fd[1]); // uncomment out
+            if (last_out_fd != -1) {
+                printf("%s: closing last_out_fd\n", cmd->exec_fn);
+                close(last_out_fd);
+            } 
+            if (cmd->next == NULL) {
+                return 0; // we are done forking all commands
+            } else {
+                printf("%s: setting last_out_fd from fd[0], and going next\n", cmd->exec_fn);
+                last_out_fd = fd[0];
+                cmd = cmd->next; // process next command in next iter
+            }
+        }
+        else {
+            // we are in the child process
+            // if there was a previous command, set its out to this one's input
+            if (last_out_fd != -1) {
+                printf("%s: setting in of this to be last_out_fd\n", cmd->exec_fn);
+                dup2(last_out_fd, STDIN_FILENO);
+                close(last_out_fd);
+            }
+            // if there is a next command, set this one's out to be pipe-input
+            if (cmd->next != NULL) {
+                close(fd[0]);
+                printf("%s: setting out of this to be fd[1]\n", cmd->exec_fn);
+                dup2(fd[1], STDOUT_FILENO);
+                close(fd[1]);
+            }
+            printf("Executing: %s\n", cmd->exec_fn);
+            execute_command(cmd);
+            fprintf(stderr, "Failed to exec %s\n", cmd->exec_fn);
+            return -1;
+        }
+    }
+    return 0;
+}
 
 /* Executes the command after forking and does the io redirection to stdout, 
 stdin, or stderr if needed. The io redirection is done after forking, so the 
@@ -49,24 +109,40 @@ void execute_command(struct command *cmd) {
     exit(1);
 }
 
-void test_single_command() {
-    char *args[3];
-    args[0] = "wc";
-    args[1] = NULL;
-    args[2] = NULL;
-    struct command cmd;
-    cmd.exec_fn = "wc";
-    cmd.argv = args;
-    cmd.input_fn = "notes.out";
-    cmd.output_fn = "count.out";
-    cmd.error_fn = "";
-    cmd.next = NULL;
-    execute_command(&cmd);
-}
 
 int main(int argc, char *argv[]) {
     printf("test:\n");
-    test_single_command();
+
+    // test chaining commands:
+    char *args[3];
+    args[0] = "echo";
+    args[1] = "veb";
+    args[2] = NULL;
+    struct command first;
+    first.exec_fn = "echo";
+    first.argv = args;
+    first.input_fn = NULL;
+    first.output_fn = NULL;
+    first.error_fn = NULL;
+    first.next = NULL;
+
+    char *args2[3];
+    args2[0] = "grep";
+    args2[1] = "v"; //"h";
+    args2[2] = NULL;
+    struct command second;
+    second.exec_fn = "grep";
+    second.argv = args2;
+    second.input_fn = NULL;
+    second.output_fn = "results.out";
+    second.error_fn = "";
+    second.next = NULL;
+
+    first.next = &second;
+
+    // printf("%s\n", first.exec_fn);
+    fork_and_exec_commands(&first);
+
     return 0;
 }
 

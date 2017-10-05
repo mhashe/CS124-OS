@@ -12,6 +12,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
     // Defaults, overridden if applicable
     cmd->input_fn = NULL;
     cmd->output_fn = NULL;
+    cmd->error_fn = NULL;
 
     // Loop through all commands, look for <, >
     int idx = 0;
