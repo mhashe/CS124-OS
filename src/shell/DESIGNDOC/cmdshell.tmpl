@@ -1,0 +1,123 @@
+			+------------------+
+			|      CS 124      |
+			| PROJECT 1: SHELL |
+			|  DESIGN DOCUMENT |
+			+------------------+
+				   
+---- GROUP ----
+
+>> Fill in the names and email addresses of your group members.
+
+FirstName LastName <email@domain.example>
+FirstName LastName <email@domain.example>
+FirstName LastName <email@domain.example>
+
+>> Specify how many late tokens you are using on this assignment:  
+
+>> What is the Git repository and commit hash for your submission?
+   (You only need to include the commit-hash in the file you submit
+   on Moodle.)
+
+   Repository URL:  
+   commit ...
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, notes for the
+>> TAs, or extra credit, please include them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course instructors.
+
+			   COMMAND SHELL
+			   =============
+
+---- LOGISTICS ----
+
+These questions will help us to keep track of the difficulty level of
+assignments, as well as keeping track of which team members worked on
+which parts.
+
+>> L1: How many hours did each team member spend on this assignment?
+   Make sure that each member's total time is listed.
+
+>> L2: What did each team member focus on for this assignment?  Keep
+   descriptions to 25-30 words or less.
+
+---- DATA STRUCTURES ----
+
+>> A1: Describe how your command shell manages parsing and executing
+>> commands that contain arguments and pipes, using the example
+>> command "a arg1 arg2 | b arg1 | c arg1 arg2 arg3".  How does your
+>> shell internally represent such a command?
+
+>> A2: Now, given the command:
+>> "a arg1 arg2 < inp.txt | b arg1 | c arg1 arg2 arg3 > out.txt"
+>> Briefly explain specifically how the redirections are parsed and
+>> represented, and by what processes.
+
+---- ALGORITHMS ----
+
+>> A3: Illustrate how you solved the problem of setting up
+>> redirection in a simple command like "a < inp.txt > out.txt", by
+>> describing what process takes care of the redirection and when.
+
+>> A4: Illustrate how you solved the problem of setting up the pipes
+>> between multiple operations in a single command, by describing
+>> what each process is responsible for.  For example, given the
+>> command "a | b | c", describe the sequence of steps in setting up
+>> the processes and their pipes, starting with your command shell's
+>> process, and going through the execution of programs a, b and c.
+>> Keep your description of each process' responsibilities limited to
+>> ~25 words or less.
+
+>> A5: Similarly, describe the details of how terminated processes are
+>> reaped in the example command "a | b | c".
+
+>> A6: Similarly, describe which processes are responsible for setting
+>> up the redirections in the example command
+>> "a < inp.txt | b | c > out.txt".
+
+---- RATIONALE ----
+
+>> A7: Why must the chdir and exit commands be implemented as built-in
+>> functions, rather than external programs?
+
+>> A8: Why did you ultimately choose this design?  In what ways is it
+>> superior to other designs you considered as you developed your solution?
+
+>> A9: Did you take any steps to facilitate development of the command
+>> shell in parallel, e.g. designing shared data structures or integration
+>> points up front?  How well did your approach work for your team?  Feel
+>> free to share any positive or negative experiences in this vein.
+
+
+			  SURVEY QUESTIONS
+			  ================
+
+Answering these questions is optional, but it will help us improve the
+course in future years.  Feel free to tell us anything you want - these
+questions are just to spur your thoughts.  Also, feel free to be completely
+honest if there are issues with the assignment or the course - you won't be
+penalized.  We can't fix things until we know about them.  :-)
+
+>> In your opinion, was this assignment, or any of the parts of it, too
+>> easy or too hard?  Did it take too long or too little time?
+
+>> Did you find that working on a particular part of the assignment gave
+>> you greater insight into some aspect of OS design?
+
+>> Were there any parts of the assignment that you felt were unnecessarily
+>> tedious or pointless?
+
+>> Is there some particular fact or hint we should give students in
+>> future quarters to help them solve the problems?  Conversely, did you
+>> find any of our guidance to be misleading?
+
+>> Do you have any suggestions for the instructor and/or TAs to more
+>> effectively assist students, either for future quarters or the remaining
+>> projects?
+
+>> Any other comments?
+

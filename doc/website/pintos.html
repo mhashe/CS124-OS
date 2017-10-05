@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
                       "http://www.w3.org/TR/html40/loose.dtd">
 <HTML>
-<!-- Created on September, 27 2017 by texi2html 1.66 -->
+<!-- Created on October, 4 2017 by texi2html 1.66 -->
 <!--
 Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
             Karl Berry  <karl@freefriends.org>
@@ -119,222 +119,272 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 <A NAME="TOC35" HREF="pintos_2.html#SEC35">2.6 Extra Credit</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC36" HREF="pintos_3.html#SEC36">A. Reference Guide</A>
+<A NAME="TOC36" HREF="pintos_3.html#SEC36">3. Project 2: PC Booter</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC37" HREF="pintos_3.html#SEC37">A.1 Loading</A>
+<A NAME="TOC37" HREF="pintos_3.html#SEC37">3.1 Background</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC38" HREF="pintos_3.html#SEC38">A.1.1 The Loader</A>
+<A NAME="TOC38" HREF="pintos_3.html#SEC38">3.1.1 Approach</A>
 <BR>
-<A NAME="TOC39" HREF="pintos_3.html#SEC39">A.1.2 Low-Level Kernel Initialization</A>
+<A NAME="TOC39" HREF="pintos_3.html#SEC39">3.1.2 Relevant BIOS Functions</A>
 <BR>
-<A NAME="TOC40" HREF="pintos_3.html#SEC40">A.1.3 High-Level Kernel Initialization</A>
-<BR>
-<A NAME="TOC41" HREF="pintos_3.html#SEC41">A.1.4 Physical Memory Map</A>
+<A NAME="TOC40" HREF="pintos_3.html#SEC40">3.1.3 Hardware Facilities</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC42" HREF="pintos_3.html#SEC42">A.2 Threads</A>
+<A NAME="TOC41" HREF="pintos_3.html#SEC41">3.2 Requirements</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC43" HREF="pintos_3.html#SEC43">A.2.1 <CODE>struct thread</CODE></A>
+<A NAME="TOC42" HREF="pintos_3.html#SEC42">3.2.1 Design Document</A>
 <BR>
-<A NAME="TOC44" HREF="pintos_3.html#SEC44">A.2.2 Thread Functions</A>
+<A NAME="TOC43" HREF="pintos_3.html#SEC43">3.2.2 Bootloader</A>
 <BR>
-<A NAME="TOC45" HREF="pintos_3.html#SEC45">A.2.3 Thread Switching</A>
+<A NAME="TOC44" HREF="pintos_3.html#SEC44">3.2.3 C Program</A>
+<BR>
+<A NAME="TOC45" HREF="pintos_3.html#SEC45">3.2.4 Program Architecture</A>
+<BR>
+<A NAME="TOC46" HREF="pintos_3.html#SEC46">3.2.5 Global Variables</A>
+<BR>
+<A NAME="TOC47" HREF="pintos_3.html#SEC47">3.2.6 Video Output</A>
+<BR>
+<A NAME="TOC48" HREF="pintos_3.html#SEC48">3.2.7 Interrupt Handling</A>
+<BR>
+<A NAME="TOC49" HREF="pintos_3.html#SEC49">3.2.8 Timer Interrupt</A>
+<BR>
+<A NAME="TOC50" HREF="pintos_3.html#SEC50">3.2.9 Keyboard Interrupt</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC46" HREF="pintos_3.html#SEC46">A.3 Synchronization</A>
+<A NAME="TOC51" HREF="pintos_3.html#SEC51">3.3 Suggested Order of Implementation</A>
+<BR>
+<A NAME="TOC52" HREF="pintos_3.html#SEC52">3.4 Testing</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC47" HREF="pintos_3.html#SEC47">A.3.1 Disabling Interrupts</A>
+<A NAME="TOC53" HREF="pintos_3.html#SEC53">3.4.1 Running Your PC Booter</A>
 <BR>
-<A NAME="TOC48" HREF="pintos_3.html#SEC48">A.3.2 Semaphores</A>
+<A NAME="TOC54" HREF="pintos_3.html#SEC54">3.4.2 Debugging Your PC Booter</A>
 <BR>
-<A NAME="TOC49" HREF="pintos_3.html#SEC49">A.3.3 Locks</A>
+</BLOCKQUOTE>
+<A NAME="TOC55" HREF="pintos_3.html#SEC55">3.5 FAQ</A>
 <BR>
-<A NAME="TOC50" HREF="pintos_3.html#SEC50">A.3.4 Monitors</A>
+<A NAME="TOC56" HREF="pintos_3.html#SEC56">3.6 Extra Credit</A>
+<BR>
+</BLOCKQUOTE>
+<A NAME="TOC57" HREF="pintos_4.html#SEC57">A. Reference Guide</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC51" HREF="pintos_3.html#SEC51">A.3.4.1 Monitor Example</A>
-<BR>
-</BLOCKQUOTE>
-<A NAME="TOC52" HREF="pintos_3.html#SEC52">A.3.5 Optimization Barriers</A>
-<BR>
-</BLOCKQUOTE>
-<A NAME="TOC53" HREF="pintos_3.html#SEC53">A.4 Interrupt Handling</A>
+<A NAME="TOC58" HREF="pintos_4.html#SEC58">A.1 Loading</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC54" HREF="pintos_3.html#SEC54">A.4.1 Interrupt Infrastructure</A>
+<A NAME="TOC59" HREF="pintos_4.html#SEC59">A.1.1 The Loader</A>
 <BR>
-<A NAME="TOC55" HREF="pintos_3.html#SEC55">A.4.2 Internal Interrupt Handling</A>
+<A NAME="TOC60" HREF="pintos_4.html#SEC60">A.1.2 Low-Level Kernel Initialization</A>
 <BR>
-<A NAME="TOC56" HREF="pintos_3.html#SEC56">A.4.3 External Interrupt Handling</A>
+<A NAME="TOC61" HREF="pintos_4.html#SEC61">A.1.3 High-Level Kernel Initialization</A>
+<BR>
+<A NAME="TOC62" HREF="pintos_4.html#SEC62">A.1.4 Physical Memory Map</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC57" HREF="pintos_3.html#SEC57">A.5 Memory Allocation</A>
+<A NAME="TOC63" HREF="pintos_4.html#SEC63">A.2 Threads</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC58" HREF="pintos_3.html#SEC58">A.5.1 Page Allocator</A>
+<A NAME="TOC64" HREF="pintos_4.html#SEC64">A.2.1 <CODE>struct thread</CODE></A>
 <BR>
-<A NAME="TOC59" HREF="pintos_3.html#SEC59">A.5.2 Block Allocator</A>
+<A NAME="TOC65" HREF="pintos_4.html#SEC65">A.2.2 Thread Functions</A>
+<BR>
+<A NAME="TOC66" HREF="pintos_4.html#SEC66">A.2.3 Thread Switching</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC60" HREF="pintos_3.html#SEC60">A.6 Virtual Addresses</A>
-<BR>
-<A NAME="TOC61" HREF="pintos_3.html#SEC61">A.7 Page Table</A>
+<A NAME="TOC67" HREF="pintos_4.html#SEC67">A.3 Synchronization</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC62" HREF="pintos_3.html#SEC62">A.7.1 Creation, Destruction, and Activation</A>
+<A NAME="TOC68" HREF="pintos_4.html#SEC68">A.3.1 Disabling Interrupts</A>
 <BR>
-<A NAME="TOC63" HREF="pintos_3.html#SEC63">A.7.2 Inspection and Updates</A>
+<A NAME="TOC69" HREF="pintos_4.html#SEC69">A.3.2 Semaphores</A>
 <BR>
-<A NAME="TOC64" HREF="pintos_3.html#SEC64">A.7.3 Accessed and Dirty Bits</A>
+<A NAME="TOC70" HREF="pintos_4.html#SEC70">A.3.3 Locks</A>
 <BR>
-<A NAME="TOC65" HREF="pintos_3.html#SEC65">A.7.4 Page Table Details</A>
-<BR>
-<BLOCKQUOTE>
-<A NAME="TOC66" HREF="pintos_3.html#SEC66">A.7.4.1 Structure</A>
-<BR>
-<A NAME="TOC67" HREF="pintos_3.html#SEC67">A.7.4.2 Page Table Entry Format</A>
-<BR>
-<A NAME="TOC68" HREF="pintos_3.html#SEC68">A.7.4.3 Page Directory Entry Format</A>
-<BR>
-</BLOCKQUOTE>
-</BLOCKQUOTE>
-<A NAME="TOC69" HREF="pintos_3.html#SEC69">A.8 Hash Table</A>
+<A NAME="TOC71" HREF="pintos_4.html#SEC71">A.3.4 Monitors</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC70" HREF="pintos_3.html#SEC70">A.8.1 Data Types</A>
-<BR>
-<A NAME="TOC71" HREF="pintos_3.html#SEC71">A.8.2 Basic Functions</A>
-<BR>
-<A NAME="TOC72" HREF="pintos_3.html#SEC72">A.8.3 Search Functions</A>
-<BR>
-<A NAME="TOC73" HREF="pintos_3.html#SEC73">A.8.4 Iteration Functions</A>
-<BR>
-<A NAME="TOC74" HREF="pintos_3.html#SEC74">A.8.5 Hash Table Example</A>
-<BR>
-<A NAME="TOC75" HREF="pintos_3.html#SEC75">A.8.6 Auxiliary Data</A>
-<BR>
-<A NAME="TOC76" HREF="pintos_3.html#SEC76">A.8.7 Synchronization</A>
+<A NAME="TOC72" HREF="pintos_4.html#SEC72">A.3.4.1 Monitor Example</A>
 <BR>
 </BLOCKQUOTE>
+<A NAME="TOC73" HREF="pintos_4.html#SEC73">A.3.5 Optimization Barriers</A>
+<BR>
 </BLOCKQUOTE>
-<A NAME="TOC77" HREF="pintos_4.html#SEC77">B. 4.4<ACRONYM>BSD</ACRONYM> Scheduler</A>
+<A NAME="TOC74" HREF="pintos_4.html#SEC74">A.4 Interrupt Handling</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC78" HREF="pintos_4.html#SEC78">B.1 Niceness</A>
+<A NAME="TOC75" HREF="pintos_4.html#SEC75">A.4.1 Interrupt Infrastructure</A>
 <BR>
-<A NAME="TOC79" HREF="pintos_4.html#SEC79">B.2 Calculating Priority</A>
+<A NAME="TOC76" HREF="pintos_4.html#SEC76">A.4.2 Internal Interrupt Handling</A>
 <BR>
-<A NAME="TOC80" HREF="pintos_4.html#SEC80">B.3 Calculating <VAR>recent_cpu</VAR></A>
-<BR>
-<A NAME="TOC81" HREF="pintos_4.html#SEC81">B.4 Calculating <VAR>load_avg</VAR></A>
-<BR>
-<A NAME="TOC82" HREF="pintos_4.html#SEC82">B.5 Summary</A>
-<BR>
-<A NAME="TOC83" HREF="pintos_4.html#SEC83">B.6 Fixed-Point Real Arithmetic</A>
+<A NAME="TOC77" HREF="pintos_4.html#SEC77">A.4.3 External Interrupt Handling</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC84" HREF="pintos_5.html#SEC84">C. Coding Standards</A>
+<A NAME="TOC78" HREF="pintos_4.html#SEC78">A.5 Memory Allocation</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC85" HREF="pintos_5.html#SEC85">C.1 Style</A>
+<A NAME="TOC79" HREF="pintos_4.html#SEC79">A.5.1 Page Allocator</A>
 <BR>
-<A NAME="TOC86" HREF="pintos_5.html#SEC86">C.2 C99</A>
-<BR>
-<A NAME="TOC87" HREF="pintos_5.html#SEC87">C.3 Unsafe String Functions</A>
+<A NAME="TOC80" HREF="pintos_4.html#SEC80">A.5.2 Block Allocator</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC88" HREF="pintos_6.html#SEC88">D. Project Documentation</A>
+<A NAME="TOC81" HREF="pintos_4.html#SEC81">A.6 Virtual Addresses</A>
+<BR>
+<A NAME="TOC82" HREF="pintos_4.html#SEC82">A.7 Page Table</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC89" HREF="pintos_6.html#SEC89">D.1 Sample Assignment</A>
+<A NAME="TOC83" HREF="pintos_4.html#SEC83">A.7.1 Creation, Destruction, and Activation</A>
 <BR>
-<A NAME="TOC90" HREF="pintos_6.html#SEC90">D.2 Sample Design Document</A>
+<A NAME="TOC84" HREF="pintos_4.html#SEC84">A.7.2 Inspection and Updates</A>
 <BR>
-</BLOCKQUOTE>
-<A NAME="TOC91" HREF="pintos_7.html#SEC91">E. Debugging Tools</A>
+<A NAME="TOC85" HREF="pintos_4.html#SEC85">A.7.3 Accessed and Dirty Bits</A>
 <BR>
-<BLOCKQUOTE>
-<A NAME="TOC92" HREF="pintos_7.html#SEC92">E.1 <CODE>printf()</CODE></A>
-<BR>
-<A NAME="TOC93" HREF="pintos_7.html#SEC93">E.2 <CODE>ASSERT</CODE></A>
-<BR>
-<A NAME="TOC94" HREF="pintos_7.html#SEC94">E.3 Function and Parameter Attributes</A>
-<BR>
-<A NAME="TOC95" HREF="pintos_7.html#SEC95">E.4 Backtraces</A>
+<A NAME="TOC86" HREF="pintos_4.html#SEC86">A.7.4 Page Table Details</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC96" HREF="pintos_7.html#SEC96">E.4.1 Example</A>
+<A NAME="TOC87" HREF="pintos_4.html#SEC87">A.7.4.1 Structure</A>
+<BR>
+<A NAME="TOC88" HREF="pintos_4.html#SEC88">A.7.4.2 Page Table Entry Format</A>
+<BR>
+<A NAME="TOC89" HREF="pintos_4.html#SEC89">A.7.4.3 Page Directory Entry Format</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC97" HREF="pintos_7.html#SEC97">E.5 GDB</A>
+</BLOCKQUOTE>
+<A NAME="TOC90" HREF="pintos_4.html#SEC90">A.8 Hash Table</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC98" HREF="pintos_7.html#SEC98">E.5.1 Using GDB</A>
+<A NAME="TOC91" HREF="pintos_4.html#SEC91">A.8.1 Data Types</A>
 <BR>
-<A NAME="TOC99" HREF="pintos_7.html#SEC99">E.5.2 Example GDB Session</A>
+<A NAME="TOC92" HREF="pintos_4.html#SEC92">A.8.2 Basic Functions</A>
 <BR>
-<A NAME="TOC100" HREF="pintos_7.html#SEC100">E.5.3 FAQ</A>
+<A NAME="TOC93" HREF="pintos_4.html#SEC93">A.8.3 Search Functions</A>
+<BR>
+<A NAME="TOC94" HREF="pintos_4.html#SEC94">A.8.4 Iteration Functions</A>
+<BR>
+<A NAME="TOC95" HREF="pintos_4.html#SEC95">A.8.5 Hash Table Example</A>
+<BR>
+<A NAME="TOC96" HREF="pintos_4.html#SEC96">A.8.6 Auxiliary Data</A>
+<BR>
+<A NAME="TOC97" HREF="pintos_4.html#SEC97">A.8.7 Synchronization</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC101" HREF="pintos_7.html#SEC101">E.6 Triple Faults</A>
-<BR>
-<A NAME="TOC102" HREF="pintos_7.html#SEC102">E.7 Modifying Bochs</A>
-<BR>
-<A NAME="TOC103" HREF="pintos_7.html#SEC103">E.8 Tips</A>
-<BR>
 </BLOCKQUOTE>
-<A NAME="TOC104" HREF="pintos_8.html#SEC104">F. Development Tools</A>
+<A NAME="TOC98" HREF="pintos_5.html#SEC98">B. 4.4<ACRONYM>BSD</ACRONYM> Scheduler</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC105" HREF="pintos_8.html#SEC105">F.1 Tags</A>
+<A NAME="TOC99" HREF="pintos_5.html#SEC99">B.1 Niceness</A>
 <BR>
-<A NAME="TOC106" HREF="pintos_8.html#SEC106">F.2 cscope</A>
+<A NAME="TOC100" HREF="pintos_5.html#SEC100">B.2 Calculating Priority</A>
 <BR>
-<A NAME="TOC107" HREF="pintos_8.html#SEC107">F.3 Version Control</A>
+<A NAME="TOC101" HREF="pintos_5.html#SEC101">B.3 Calculating <VAR>recent_cpu</VAR></A>
+<BR>
+<A NAME="TOC102" HREF="pintos_5.html#SEC102">B.4 Calculating <VAR>load_avg</VAR></A>
+<BR>
+<A NAME="TOC103" HREF="pintos_5.html#SEC103">B.5 Summary</A>
+<BR>
+<A NAME="TOC104" HREF="pintos_5.html#SEC104">B.6 Fixed-Point Real Arithmetic</A>
+<BR>
+</BLOCKQUOTE>
+<A NAME="TOC105" HREF="pintos_6.html#SEC105">C. Coding Standards</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC108" HREF="pintos_8.html#SEC108">F.3.1 Setting Up Git</A>
+<A NAME="TOC106" HREF="pintos_6.html#SEC106">C.1 Style</A>
 <BR>
-<A NAME="TOC109" HREF="pintos_8.html#SEC109">F.3.2 Git Repository Details</A>
+<A NAME="TOC107" HREF="pintos_6.html#SEC107">C.2 C99</A>
 <BR>
-<A NAME="TOC110" HREF="pintos_8.html#SEC110">F.3.3 Using Git for Local Edits</A>
-<BR>
-<A NAME="TOC111" HREF="pintos_8.html#SEC111">F.3.4 Sharing Work with Your Team</A>
-<BR>
-<A NAME="TOC112" HREF="pintos_8.html#SEC112">F.3.5 Submitting Assignments</A>
+<A NAME="TOC108" HREF="pintos_6.html#SEC108">C.3 Unsafe String Functions</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC113" HREF="pintos_8.html#SEC113">F.4 Virtual Machine</A>
-<BR>
-</BLOCKQUOTE>
-<A NAME="TOC114" HREF="pintos_9.html#SEC114">G. Installing Pintos</A>
+<A NAME="TOC109" HREF="pintos_7.html#SEC109">D. Project Documentation</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC115" HREF="pintos_9.html#SEC115">G.1 Building Bochs for Pintos</A>
+<A NAME="TOC110" HREF="pintos_7.html#SEC110">D.1 Sample Assignment</A>
+<BR>
+<A NAME="TOC111" HREF="pintos_7.html#SEC111">D.2 Sample Design Document</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC116" HREF="pintos_10.html#SEC116">Bibliography</A>
+<A NAME="TOC112" HREF="pintos_8.html#SEC112">E. Debugging Tools</A>
 <BR>
 <BLOCKQUOTE>
-<A NAME="TOC117" HREF="pintos_10.html#SEC117">G.2 Hardware References</A>
+<A NAME="TOC113" HREF="pintos_8.html#SEC113">E.1 <CODE>printf()</CODE></A>
 <BR>
-<A NAME="TOC118" HREF="pintos_10.html#SEC118">G.3 Software References</A>
+<A NAME="TOC114" HREF="pintos_8.html#SEC114">E.2 <CODE>ASSERT</CODE></A>
 <BR>
-<A NAME="TOC119" HREF="pintos_10.html#SEC119">G.4 Operating System Design References</A>
+<A NAME="TOC115" HREF="pintos_8.html#SEC115">E.3 Function and Parameter Attributes</A>
+<BR>
+<A NAME="TOC116" HREF="pintos_8.html#SEC116">E.4 Backtraces</A>
+<BR>
+<BLOCKQUOTE>
+<A NAME="TOC117" HREF="pintos_8.html#SEC117">E.4.1 Example</A>
 <BR>
 </BLOCKQUOTE>
-<A NAME="TOC120" HREF="pintos_11.html#SEC120">License</A>
+<A NAME="TOC118" HREF="pintos_8.html#SEC118">E.5 GDB</A>
+<BR>
+<BLOCKQUOTE>
+<A NAME="TOC119" HREF="pintos_8.html#SEC119">E.5.1 Using GDB</A>
+<BR>
+<A NAME="TOC120" HREF="pintos_8.html#SEC120">E.5.2 Example GDB Session</A>
+<BR>
+<A NAME="TOC121" HREF="pintos_8.html#SEC121">E.5.3 FAQ</A>
+<BR>
+</BLOCKQUOTE>
+<A NAME="TOC122" HREF="pintos_8.html#SEC122">E.6 Triple Faults</A>
+<BR>
+<A NAME="TOC123" HREF="pintos_8.html#SEC123">E.7 Modifying Bochs</A>
+<BR>
+<A NAME="TOC124" HREF="pintos_8.html#SEC124">E.8 Tips</A>
+<BR>
+</BLOCKQUOTE>
+<A NAME="TOC125" HREF="pintos_9.html#SEC125">F. Development Tools</A>
+<BR>
+<BLOCKQUOTE>
+<A NAME="TOC126" HREF="pintos_9.html#SEC126">F.1 Tags</A>
+<BR>
+<A NAME="TOC127" HREF="pintos_9.html#SEC127">F.2 cscope</A>
+<BR>
+<A NAME="TOC128" HREF="pintos_9.html#SEC128">F.3 Version Control</A>
+<BR>
+<BLOCKQUOTE>
+<A NAME="TOC129" HREF="pintos_9.html#SEC129">F.3.1 Setting Up Git</A>
+<BR>
+<A NAME="TOC130" HREF="pintos_9.html#SEC130">F.3.2 Git Repository Details</A>
+<BR>
+<A NAME="TOC131" HREF="pintos_9.html#SEC131">F.3.3 Using Git for Local Edits</A>
+<BR>
+<A NAME="TOC132" HREF="pintos_9.html#SEC132">F.3.4 Sharing Work with Your Team</A>
+<BR>
+<A NAME="TOC133" HREF="pintos_9.html#SEC133">F.3.5 Submitting Assignments</A>
+<BR>
+</BLOCKQUOTE>
+<A NAME="TOC134" HREF="pintos_9.html#SEC134">F.4 Virtual Machine</A>
+<BR>
+</BLOCKQUOTE>
+<A NAME="TOC135" HREF="pintos_10.html#SEC135">G. Installing Pintos</A>
+<BR>
+<BLOCKQUOTE>
+<A NAME="TOC136" HREF="pintos_10.html#SEC136">G.1 Building Bochs for Pintos</A>
+<BR>
+</BLOCKQUOTE>
+<A NAME="TOC137" HREF="pintos_11.html#SEC137">Bibliography</A>
+<BR>
+<BLOCKQUOTE>
+<A NAME="TOC138" HREF="pintos_11.html#SEC138">G.2 Hardware References</A>
+<BR>
+<A NAME="TOC139" HREF="pintos_11.html#SEC139">G.3 Software References</A>
+<BR>
+<A NAME="TOC140" HREF="pintos_11.html#SEC140">G.4 Operating System Design References</A>
+<BR>
+</BLOCKQUOTE>
+<A NAME="TOC141" HREF="pintos_12.html#SEC141">License</A>
 <BR>
 </BLOCKQUOTE>
 <HR SIZE=1>
 <BR>
 <FONT SIZE="-1">
 This document was generated
-by <I>Donnie Pinkston</I> on <I>September, 27 2017</I>
+by <I>Donnie Pinkston</I> on <I>October, 4 2017</I>
 using <A HREF="http://texi2html.cvshome.org"><I>texi2html</I></A>
 </FONT>
 

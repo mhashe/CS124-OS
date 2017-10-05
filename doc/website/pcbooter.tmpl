@@ -1,0 +1,234 @@
+			+-----------------------+
+			|         CS 124        |
+			| PROJECT 2: BOOTLOADER |
+			|    DESIGN DOCUMENT    |
+			+-----------------------+
+
+---- GROUP ----
+
+>> Fill in the names and email addresses of your group members.
+
+FirstName LastName <email@domain.example>
+FirstName LastName <email@domain.example>
+FirstName LastName <email@domain.example>
+
+>> Specify how many late tokens you are using on this assignment:  
+
+>> What is the Git repository and commit hash for your submission?
+   (You only need to include the commit-hash in the file you submit
+   on Moodle.)
+
+   Repository URL:  
+   commit ...
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, notes for the
+>> TAs, or extra credit, please give them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course instructors.
+
+			     PC BOOTER
+			     =========
+
+---- LOGISTICS ----
+
+These questions will help us to keep track of the difficulty level of
+assignments, as well as keeping track of which team members worked on
+which parts.
+
+>> L1: How many hours did each team member spend on this assignment?
+   Make sure that each member's total time is listed.
+
+>> L2: What did each team member focus on for this assignment?  Keep
+   descriptions to 25-30 words or less.
+
+Note that this design document is a bit long.  Most of the questions can be
+answered pretty briefly.  Don't feel a need to write a long answer if it is
+not required by the question.
+
+			     GAME / DEMO
+			     ===========
+
+---- ALGORITHMS ----
+
+>> A1: In a few sentences, describe what kind of game or demo program your
+>> PC booter implements.
+
+>> A2: In a few sentences, how does the user interact with the program?
+>> What are the controls?  What should the user try to do?
+
+---- DATA STRUCTURES ----
+
+>> A3: Describe any global state that your program manages in order to
+>> perform its operations.  Don't focus on state managed within interrupt
+>> handlers; we will look at that later.  Rather, focus on state that is
+>> part of the game implementation itself.
+
+---- SYNCHRONIZATION ----
+
+>> A4: From the perspective of the entire program, briefly describe how
+>> the various interrupts are handled and processed within your program.
+>> For example, when a timer interrupt occurs, what is the general sequence
+>> of operations or updates that is performed within your program?
+>> Similarly, when a keyboard interrupt occurs, what does your program do
+>> in response?
+
+>> A5: Would you say your program relies on polling or busy-waiting anywhere
+>> to accomplish its tasks?  If so, what tasks?
+
+---- RATIONALE ----
+
+>> A6: Why did you choose the project you did?
+
+>> A7: Did your choice of project affect any of the specific implementation
+>> details of the various subsystems that you needed to use?  (For example,
+>> if you implemented a scrolling game, did you implement specialized high-
+>> performance video code to scroll the screen?)
+
+>> A8: Did you run into any technical or resource limitations in the
+>> implementation of your program?  (For example, bootloader didn't fit,
+>> or a really useful standard library wasn't available, or you couldn't
+>> achieve the desired performance level, etc.)  If so, what steps did you
+>> take to try to overcome those limitations?
+
+			     BOOT SECTOR
+			     ===========
+
+---- DATA STRUCTURES ----
+
+>> B1: How did you decide to store the Disk Address Packet?  Does the
+>> memory occupied by the DAP get reclaimed after it is used?  If not,
+>> why not?
+
+>> B2: How many sectors does your bootloader load?  How did you arrive
+>> at this number?  Briefly explain your rationale.
+
+>> B3: Does your bootloader pass any information to the main program?
+>> (If not, just say no.)  If so, what information is passed, and how
+>> is it passed?
+
+---- ALGORITHMS ----
+
+>> B3: Briefly describe how your bootloader brings your program into
+>> memory.  Does it perform one large load, or multiple smaller loads?
+
+>> B4: Did you add any BIOS calls to your bootloader to prepare for your
+>> main program?  (i.e. things that aren't available in protected mode)
+
+			  VIDEO SUBSYSTEM
+			  ===============
+
+---- DATA STRUCTURES ----
+
+>> C1: What video display mode does your program use?  Is it a text mode
+>> or a graphical mode?  Where does the video buffer start?  How is data
+>> represented in this mode?  (Please be brief; we don't need complete
+>> documentation on the video system.)
+
+>> C2: Does your video code maintain any variables or data structures to
+>> facilitate video output?  Briefly describe these values and their
+>> purposes here.
+
+---- ALGORITHMS ----
+
+>> C3: What abstraction does your video code present to your main program?
+>> Briefly describe the higher-level operations you decided to implement.
+
+---- RATIONALE ----
+
+>> C4: Did you take any specific steps to improve the appearance of your
+>> program's display output?  For example, using Extended ASCII Codes, or
+>> choosing specific colors to represent different things?
+
+			  TIMER SUBSYSTEM
+			  ===============
+
+---- DATA STRUCTURES ----
+
+>> D1: What state does your timer subsystem manage?  Describe the variables
+>> or data structures that it maintains, and how they are used.
+
+---- ALGORITHMS ----
+
+>> D2: What abstraction does your timer code present to your main program?
+>> Briefly describe the higher-level operations you decided to implement.
+
+>> D3: Did you change the timer frequency from 100Hz?  If so, what did you
+>> change it to, and why?
+
+---- SYNCHRONIZATION ----
+
+>> D4: Given how your program handles timer events, is there any potential
+>> for timer interrupts to generate race conditions in updating your
+>> program's global state?  If so, what steps did you take to ensure that
+>> such situations cannot occur?
+
+			KEYBOARD SUBSYSTEM
+			==================
+
+---- DATA STRUCTURES ----
+
+>> E1: What state does your keyboard subsystem manage?  Describe the variables
+>> or data structures that it maintains, and how they are used.
+
+>> E2: How do your data structures handle keys with multi-byte scan-codes?
+
+---- ALGORITHMS ----
+
+>> E3: What abstraction does your keyboard code present to your main program?
+>> Briefly describe the higher-level operations you decided to implement.
+
+>> E4: Does your keyboard subsystem expose scan-codes directly to your main
+>> program, or does it preprocess them and expose other information to your
+>> main program?  If scan-code data is preprocessed, briefly describe what
+>> information is actually exposed, and how it is derived from scan-codes.
+
+---- SYNCHRONIZATION ----
+
+>> E5: Given how your keyboard interrupt handler operates, is there any
+>> potential for race conditions in updating the keyboard subsystem's
+>> internal state?  If so, what steps did you take to ensure that such
+>> situations cannot occur?
+
+>> E6: Given how your program handles keyboard events, is there any
+>> potential for keyboard interrupts to generate race conditions in updating
+>> your program's global state?  If so, what steps did you take to ensure
+>> that such situations cannot occur?
+
+---- RATIONALE ----
+
+>> E7: Why did you choose the design and data representation that your
+>> keyboard subsystem uses?  How is it suited to your program's overall
+>> operation?
+
+			  SURVEY QUESTIONS
+			  ================
+
+Answering these questions is optional, but it will help us improve the
+course in future years.  Feel free to tell us anything you want - these
+questions are just to spur your thoughts.  Also, feel free to be completely
+honest if there are issues with the assignment or the course - you won't be
+penalized.  We can't fix things until we know about them.  :-)
+
+>> In your opinion, was this assignment, or any of the parts of it, too
+>> easy or too hard?  Did it take too long or too little time?
+
+>> Did you find that working on a particular part of the assignment gave
+>> you greater insight into some aspect of OS design?
+
+>> Were there any parts of the assignment that you felt were unnecessarily
+>> tedious or pointless?
+
+>> Is there some particular fact or hint we should give students in
+>> future quarters to help them solve the problems?  Conversely, did you
+>> find any of our guidance to be misleading?
+
+>> Do you have any suggestions for the instructor and/or TAs to more
+>> effectively assist students, either for future quarters or the remaining
+>> projects?
+
+>> Any other comments?
+
