@@ -1,7 +1,9 @@
+#include <stdlib.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <limits.h>
+#include <string.h>
 
 #include "token.h"
 
@@ -19,14 +21,26 @@ int main(int argc, char *argv[])
         perror("Error in getpwuid");
         return(1);
     }
-    // User name
+    // User name, home directory
     char *uname = pw->pw_name;
+    char *hdir = pw->pw_dir;
 
     // Path length at most PATH_MAX
     char cwd[PATH_MAX];
     if (getcwd(cwd, sizeof(cwd)) == NULL) {
         perror("Error in getcwd");
         return(1);
+    }
+
+    // If process in home directory of user, change prompt
+    if (strstr(cwd, hdir) != NULL) {
+        // Copy to hold cwd
+        char copy[PATH_MAX];
+        strcpy(copy, cwd); // No return value for error conditions
+
+        // Replace /home/USER with ~
+        cwd[0] = '~';
+        memmove(&cwd[1], &copy[strlen(hdir)], PATH_MAX - strlen(hdir));
     }
 
     while(1) {
@@ -36,7 +50,7 @@ int main(int argc, char *argv[])
         printf("%s:%s >>> ", uname, cwd);
 
         // TODO: Handle SIGINT
-        
+
         // Wait for input
         if (fgets(command, MAX_SIZE, stdin) == NULL) {
             perror("Error in fgets");
