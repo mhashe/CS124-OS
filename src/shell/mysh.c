@@ -94,8 +94,14 @@ int main(int argc, char *argv[])
     using_history();
 
     while(1) {
+        char* full_in = (char*)calloc(MAX_LINE, sizeof(char));
+        if (full_in == NULL) {
+            fprintf(stderr, "Error allocating input line.\n");
+            exit(1);
+        }
+
+        // Input buffer
         char *line_in = NULL;
-        char *mult_in = NULL;
 
         prompt = generate_prompt();
         if (prompt == NULL) {
@@ -113,22 +119,27 @@ int main(int argc, char *argv[])
             return 0;
         }
 
-        // Add multiline functionality
-        while (line_in[strlen(line_in)-1] == '\\') {
-            // Overwrite the backslash in the previous line
-            line_in[strlen(line_in)-1] = '\0';
+        // Append to full ln
+        strcat(full_in, line_in);
+        free(line_in);
 
-            mult_in = readline(" > ");
-            strcat(line_in, mult_in);
+        // Add multiline functionality
+        while (full_in[strlen(full_in)-1] == '\\') {
+            // Overwrite the backslash in the previous line
+            full_in[strlen(full_in)-1] = '\0';
+
+            line_in = readline(" > ");
+            strcat(full_in, line_in);
+            free(line_in);
         }
 
-        add_history(line_in);
+        add_history(full_in);
 
         // Tokenize input
-        char** comms = tokenize(line_in);
+        char** comms = tokenize(full_in);
 
-        // free from readline
-        free(line_in);
+        // free line
+        free(full_in);
 
         struct command* cmd = parse_to_chained_commands(comms);
         // char **cmds;
@@ -155,9 +166,8 @@ int main(int argc, char *argv[])
         // }
         // if (cmd->next == NULL) 
 
+        // TODO: Free everything
         printf("forking result: %d\n", fork_and_exec_commands(cmd));
-
-        // TODO: Free statements
     }
 
     return 0;
