@@ -1,3 +1,5 @@
+#include "com_parser.h"
+
 /* Takes in a linked list of commands and executes them while redirecting their 
 io. It then waits for all of them to finish in the shell process. */
 int fork_and_exec_commands(struct command *cmd);
