@@ -11,6 +11,8 @@
 #include "token.h"
 #include "consts.h"
 #include "com_parser.h"
+#include "com_exec.h"
+
 
 int main(int argc, char *argv[])
 {
@@ -109,6 +111,8 @@ int main(int argc, char *argv[])
             cmd = cmd->next;
             printf("\n");
         }
+
+        printf("forking result: %d\n", fork_and_exec_commands(cmd));
 
         // TODO: Free statements
     }
