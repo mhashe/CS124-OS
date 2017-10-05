@@ -49,7 +49,6 @@ int is_number(char* str, int start_i, int end_i) {
  *
  * ret: array of char pointers (strings) of tokenized values
  */
-// TODO handle errors everywhere
 char** tokenize(char* commands) {
 
     // assuming a single line of commands cannot contain more than MAX_LINE
