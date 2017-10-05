@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
         }
 
         // Add multiline functionality
-        printf("%s\n", line_in[strlen(line_in)-1]);
+        // printf("%s\n", line_in[strlen(line_in)-1]);
 
         add_history(line_in);
 
