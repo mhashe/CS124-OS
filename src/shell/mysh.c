@@ -66,10 +66,10 @@ char* generate_prompt() {
     strncpy(prompt+COL_LENGTH, uname, strlen(uname));
     prompt[COL_LENGTH+strlen(uname)] = ':';
     strncpy(prompt+COL_LENGTH+strlen(uname)+1, cwd, strlen(cwd));
+    strncpy(prompt+COL_LENGTH+strlen(uname)+1+strlen(cwd), 
+        COL_RESET, COL_LENGTH);
     // 4 = 3 characters + null-terminator
-    strncpy(prompt+COL_LENGTH+strlen(uname)+1+strlen(cwd), " $ ", 3);
-    strncpy(prompt+COL_LENGTH+strlen(uname)+1+strlen(cwd)+3, 
-        COL_RESET, COL_LENGTH+1);
+    strncpy(prompt+COL_LENGTH+strlen(uname)+1+strlen(cwd)+COL_LENGTH, " $ ", 4);
 
     return prompt;
 }
