@@ -5,6 +5,7 @@
 #include <ctype.h>
 
 #include "token.h"
+#include "consts.h"
 
 /*
  * copy src[word_start:word_start+word_size] into dest[i] as a null term string
@@ -45,25 +46,30 @@ int is_number(char* str, int start_i, int end_i) {
  * ret: array of char pointers (strings) of tokenized values
  */
 // TODO handle errors everywhere
-// TODO remove repeated code
-// TODO handle integer file descriptor
 char** tokenize(char* commands) {
-    // TODO: remove magic number
-    char** toRet = (char**)calloc(1024, sizeof(char*));
 
+    // assuming a single line of commands cannot contain more than MAX_LINE
+    // commands
+    char** toRet = (char**)calloc(MAX_LINE, sizeof(char*));
+
+    // current character we are looking at
     int i = 0;
+    // character we are processing
+    char ch;
+    // start of the word we are currently processing
     int word_start = 0;
+    // token number we are on
     int comm_num = 0;
+    // size of the current word
     int word_size;
 
     while(1) {
-        char ch = commands[i];
+        ch = commands[i];
         if (ch =='\"') {
+            // TODO handle when quotes happen in middle eg hel"hi"lo
             // treat everything until closing quote as a string
-
             i = (int)(strchr(commands + i + 1, '\"') - commands);
 
-            // TODO handle when quotes happen in middle eg hel"hi"lo
             // skip the starting quote
             word_start++;
 
@@ -73,7 +79,7 @@ char** tokenize(char* commands) {
             // copy into buffer
             copy_comm(toRet, commands, word_start, word_size, comm_num);
             
-            // advance to next command space
+            // advance to next token space
             comm_num++;
 
             // onto the next one 
@@ -82,7 +88,6 @@ char** tokenize(char* commands) {
 
         } else if (word_start == i && ch == ' ') {
             // skip repeated spaces
-
             i++;
             word_start = i;
 
@@ -99,9 +104,10 @@ char** tokenize(char* commands) {
                 // copy into buffer
                 copy_comm(toRet, commands, word_start, word_size, comm_num);
                 
-                // advance to next command space
+                // advance to next token space
                 comm_num++;
 
+                // set up for special character
                 word_start = i;
             }
 
@@ -111,7 +117,7 @@ char** tokenize(char* commands) {
             // copy into buffer
             copy_comm(toRet, commands, word_start, word_size, comm_num);
 
-            // advance to next command space
+            // advance to next token space
             comm_num++;
 
             // onto the next one 
@@ -138,7 +144,7 @@ char** tokenize(char* commands) {
                     // copy into buffer
                     copy_comm(toRet, commands, word_start, word_size, comm_num);
                     
-                    // advance to next command space
+                    // advance to next token space
                     comm_num++;
 
                     word_start = i;
@@ -169,7 +175,7 @@ char** tokenize(char* commands) {
             // copy into buffer
             copy_comm(toRet, commands, word_start, word_size, comm_num);
 
-            // advance to next command space
+            // advance to next token space
             comm_num++;
 
             // onto the next one 
@@ -184,7 +190,7 @@ char** tokenize(char* commands) {
             // copy into buffer
             copy_comm(toRet, commands, word_start, word_size, comm_num);
             
-            // advance to next command space
+            // advance to next token space
             comm_num++;
             
             // onto the next one 
@@ -192,7 +198,7 @@ char** tokenize(char* commands) {
             word_start = i;
 
         } else if (ch == '\0' || ch == '\n') {
-            // printf("%c\n", commands[word_start]);
+            // case that designates the end of the sequence of tokens
             if (commands[word_start] == '\0' || 
                 commands[word_start] == ' '  ||
                 commands[word_start] == '\n')
@@ -207,6 +213,8 @@ char** tokenize(char* commands) {
             break;
 
         } else {
+            // case where we are processing a normal character that is part of a
+            // token
             i++;
         }
 
