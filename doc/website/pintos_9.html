@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
                       "http://www.w3.org/TR/html40/loose.dtd">
 <HTML>
-<!-- Created on September, 27 2017 by texi2html 1.66 -->
+<!-- Created on October, 4 2017 by texi2html 1.66 -->
 <!--
 Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
             Karl Berry  <karl@freefriends.org>
@@ -12,10 +12,10 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 
 -->
 <HEAD>
-<TITLE>Pintos Projects: Installing Pintos</TITLE>
+<TITLE>Pintos Projects: Development Tools</TITLE>
 
-<META NAME="description" CONTENT="Pintos Projects: Installing Pintos">
-<META NAME="keywords" CONTENT="Pintos Projects: Installing Pintos">
+<META NAME="description" CONTENT="Pintos Projects: Development Tools">
+<META NAME="keywords" CONTENT="Pintos Projects: Development Tools">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
 <META NAME="Generator" CONTENT="texi2html 1.66">
@@ -24,10 +24,10 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 
 <BODY >
 
-<A NAME="SEC114"></A>
+<A NAME="SEC125"></A>
 <TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
-<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_8.html#SEC104"> &lt;&lt; </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_9.html#SEC115"> &gt;&gt; </A>]</TD>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_8.html#SEC112"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_10.html#SEC135"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
@@ -35,306 +35,486 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 </TR></TABLE>
 
 <HR SIZE=2>
-<H1> G. Installing Pintos </H1>
-<!--docid::SEC114::-->
+<H1> F. Development Tools </H1>
+<!--docid::SEC125::-->
 <P>
 
-This chapter explains how to install a Pintos development environment on
-your own machine.  If you are using a Pintos development environment
-that has been set up by someone else, you do not need to read this
-chapter or follow these instructions.
+Here are some tools that you might find useful while developing code.
 </P>
 <P>
 
-Students are strongly advised to develop Pintos on a 64-bit Linux platform.
-Pintos has been most extensively tested on GNU/Linux, in particular the Debian
-and Ubuntu distributions.  It is not designed to install under any form of
-Windows, including with Cygwin.  Similarly, Mac OS X has enough differences
-that it is extremely difficult to get Pintos working on it; therefore
-Mac OS X is not supported as a platform for Pintos.
+<A NAME="Tags"></A>
+<HR SIZE="6">
+<A NAME="SEC126"></A>
+<H2> F.1 Tags </H2>
+<!--docid::SEC126::-->
+<P>
+
+Tags are an index to the functions and global variables declared in a
+program.  Many editors, including Emacs and <CODE>vi</CODE>, can use
+them.  The <Q><TT>Makefile</TT></Q> in <Q><TT>pintos/src</TT></Q> produces Emacs-style
+tags with the command <CODE>make TAGS</CODE> or <CODE>vi</CODE>-style tags with
+<CODE>make tags</CODE>.
 </P>
 <P>
 
-Because many students do not have direct access to a 64-bit Linux platform,
-a virtual machine image will be made available for use.  For details,
-see section <A HREF="pintos_8.html#SEC113">F.4 Virtual Machine</A>.
+In Emacs, use <KBD>M-.</KBD> to follow a tag in the current window,
+<KBD>C-x 4 .</KBD> in a new window, or <KBD>C-x 5 .</KBD> in a new frame.  If
+your cursor is on a symbol name for any of those commands, it becomes
+the default target.  If a tag name has multiple definitions, <KBD>M-0
+M-.</KBD> jumps to the next one.  To jump back to where you were before
+you followed the last tag, use <KBD>M-*</KBD>.
 </P>
 <P>
 
-Prerequisites for installing a Pintos development environment include
-the following, on top of standard Unix utilities:
+<A NAME="cscope"></A>
+<HR SIZE="6">
+<A NAME="SEC127"></A>
+<H2> F.2 cscope </H2>
+<!--docid::SEC127::-->
+<P>
+
+The <CODE>cscope</CODE> program also provides an index to functions and
+variables declared in a program.  It has some features that tag
+facilities lack.  Most notably, it can find all the points in a
+program at which a given function is called.
 </P>
 <P>
 
-<UL>
-<LI>
-Required: <A HREF="http://gcc.gnu.org/">GCC</A>.  Version 4.0 or later is
-preferred.  Version 3.3 or later should work.  If the host machine has
-an 80<VAR>x</VAR>86 processor, then GCC should be available as <CODE>gcc</CODE>;
-otherwise, an 80<VAR>x</VAR>86 cross-compiler should be available as
-<CODE>i386-elf-gcc</CODE>.  A sample set of commands for installing GCC
-3.3.6 as a cross-compiler are included in
-<Q><TT>src/misc/gcc-3.3.6-cross-howto</TT></Q>.
-<P>
-
+The <Q><TT>Makefile</TT></Q> in <Q><TT>pintos/src</TT></Q> produces <CODE>cscope</CODE>
+indexes when it is invoked as <CODE>make cscope</CODE>.  Once the index has
+been generated, run <CODE>cscope</CODE> from a shell command line; no
+command-line arguments are normally necessary.  Then use the arrow
+keys to choose one of the search criteria listed near the bottom of
+the terminal, type in an identifier, and hit <KBD>Enter</KBD>.
+<CODE>cscope</CODE> will then display the matches in the upper part of
+the terminal.  You may use the arrow keys to choose a particular
+match; if you then hit <KBD>Enter</KBD>, <CODE>cscope</CODE> will invoke the
+default system editor<A NAME="DOCF6" HREF="pintos_fot.html#FOOT6">(6)</A> and position the
+cursor on that match.  To start a new search, type <KBD>Tab</KBD>.  To exit
+<CODE>cscope</CODE>, type <KBD>Ctrl-d</KBD>.
 </P>
-<LI>
-Required: <A HREF="http://www.gnu.org/software/binutils/">GNU binutils</A>.
-Pintos uses <CODE>addr2line</CODE>, <CODE>ar</CODE>, <CODE>ld</CODE>,
-<CODE>objcopy</CODE>, and <CODE>ranlib</CODE>.  If the host machine is not an
-80<VAR>x</VAR>86, versions targeting 80<VAR>x</VAR>86 should be available with an
-<Q><SAMP>i386-elf-</SAMP></Q> prefix.
 <P>
 
+Emacs and some versions of <CODE>vi</CODE> have their own interfaces to
+<CODE>cscope</CODE>.  For information on how to use these interface,
+visit <A HREF="http://cscope.sourceforge.net, the &lt;CODE&gt;cscope&lt;/CODE&gt; home
+page">http://cscope.sourceforge.net, the <CODE>cscope</CODE> home
+page</A>.
 </P>
-<LI>
-Required: <A HREF="http://www.perl.org">Perl</A>.  Version 5.8.0 or later is
-preferred.  Version 5.6.1 or later should work.
 <P>
 
+<A NAME="Version Control"></A>
+<HR SIZE="6">
+<A NAME="SEC128"></A>
+<H2> F.3 Version Control </H2>
+<!--docid::SEC128::-->
+<P>
+
+<A NAME="Setting Up Git"></A>
+<HR SIZE="6">
+<A NAME="SEC129"></A>
+<H3> F.3.1 Setting Up Git </H3>
+<!--docid::SEC129::-->
+<P>
+
+The Pintos codebase is rather substantial, and you will be working in teams
+to develop some complex features on the project.  In situations like this,
+a version control system is absolutely essential so that you can coordinate
+your interactions with the codebase, and so you can record checkpoints of
+your work as you go.  Additionally, you will submit your work using the
+version-control system so that we can retrieve and grade what you have done.
 </P>
-<LI>
-Required: <A HREF="http://www.gnu.org/software/make/">GNU make</A>, version
-3.80 or later.
 <P>
 
+We will be using the Git distributed version control system for
+CS124.  You can install Git onto your local machine from the
+following website:  <A HREF="http://git-scm.com/">http://git-scm.com/</A>.  (It is already installed on the
+CMS cluster if you decide to work there.)  There are installers for all
+major operating systems.  Once Git is installed, you can follow the
+instructions below to get started on Pintos.
 </P>
-<LI>
-Recommended: <A HREF="http://fabrice.bellard.free.fr/qemu/">QEMU</A>, version
-0.11.0 or later.  If QEMU is not available, Bochs can be used, but its
-slowness is frustrating.
 <P>
 
-</P>
-<LI>
-Recommended: <A HREF="http://www.gnu.org/software/gdb/">GDB</A>.  GDB is
-helpful in debugging (see section <A HREF="pintos_7.html#SEC97">E.5 GDB</A>).  If the host machine is not an
-80<VAR>x</VAR>86, a version of GDB targeting 80<VAR>x</VAR>86 should be available
-as <Q><SAMP>i386-elf-gdb</SAMP></Q>.
-<P>
-
-</P>
-<LI>
-Recommended: <A HREF="http://www.x.org/">X</A>.  Being able to use an X server
-makes the virtual machine feel more like a physical machine, but it is
-not strictly necessary.
-<P>
-
-</P>
-<LI>
-Optional: <A HREF="http://www.gnu.org/software/texinfo/">Texinfo</A>, version
-4.5 or later.  Texinfo is required to build the PDF version of the
-documentation.
-<P>
-
-</P>
-<LI>
-Optional: <A HREF="http://www.tug.org/">TeX</A>.  Also required to build
-the PDF version of the documentation.
-<P>
-
-</P>
-<LI>
-Optional: <A HREF="http://www.vmware.com/">VMware Player</A>.  This is a
-third platform that can also be used to test Pintos.
-</UL>
-<P>
-
-Once these prerequisites are available, follow these instructions to
-install Pintos:
+<STRONG>NOTE:  A CMS cluster account is required to access the Git repositories
+on the CMS cluster!</STRONG>  If you don't have an account, or your account is suspended
+etc., you need to get this resolved ASAP.  Ask Donnie if you have any questions
+about this.
 </P>
 <P>
 
 <OL>
-<LI>
-Install <A HREF="http://bochs.sourceforge.net/">Bochs</A>, version 2.2.6, as
-described below (see section <A HREF="pintos_9.html#SEC115">G.1 Building Bochs for Pintos</A>).
+
+<LI>Once you have installed Git on your computer, configure it with your
+      user information.  The double-quotes in these commands are necessary if
+      you have spaces in the values you specify.
+<P>
+
+      <CODE>git config --global user.name &quot;Your Name&quot;</CODE>
+</P>
+<P>
+
+      <CODE>git config --global user.email &quot;your@email.tld&quot;</CODE>
+</P>
+<P>
+
+      You will probably also find it helpful to turn on colorful output:
+</P>
+<P>
+
+      <CODE>git config --global color.ui true</CODE>
+</P>
 <P>
 
 </P>
-<LI>
-Install scripts from <Q><TT>src/utils</TT></Q>.  Copy <Q><TT>backtrace</TT></Q>,
-<Q><TT>pintos</TT></Q>, <Q><TT>pintos-gdb</TT></Q>, <Q><TT>pintos-mkdisk</TT></Q>,
-<Q><TT>pintos-set-cmdline</TT></Q>, and <Q><TT>Pintos.pm</TT></Q> into the default
-<CODE>PATH</CODE>.
+<LI>You have a choice between using a Git respository hosted on the CMS
+      cluster (a.k.a. &quot;the CS cluster&quot;), or using another Git repository that
+      is accessible to Donnie and the TAs (e.g. on GitHub or Bitbucket).
+<P>
+
+      If you intend to use the CMS cluster for your Git repository, please
+      email Donnie ASAP with your team's name so that he can create an empty
+      repository for you.  If you use this approach, all teammates must have
+      working cluster accounts.
+</P>
+<P>
+
+      If you intend to use a Git repository hosted somewhere else, please
+      make sure it is a private repository that is only accessible by the
+      people who need to access it.  Feel free to email Donnie and/or the
+      TAs for their GitHub/Bitbucket account names, if you decide to go
+      this route.
+</P>
+<P>
+
+      <STRONG>The subsequent steps assume you will be using the CMS cluster
+      to host your repository.</STRONG>  However, you can use similar steps if you
+      host the repository elsewhere; simply update the below commands
+      appropriately.
+</P>
 <P>
 
 </P>
-<LI>
-Install <Q><TT>src/misc/gdb-macros</TT></Q> in a public location.  Then use a
-text editor to edit the installed copy of <Q><TT>pintos-gdb</TT></Q>, changing
-the definition of <CODE>GDBMACROS</CODE> to point to where you installed
-<Q><TT>gdb-macros</TT></Q>.  Test the installation by running
-<CODE>pintos-gdb</CODE> without any arguments.  If it does not complain
-about missing <Q><TT>gdb-macros</TT></Q>, it is installed correctly.
+<LI>Your team's repository will initially be empty, so for you to be able to
+      do any work on Pintos you must retrieve the codebase and add it to your
+      repository.  The starting code is stored in another Git repository so
+      that if there are any bugfixes that must be passed along, you can easily
+      retrieve them.  To get the code from this repository, <STRONG>one</STRONG> team
+      member should do the following:
+<P>
+
+<UL>
+
+<LI>Clone your team's empty repository to a local computer:
+<P>
+
+            <CODE>git clone <VAR>username</VAR>@login.cms.caltech.edu:/cs/courses/cs124/teams/<VAR>teamname</VAR></CODE>
+</P>
+<P>
+
+            (This command would change if you host your repository elsewhere.)
+</P>
+<P>
+
+            Since the repository is initially empty, this won't be very
+            exciting yet.
+</P>
 <P>
 
 </P>
-<LI>
-Compile the remaining Pintos utilities by typing <CODE>make</CODE> in
-<Q><TT>src/utils</TT></Q>.  Install <Q><TT>squish-pty</TT></Q> somewhere in <CODE>PATH</CODE>.
-To support VMware Player, install <Q><TT>squish-unix</TT></Q>.
-If your Perl is older than version 5.8.0, also install
-<Q><TT>setitimer-helper</TT></Q>; otherwise, it is unneeded.
+<LI>Execute the following command to retrieve the Pintos codebase into
+            your local clone of the team's repository:
+<P>
+
+            <CODE>git pull <VAR>username</VAR>@login.cms.caltech.edu:/cs/courses/cs124/pintos-cit master</CODE>
+</P>
+<P>
+
+            (This command will be the same regardless of where you host your
+            Git repository.)
+</P>
 <P>
 
 </P>
-<LI>
-Pintos should now be ready for use.  If you have the Pintos reference
-solutions, which are provided only to faculty and their teaching
-assistants, then you may test your installation by running <CODE>make
-check</CODE> in the top-level <Q><TT>tests</TT></Q> directory.  The tests take between
-20 minutes and 1 hour to run, depending on the speed of your hardware.
+<LI>Push the Pintos code back up to the team repository with this
+            command:
+<P>
+
+            <CODE>git push --all</CODE>
+</P>
+<P>
+
+            (The <CODE>--all</CODE> argument is necessary for the first push,
+            since the team repository is empty.  It will be unnecessary once
+            the repository is initialized.)
+</P>
+<P>
+
+</UL>
+<P>
+
+      When changes are made to the Pintos sources in the future, one teammate
+      can again perform the above procedure, with the following differences:
+</P>
+<P>
+
+<UL>
+<LI>Obviously the team repository won't be empty at that point.
+<LI>The <CODE>git push</CODE> command will not require the <CODE>--all</CODE>
+            argument.
+</UL>
 <P>
 
 </P>
-<LI>
-Optional: Build the documentation, by running <CODE>make dist</CODE> in the
-top-level <Q><TT>doc</TT></Q> directory.  This creates a <Q><TT>WWW</TT></Q> subdirectory
-within <Q><TT>doc</TT></Q> that contains HTML and PDF versions of the
-documentation, plus the design document templates and various hardware
-specifications referenced by the documentation.  Building the PDF
-version of the manual requires Texinfo and TeX (see above).  You may
-install <Q><TT>WWW</TT></Q> wherever you find most useful.
+<LI>Now that the team repository is set up, team members will need to
+      figure out a location to work.  You can work on your local computer,
+      on the CMS cluster, or wherever you feel comfortable doing so.
+      I usually work within a <Q><TT>projects/pintos</TT></Q> directory on my laptop,
+      but perhaps you will want to create a <Q><TT>CS124</TT></Q>
+      directory for yourself to work in.
 <P>
 
-The <Q><TT>doc</TT></Q> directory is not included in the <Q><TT>.tar.gz</TT></Q>
-distributed for Pintos.  It is in the Pintos CVS tree available via
-<CODE>:pserver:anonymous@footstool.stanford.edu:/var/lib/cvs</CODE>, in the
-<CODE>pintos</CODE> module.  The CVS tree is <EM>not</EM> the authoritative
-source for Stanford course materials, which should be obtained from the
-course website.
+</P>
+<LI>Once you have a location figured out, clone your team's repository to
+      that location.  You will actually be making a complete local copy of the
+      team repository (which Git calls &quot;origin&quot;) for yourself to work against.
+      You will be able to make whatever changes you want to this repository
+      without affecting the team repository until you are ready to do so.
+<P>
+
+      <CODE>git clone <VAR>username</VAR>@login.cms.caltech.edu:/cs/courses/cs124/teams/<VAR>teamname</VAR></CODE>
+</P>
+<P>
+
+      (Again, this command will change if you host your repository elsewhere.)
+</P>
+<P>
+
+      Once you have done this, you can run &quot;<CODE>git remote -v</CODE>&quot; to see
+      that this repository is now nicknamed &quot;origin&quot;, as stated earlier.
+</P>
+<P>
+
 </OL>
 <P>
 
-<A NAME="Building Bochs for Pintos"></A>
+<A NAME="Git Repository Details"></A>
 <HR SIZE="6">
-<A NAME="SEC115"></A>
-<H2> G.1 Building Bochs for Pintos </H2>
-<!--docid::SEC115::-->
+<A NAME="SEC130"></A>
+<H3> F.3.2 Git Repository Details </H3>
+<!--docid::SEC130::-->
 <P>
 
-Upstream Bochs has bugs and warts that should be fixed when used with
-Pintos.  Thus, Bochs should be installed manually for use with Pintos,
-instead of using the packaged version of Bochs included with an
-operating system distribution.
-</P>
-<P>
-
-Two different Bochs binaries should be installed.  One, named simply
-<CODE>bochs</CODE>, should have the GDB stub enabled, by passing
-<Q><SAMP>--enable-gdb-stub</SAMP></Q> to the Bochs <CODE>configure</CODE> script.  The
-other, named <CODE>bochs-dbg</CODE>, should have the internal debugger
-enabled, by passing <Q><SAMP>--enable-debugger</SAMP></Q> to <CODE>configure</CODE>.
-(The <CODE>pintos</CODE> script selects a binary based on the options
-passed to it.)  In each case, the X, terminal, and &quot;no GUI&quot; interfaces
-should be configured, by passing <Q><SAMP>--with-x --with-x11 --with-term
---with-nogui</SAMP></Q> to <CODE>configure</CODE>.
+You should be aware that your local repository actually contains two
+components in one.  First, you will see directories and files like <Q><TT>src</TT></Q>,
+etc.  (For the first two projects, you will only have a <Q><TT>src</TT></Q> directory,
+but other directories will be added as the course progresses.)  These are
+actually not part of the Git repository itself; they are a working copy that
+you can edit separately.  If you decide you don't like the changes you have
+made in your working copy, you can always revert back to the repository
+version with no problems.
 </P>
 <P>
 
-This version of Pintos is designed for use with Bochs 2.2.6.  A number
-of patches for this version of Bochs are included in <Q><TT>src/misc</TT></Q>:
+When you are completely satisfied with your changes, then you can commit these
+changes to your own local repository.  The repository itself is stored in a
+subdirectory named <Q><TT>.git</TT></Q>, which you can see if you type
+&quot;<CODE>ls -al</CODE>&quot;.  (Feel free to look in this directory, but don't muck
+with anything in there unless you absolutely know what you are doing.)
+</P>
+<P>
+
+<A NAME="Using Git for Local Edits"></A>
+<HR SIZE="6">
+<A NAME="SEC131"></A>
+<H3> F.3.3 Using Git for Local Edits </H3>
+<!--docid::SEC131::-->
+<P>
+
+As you work on your projects, you may want to commit your changes as you get
+various parts of the project working.  In fact, you are encouraged to do this!
+Nothing is more frustrating than completing a complicated feature, and then
+immediately mangling it as you start working on the next task.  <STRONG>Commit
+your work every time you complete anything that you don't feel like doing
+again.</STRONG>  At any point in your work, you can run the command
+&quot;<CODE>git status</CODE>&quot; to see what files have been modified in your working
+directory.
+</P>
+<P>
+
+The command you use to commit changes to your local repository is
+&quot;<CODE>git commit</CODE>&quot;.  However, it is important to understand Git's
+workflow for committing changes to the repository.  Changes you make in your
+working directory will not immediately be included when you commit to your
+repository; rather, Git maintains a &quot;staging area&quot; of changes that will be
+included in the next commit.  In other words, you can make some changes that
+will be included in the commit, and other changes that will not be included
+in the commit.  A file whose changes will be included in the next commit is
+described as being &quot;staged&quot; (i.e. its changes are included in the staging
+area).  A file whose changes will not be included in the next commit is
+&quot;unstaged,&quot; or &quot;modified but not staged.&quot;
+</P>
+<P>
+
+To complicate this somewhat, files also fall into two categories:  &quot;tracked&quot;
+files, which have been added to the repository and Git is managing them; and
+&quot;untracked&quot; files, which have not yet been added to the repository.
+</P>
+<P>
+
+The upshot of all this is that if you want to add a new file to your
+repository, or you want to include changes of an existing file into your
+repository, you must run &quot;<CODE>git add filename</CODE>&quot; to include the file
+in the staging area.  Then, these changes will be included in the next commit.
+There is a simplification for when you haven't added any new files:  you can
+run &quot;<CODE>git commit -a</CODE>&quot;, which will perform the staging step as well as
+the commit step.  However, if you create a brand new file, you still need to
+run &quot;<CODE>git add filename</CODE>&quot; on that new file before it will be committed.
+</P>
+<P>
+
+<A NAME="Sharing Work with Your Team"></A>
+<HR SIZE="6">
+<A NAME="SEC132"></A>
+<H3> F.3.4 Sharing Work with Your Team </H3>
+<!--docid::SEC132::-->
+<P>
+
+When you are ready to share your local work with the rest of your team, you can
+run this command to push all of your changes back to the team's Git repository:
+</P>
+<P>
+
+<CODE>git push</CODE>
+</P>
+<P>
+
+That's really all it takes!  Of course, the rest of the team must then pull
+your changes into their local repositories by running &quot;<CODE>git pull</CODE>&quot;.
+This will bring all changes in the team repository down to the local
+repository.
+</P>
+<P>
+
+There are two important rules that you must always follow:
+</P>
+<P>
+
+<UL>
+
+<LI><STRONG>Never break the code in the team repository, unless you have
+      first coordinated your changes with the rest of your team!</STRONG>  It is
+      extremely frustrating to pull changes from the team's repository and then
+      discover that it broke everything, and now you can't make any progress!
+<P>
+
+      The corrolary is that if you are going to break the code in the team
+      repository, make sure your team knows first.  That way they can avoid
+      pulling the changes if they are in the middle of other work.
 </P>
 <P>
 
 </P>
-<DL COMPACT>
-<DT><Q><TT>bochs-2.2.6-big-endian.patch</TT></Q>
-<DD><P>
+<LI><STRONG>Make sure to pull changes from your team repository frequently!</STRONG>
+      It may be tempting to avoid retrieving changes from the team repository
+      so that you can work uninterrupted, but if you do this then your local
+      repository will become more and more different from the team repository,
+      and it will become more and more painful to get back in sync.  However,
+      if you synchronize with the team repository frequently, the pain of
+      keeping in sync will be minimized.
+<P>
 
-Makes the GDB stubs work on big-endian systems such as Solaris/Sparc, by
-doing proper byteswapping.  It should be harmless elsewhere.
+</UL>
+<P>
+
+<A NAME="Submitting Assignments"></A>
+<HR SIZE="6">
+<A NAME="SEC133"></A>
+<H3> F.3.5 Submitting Assignments </H3>
+<!--docid::SEC133::-->
+<P>
+
+When your team has completed a project to the team's satisfaction, these are
+the steps to submit it for grading:
+</P>
+<P>
+
+<OL>
+
+<LI>Make sure that all changes for the project are pushed to the team
+      repository.  Also, make sure that you have completed your design
+      document, and that it is in your repository at the specified location.
+<P>
+
+</P>
+<LI>Create a tag to identify your submission.  One team meber should execute
+      this command:  &quot;<CODE>git tag project<VAR>n</VAR>-<VAR>version</VAR></CODE>&quot;
+<P>
+
+      For example, after completing the command shell, one teammate could do
+      the following:
+</P>
+<P>
+
+      <CODE>git tag project1-1</CODE>
+</P>
+<P>
+
+      This tag will only be in the local repository, so once it is tagged,
+      the tag also needs to be pushed to the team repository:
+</P>
+<P>
+
+      <CODE>git push --tags</CODE>
+</P>
+<P>
+
+      If you discover a bug in your work and you want to fix it, feel free to
+      do so and then retag your work, but increment the version, e.g.
+      &quot;<CODE>project1-2</CODE>&quot;.  If you try to reuse the same tag you will run
+      into some trouble with Git, so make sure each tag is unique.
+</P>
+<P>
+
+      Also, if multiple teammates create the same tag name on different
+      commits in their local repositories, and then try to push them to the
+      team repository, this will cause some serious problems.
 </P>
 <P>
 
 </P>
-<DT><Q><TT>bochs-2.2.6-jitter.patch</TT></Q>
-<DD><P>
+<LI>Finally, one teammate should submit the team's design document on Moodle.
+      (Again, if you discover bugs and want to fix them, just resubmit a new
+      design document with the new commit hash-value.)
+<P>
 
-Adds the &quot;jitter&quot; feature, in which timer interrupts are delivered at
-random intervals (see section <A HREF="pintos_1.html#SEC6">1.1.4 Debugging versus Testing</A>).
+</OL>
+<P>
+
+<A NAME="Virtual Machine"></A>
+<HR SIZE="6">
+<A NAME="SEC134"></A>
+<H2> F.4 Virtual Machine </H2>
+<!--docid::SEC134::-->
+<P>
+
+To ensure uniformity of development platforms, it is strongly recommended
+that students develop Pintos on a 32-bit Linux platform.  For students
+that don't have access to such a platform, a virtual machine image will
+be provided for use with Oracle Virtual Box.  Virtual Box is freely
+available at <A HREF="http://www.virtualbox.org">http://www.virtualbox.org</A>.
 </P>
 <P>
 
-</P>
-<DT><Q><TT>bochs-2.2.6-triple-fault.patch</TT></Q>
-<DD><P>
-
-Causes Bochs to break to GDB when a triple fault occurs and
-the GDB stub is active (see section <A HREF="pintos_7.html#SEC101">E.6 Triple Faults</A>).
+More details will be coming soon...
 </P>
 <P>
 
-</P>
-<DT><Q><TT>bochs-2.2.6-ms-extensions.patch</TT></Q>
-<DD><P>
-
-Needed for Bochs to compile with GCC on some hosts.  Probably
-harmless elsewhere.
-</P>
-<P>
-
-</P>
-<DT><Q><TT>bochs-2.2.6-solaris-tty.patch</TT></Q>
-<DD><P>
-
-Needed for Bochs to compile in terminal support on Solaris
-hosts.  Probably harmless elsewhere.
-</P>
-<P>
-
-</P>
-<DT><Q><TT>bochs-2.2.6-page-fault-segv.patch</TT></Q>
-<DD><P>
-
-Makes the GDB stub report a SIGSEGV to the debugger when a page-fault
-exception occurs, instead of &quot;signal 0.&quot;  The former can be ignored
-with <CODE>handle SIGSEGV nostop</CODE> but the latter cannot.
-</P>
-<P>
-
-</P>
-<DT><Q><TT>bochs-2.2.6-paranoia.patch</TT></Q>
-<DD><P>
-
-Fixes compile error with modern versions of GCC.
-</P>
-<P>
-
-</P>
-<DT><Q><TT>bochs-2.2.6-solaris-link.patch</TT></Q>
-<DD><P>
-
-Needed on Solaris hosts.  Do not apply it elsewhere.
-</DL>
-<P>
-
-To apply all the patches, <CODE>cd</CODE> into the Bochs directory, then
-type:
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-big-endian.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-jitter.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-triple-fault.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-ms-extensions.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-solaris-tty.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-page-fault-segv.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-paranoia.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-solaris-link.patch
-</pre></td></tr></table>You will have to supply the proper <CODE>$PINTOSDIR</CODE>, of course.  You can
-use <CODE>patch</CODE>'s <Q><SAMP>--dry-run</SAMP></Q> option if you want to test
-whether the patches would apply cleanly before trying to apply them.
-<P>
-
-Sample commands to build and install Bochs for Pintos are supplied in
-<Q><TT>src/misc/bochs-2.2.6-build.sh</TT></Q>.
-</P>
-<P>
-
-<A NAME="Bibliography"></A>
+<A NAME="Installing Pintos"></A>
 <HR SIZE="6">
 <TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
-<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_9.html#SEC114"> &lt;&lt; </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_10.html#SEC116"> &gt;&gt; </A>]</TD>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_9.html#SEC125"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_10.html#SEC135"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
@@ -343,7 +523,7 @@ Sample commands to build and install Bochs for Pintos are supplied in
 <BR>
 <FONT SIZE="-1">
 This document was generated
-by <I>Donnie Pinkston</I> on <I>September, 27 2017</I>
+by <I>Donnie Pinkston</I> on <I>October, 4 2017</I>
 using <A HREF="http://texi2html.cvshome.org"><I>texi2html</I></A>
 </FONT>
 
