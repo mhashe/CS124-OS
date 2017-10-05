@@ -53,12 +53,14 @@ void execute_command(struct command *cmd) {
 
 int main(int argc, char *argv[]) {
     // make sure everything is null terminated?
-    char *args[1];
+    char *args[3];
     char arg = '/';
-    args[0] = &arg;
+    args[0] = "echo";
+    args[1] = "hi";
+    args[2] = NULL;
     // pid_t pid = fork();
     // int status;
-    execvp("/bin/echo", args);
+    execvp("echo", args);
     return 0;
 
     printf("test:\n");
