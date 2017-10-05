@@ -205,6 +205,14 @@ char** tokenize(char* commands) {
             
             break;
 
+        } else if (ch == '\n') {
+            // + 1 for null termination
+            word_size = i - word_start + 1;
+
+            // copy into buffer
+            copy_comm(toRet, commands, word_start, word_size, comm_num);
+            
+            break;
         } else {
             i++;
         }
