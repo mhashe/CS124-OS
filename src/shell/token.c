@@ -158,8 +158,6 @@ char** tokenize(char* commands) {
             if (commands[word_start + word_size - 1] == '&') {
                 int fd_start = word_start + word_size;
                 int fd_end = (int)(strchr(commands + fd_start, ' ') - commands);
-                printf("%d\n", fd_end);
-                printf("%d\n", fd_start);
 
                 if (is_number(commands, fd_start, fd_end)) {
                     // +1 to include &
@@ -193,8 +191,11 @@ char** tokenize(char* commands) {
             i++;
             word_start = i;
 
-        } else if (ch == '\0') {
-            if (commands[word_start] == '\0')
+        } else if (ch == '\0' || ch == '\n') {
+            // printf("%c\n", commands[word_start]);
+            if (commands[word_start] == '\0' || 
+                commands[word_start] == ' '  ||
+                commands[word_start] == '\n')
                 break;
 
             // + 1 for null termination
@@ -205,14 +206,6 @@ char** tokenize(char* commands) {
             
             break;
 
-        } else if (ch == '\n') {
-            // + 1 for null termination
-            word_size = i - word_start + 1;
-
-            // copy into buffer
-            copy_comm(toRet, commands, word_start, word_size, comm_num);
-            
-            break;
         } else {
             i++;
         }
