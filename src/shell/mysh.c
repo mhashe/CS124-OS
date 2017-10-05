@@ -16,15 +16,15 @@ int main(int argc, char *argv[])
     uid_t uid = getuid();
 
     // Struct containing user information
-    struct passwd *pw = getpwuid(uid);
+    struct passwd* pw = getpwuid(uid);
     if (!pw)
     {
         perror("Error in getpwuid");
         return 1;
     }
     // User name, home directory
-    char *uname = pw->pw_name;
-    char *hdir = pw->pw_dir;
+    char* uname = pw->pw_name;
+    char* hdir = pw->pw_dir;
 
     // Path length at most PATH_MAX
     char cwd[PATH_MAX];
@@ -73,16 +73,20 @@ int main(int argc, char *argv[])
         //     i++;
 
         // }
-        char **com0 = split_by_pipe_symbol(comms, 2);
+        struct command* cmd = parse_to_chained_commands(comms);
+        char **cmds;
+        int idx;
 
-        if (com0 == NULL) {
-            continue;
-        }
+        while (cmd != NULL) {
+            cmds = cmd->argv;
 
-        int idx = 0;
-        while (com0[idx] != NULL) {
-            printf("%s\n", com0[idx]);
-            idx += 1;
+            idx = 0;
+            while (cmds[idx] != NULL) {
+                printf("%s\n",cmds[idx]);
+                idx += 1;
+            }
+            cmd = cmd->next;
+            printf("\n");
         }
 
         // TODO: Free statements

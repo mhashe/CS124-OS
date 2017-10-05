@@ -15,22 +15,22 @@
 
 /* Parses a sequence of tokenized arguments (between-pipes, not including any) 
 into a command struct, which it returns. */
-struct command* new_command(char **argv) {
+struct command* new_command(char **pipe_commands) {
     struct command *cmd;
-    cmd = (struct command *) malloc(sizeof(struct command));
+    cmd = (struct command *)calloc(1, sizeof(struct command));
     cmd->input_fn = NULL;
     cmd->output_fn = NULL;
 
     /* TODO:
-        Parse from argvs the filename for input/output/error redirection if they exist.
+        Parse from pipe_commands the filename for input/output/error redirection if they exist.
         This should be done in a seperate function.
         This function should check that the files exist. Else, they should 
         either throw an error or return an error value.? 
         (If none are found, the default for cmd->input and cmd->ouput are null)
     */
 
-    cmd->exec_fn = argv[0];
-    cmd->argv = (argv + 1);
+    cmd->exec_fn = pipe_commands[0];
+    cmd->argv = pipe_commands;
     cmd->next = NULL; // if there is a command piped from this, this will be changed
     return cmd;
 }
@@ -39,13 +39,29 @@ struct command* new_command(char **argv) {
 /* Parse a sequence of tokenized arguments (including pipes) into a linked-list 
 of commands using split_by_pipe_symbol. */
 struct command* parse_to_chained_commands(char **argv) {
-    struct command *head_cmd;
-    struct command *cmd = new_command(split_by_pipe_symbol(argv, 0));
+    struct command* head_cmd;
+    struct command* cmd;
+    char** pipe_commands;
+
+    pipe_commands = split_by_pipe_symbol(argv, 0);
+    if (pipe_commands == NULL) {
+        // No valid command entered
+        head_cmd = NULL;
+        return head_cmd;
+    }
+
+    cmd = new_command(pipe_commands);
     head_cmd = cmd;
     
     int count = 1;
-    while (argv[0][0] != '\0') {
-        cmd->next = new_command(split_by_pipe_symbol(argv, count));
+    while (1) {
+        pipe_commands = split_by_pipe_symbol(argv, count);
+        if (pipe_commands == NULL) {
+            // No more commands
+            break;
+        }
+
+        cmd->next = new_command(pipe_commands);
         cmd = cmd->next;
         count += 1;
     }
