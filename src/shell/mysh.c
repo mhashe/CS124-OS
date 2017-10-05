@@ -73,7 +73,19 @@ int main(int argc, char *argv[])
         //     i++;
 
         // }
-        split_by_pipe_symbol(comms, 0);
+        char **com0 = split_by_pipe_symbol(comms, 2);
+
+        if (com0 == NULL) {
+            continue;
+        }
+
+        int idx = 0;
+        while (com0[idx] != NULL) {
+            printf("%s\n", com0[idx]);
+            idx += 1;
+        }
+
+        // TODO: Free statements
     }
 
     return 0;
