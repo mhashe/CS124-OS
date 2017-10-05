@@ -1,10 +1,8 @@
-// for strchrnul
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "token.h"
 
@@ -17,6 +15,22 @@ void copy_comm(char** dest, char* src, int word_start, int word_size, int i) {
     dest[i][word_size-1] = '\0';
 }
 
+/*
+ * checks if a string[start_i:end_i] is a positive number
+ *
+ * return:
+ *     1 if valid positive number
+ *     0 otherwise
+ * 
+ */
+int is_number(char* str, int start_i, int end_i) {
+    for (int i = start_i; i < end_i; i++) {
+        if (!isdigit(str[i])) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 /*
  * tokenizes a string for command parsing
@@ -67,12 +81,14 @@ char** tokenize(char* commands) {
             i++;
             word_start = i;
 
-        } else if (ch == '|' || ch == '<' || ch == '>') {
-            // if have a redirection character, end the word now and treat it
-
+        } else if (ch == '|') {
+            // treat piping
+            // piping does not allow for file descriptors
+            
             // case where we are already in the process of parsing a word,
             // finish it up then continue
             if (word_start != i) {
+
                 // + 1 for null termination
                 word_size = i - word_start + 1;
 
@@ -81,19 +97,60 @@ char** tokenize(char* commands) {
                 
                 // advance to next command space
                 comm_num++;
+
+                word_start = i;
             }
 
-            // special character and null termination
+            // +1 to include character i is on and +1 to include null term
+            word_size = i - word_start + 2;
+
+            // copy into buffer
+            copy_comm(toRet, commands, word_start, word_size, comm_num);
+
+            // advance to next command space
+            comm_num++;
+
+            // onto the next one 
+            // -1 to ignore the null termination character
+            i += word_size - 1;
+            word_start = i;
+ 
+            
+
+        } else if (ch == '<' || ch == '>') {
+            // if have a redirection character, end the word now and treat it
+
+            // case where we are already in the process of parsing a word,
+            // finish it up then continue
+            if (word_start != i) {
+
+                // check if the word that is touching the special character is a
+                // number, if so, treat it as a file descriptor. if it is a file
+                // descriptor, don't seperate it from the special character
+                if (!is_number(commands, word_start, i)) {
+                    // + 1 for null termination
+                    word_size = i - word_start + 1;
+
+                    // copy into buffer
+                    copy_comm(toRet, commands, word_start, word_size, comm_num);
+                    
+                    // advance to next command space
+                    comm_num++;
+
+                    word_start = i;
+                } 
+            }
+
+            // +1 to include character i is on and +1 to include null term
+            word_size = i - word_start + 2;
 
             // treat appending special character
             if (ch == '>' && commands[i+1] == '>') {
-                word_size = 3;
-            } else {
-                word_size = 2;
-            }
+                word_size += 1;
+            } 
 
             // copy into buffer
-            copy_comm(toRet, commands, i, word_size, comm_num);
+            copy_comm(toRet, commands, word_start, word_size, comm_num);
 
             // advance to next command space
             comm_num++;
