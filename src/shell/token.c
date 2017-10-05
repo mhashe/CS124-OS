@@ -97,8 +97,8 @@ char** tokenize(char* commands) {
             i++;
             word_start = i;
 
-        } else if (word_start == i && ch == ' ') {
-            // skip repeated spaces
+        } else if (word_start == i && (ch == ' ' || ch == '\t')) {
+            // skip repeated whitespace
             i++;
             word_start = i;
 
@@ -205,7 +205,7 @@ char** tokenize(char* commands) {
             i += word_size - 1;
             word_start = i;
 
-        } else if (ch == ' ') {
+        } else if (ch == ' ' || ch == '\t') {
             // + 1 for null termination
             word_size = i - word_start + 1;
 
@@ -222,7 +222,6 @@ char** tokenize(char* commands) {
         } else if (ch == '\0' || ch == '\n') {
             // case that designates the end of the sequence of tokens
             if (commands[word_start] == '\0' || 
-                commands[word_start] == ' '  ||
                 commands[word_start] == '\n')
                 break;
 
