@@ -126,6 +126,8 @@ int main(int argc, char *argv[])
         // read input
         line_in = readline(prompt);
 
+        free(prompt);
+
         // Wait for input
         if (line_in == NULL) {
             // Received EOF => stdin is closed, no reason for terminal
