@@ -111,15 +111,17 @@ void wait_for_children() {
         pid_t finished = wait(&status);
         int exit_status = WEXITSTATUS(status);
 
+        if (finished == -1) {
+            return;
+        }
+
         // Only exit code -1 (if cmd doesn't exist) or 0 (successful) are OK
         if ((exit_status != 0) && (exit_status != 1)) {
             fprintf(stderr, "Error returned from one of the child processes forked.\n");
         }
-        if (finished == -1) {
-            return;
-        }
     }
 }
+// improved termination handling of child processes
 
 
 /* Executes the command after forking and does the io redirection to stdout, 
