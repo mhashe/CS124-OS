@@ -44,7 +44,7 @@ int fork_and_exec_commands(struct command *cmd) {
         }
         if (pid > 0) {
             // we are in the shell process
-            close(fd[1]); // uncomment out
+            // close(fd[1]); // uncomment out
             if (last_out_fd != -1) {
                 printf("%s: closing last_out_fd\n", cmd->exec_fn);
                 close(last_out_fd);
