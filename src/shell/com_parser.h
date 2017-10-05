@@ -1,3 +1,6 @@
+#ifndef COM_PARSER_H
+#define COM_PARSER_H
+
 /* Parses a sequence of tokenized arguments (between-pipes, not including any) 
 into a command struct, which it returns. */
 struct command* new_command(char **argv);
@@ -10,3 +13,4 @@ struct command* parse_to_chained_commands(char **argv);
 modifies argv in place by cropping out the arguments before the first pipe. */
 char** split_by_pipe_symbol(char **argv);
 
+#endif

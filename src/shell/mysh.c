@@ -4,10 +4,10 @@
 #include <unistd.h>
 #include <limits.h>
 #include <string.h>
+#include <signal.h>
 
 #include "token.h"
-
-#define MAX_SIZE    1024    // Max size of input
+#include "consts.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     if (!pw)
     {
         perror("Error in getpwuid");
-        return(1);
+        return 1;
     }
     // User name, home directory
     char *uname = pw->pw_name;
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     char cwd[PATH_MAX];
     if (getcwd(cwd, sizeof(cwd)) == NULL) {
         perror("Error in getcwd");
-        return(1);
+        return 1;
     }
 
     // If process in home directory of user, change prompt
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     }
 
     while(1) {
-        char command[MAX_SIZE];
+        char command[MAX_LINE];
 
         // Print command prompt
         printf("%s:%s >>> ", uname, cwd);
@@ -52,9 +52,10 @@ int main(int argc, char *argv[])
         // TODO: Handle SIGINT
 
         // Wait for input
-        if (fgets(command, MAX_SIZE, stdin) == NULL) {
-            perror("Error in fgets");
-            return(1);
+        if (fgets(command, MAX_LINE, stdin) == NULL) {
+            // Received EOF => stdin is closed, no reason for terminal
+            printf("\n");
+            return 0;
         }
 
         // Tokenize input
@@ -73,5 +74,5 @@ int main(int argc, char *argv[])
         }
     }
 
-    return(0);
+    return 0;
 }
