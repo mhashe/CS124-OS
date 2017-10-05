@@ -86,28 +86,9 @@ int main(int argc, char *argv[])
         }
 
         add_history(line_in);
-        // HIST_ENTRY* hist = previous_history();
-        // if (hist) {
-        //     printf("%s\n", hist->line);
-        //     next_history();
-        // }
-        
 
         // Tokenize input
         char** comms = tokenize(line_in);
-
-
-        // char* comm;
-        // int i = 0;
-        // while(1) {
-        //     comm = comms[i];
-        //     if (comm == NULL) {
-        //         break;
-        //     }
-        //     printf("%s\n", comm);
-        //     i++;
-
-        // }
 
         struct command* cmd = parse_to_chained_commands(comms);
         char **cmds;
