@@ -50,20 +50,20 @@ char* generate_prompt() {
 
         // Replace /home/USER with ~
         cwd[0] = '~';
-        memmove(&cwd[1], &copy[strlen(hdir)], strlen(cwd) - strlen(hdir));
+        strncpy(&cwd[1], &copy[strlen(hdir)], strlen(cwd) - strlen(hdir)+1);
     }
 
-    // +1 for :, +3 for _$_
-    char* prompt = (char*)calloc(strlen(uname)+1+strlen(cwd)+3, sizeof(char));
+    // +1 for :, +3 for _$_, +1 for null termination
+    char* prompt = (char*)calloc(strlen(uname)+1+strlen(cwd)+3+1, sizeof(char));
     if (prompt == NULL) {
         fprintf(stderr, "Error allocating prompt string.");
         exit(1);
     }
 
     // Move uname, :, cwd into prompt
-    memmove(prompt, uname, strlen(uname));
+    strncpy(prompt, uname, strlen(uname));
     prompt[strlen(uname)] = ':';
-    memmove(prompt+strlen(uname)+1, cwd, strlen(cwd));
+    strncpy(prompt+strlen(uname)+1, cwd, strlen(cwd));
     // 4 = 3 characters + null-terminator
     strncpy(prompt+strlen(uname)+1+strlen(cwd), " $ ", 4);
 
