@@ -118,6 +118,7 @@ int main(int argc, char *argv[])
         //     cmd = cmd->next;
         //     printf("\n");
         // }
+        // if (cmd->next == NULL) 
 
         printf("forking result: %d\n", fork_and_exec_commands(cmd));
 
