@@ -17,8 +17,10 @@
  * in the shell process.
  */
 
-// TODO: How to figure out when the children processes have finished execution? Get this info
 // TODO: Do more advanced testing
+// TODO: Improve commenting
+// TODO: Either 1. Remove debug info or 2. Make debug mode
+// TODO: Error handling
 
 /* Takes in a linked list of commands and executes them while redirecting their 
 io. It then waits for all of them to finish in the shell process. */
@@ -42,14 +44,13 @@ int fork_and_exec_commands(struct command *cmd) {
         }
         if (pid > 0) {
             // we are in the shell process
-            usleep(500); // delete this
             close(fd[1]); // uncomment out
             if (last_out_fd != -1) {
                 printf("%s: closing last_out_fd\n", cmd->exec_fn);
                 close(last_out_fd);
             } 
             if (cmd->next == NULL) {
-                return 0; // we are done forking all commands
+                break; // we are done forking all commands
             } else {
                 printf("%s: setting last_out_fd from fd[0], and going next\n", cmd->exec_fn);
                 last_out_fd = fd[0];
@@ -77,9 +78,13 @@ int fork_and_exec_commands(struct command *cmd) {
             return -1;
         }
     }
+
+    // Make the shell process wait for all child processes to terminate
+    wait(NULL);
+    printf("all child processes are finished\n");
+
     return 0;
 }
-
 /* Executes the command after forking and does the io redirection to stdout, 
 stdin, or stderr if needed. The io redirection is done after forking, so the 
 redirection is unique to this process/command. */
