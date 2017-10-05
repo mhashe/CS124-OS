@@ -12,6 +12,10 @@
  */ 
 void copy_comm(char** dest, char* src, int word_start, int word_size, int i) {
     dest[i] = (char*) malloc(word_size * sizeof(char));
+    if (dest[i] == NULL) {
+        fprintf(stderr, "MALLOC FAILED in tokenizer\n");
+        exit(1);
+    }
     strncpy(dest[i], src + word_start, word_size);
     dest[i][word_size-1] = '\0';
 }
@@ -51,6 +55,10 @@ char** tokenize(char* commands) {
     // assuming a single line of commands cannot contain more than MAX_LINE
     // commands
     char** toRet = (char**)calloc(MAX_LINE, sizeof(char*));
+    if (toRet == NULL) {
+        fprintf(stderr, "CALLOC FAILED in tokenizer\n");
+        exit(1);
+    }
 
     // current character we are looking at
     int i = 0;
@@ -59,7 +67,7 @@ char** tokenize(char* commands) {
     // start of the word we are currently processing
     int word_start = 0;
     // token number we are on
-    int comm_num = 0;
+    int token_num = 0;
     // size of the current word
     int word_size;
 
@@ -69,6 +77,10 @@ char** tokenize(char* commands) {
             // TODO handle when quotes happen in middle eg hel"hi"lo
             // treat everything until closing quote as a string
             i = (int)(strchr(commands + i + 1, '\"') - commands);
+            if (i < 0) {
+                fprintf(stderr, "open quote not closed in tokenizer\n");
+                exit(1);
+            }
 
             // skip the starting quote
             word_start++;
@@ -77,10 +89,10 @@ char** tokenize(char* commands) {
             word_size = i - word_start + 1;
 
             // copy into buffer
-            copy_comm(toRet, commands, word_start, word_size, comm_num);
+            copy_comm(toRet, commands, word_start, word_size, token_num);
             
             // advance to next token space
-            comm_num++;
+            token_num++;
 
             // onto the next one 
             i++;
@@ -102,10 +114,10 @@ char** tokenize(char* commands) {
                 word_size = i - word_start + 1;
 
                 // copy into buffer
-                copy_comm(toRet, commands, word_start, word_size, comm_num);
+                copy_comm(toRet, commands, word_start, word_size, token_num);
                 
                 // advance to next token space
-                comm_num++;
+                token_num++;
 
                 // set up for special character
                 word_start = i;
@@ -115,10 +127,10 @@ char** tokenize(char* commands) {
             word_size = i - word_start + 2;
 
             // copy into buffer
-            copy_comm(toRet, commands, word_start, word_size, comm_num);
+            copy_comm(toRet, commands, word_start, word_size, token_num);
 
             // advance to next token space
-            comm_num++;
+            token_num++;
 
             // onto the next one 
             // -1 to ignore the null termination character
@@ -142,10 +154,11 @@ char** tokenize(char* commands) {
                     word_size = i - word_start + 1;
 
                     // copy into buffer
-                    copy_comm(toRet, commands, word_start, word_size, comm_num);
+                    copy_comm(toRet, commands, word_start, 
+                        word_size, token_num);
                     
                     // advance to next token space
-                    comm_num++;
+                    token_num++;
 
                     word_start = i;
                 } 
@@ -164,6 +177,16 @@ char** tokenize(char* commands) {
             if (commands[word_start + word_size - 1] == '&') {
                 int fd_start = word_start + word_size;
                 int fd_end = (int)(strchr(commands + fd_start, ' ') - commands);
+                if (fd_end < 0) {
+                    // occurs when no space is after duplication command
+                    fd_end = (int)
+                        (strchr(commands + fd_start, '\n') - commands);
+
+                    if (fd_end < 0) {
+                        fprintf(stderr, "fc duplication FAILED\n");
+                        exit(1);
+                    }
+                }
 
                 if (is_number(commands, fd_start, fd_end)) {
                     // +1 to include &
@@ -173,10 +196,10 @@ char** tokenize(char* commands) {
             }
 
             // copy into buffer
-            copy_comm(toRet, commands, word_start, word_size, comm_num);
+            copy_comm(toRet, commands, word_start, word_size, token_num);
 
             // advance to next token space
-            comm_num++;
+            token_num++;
 
             // onto the next one 
             // -1 to ignore the null termination character
@@ -188,10 +211,10 @@ char** tokenize(char* commands) {
             word_size = i - word_start + 1;
 
             // copy into buffer
-            copy_comm(toRet, commands, word_start, word_size, comm_num);
+            copy_comm(toRet, commands, word_start, word_size, token_num);
             
             // advance to next token space
-            comm_num++;
+            token_num++;
             
             // onto the next one 
             i++;
@@ -208,7 +231,7 @@ char** tokenize(char* commands) {
             word_size = i - word_start + 1;
 
             // copy into buffer
-            copy_comm(toRet, commands, word_start, word_size, comm_num);
+            copy_comm(toRet, commands, word_start, word_size, token_num);
             
             break;
 
