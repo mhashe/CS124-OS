@@ -159,6 +159,7 @@ int main(int argc, char *argv[])
         // if (cmd->next == NULL) 
 
         printf("forking result: %d\n", fork_and_exec_commands(cmd));
+        fflush(NULL);
 
         // TODO: Free statements
     }
