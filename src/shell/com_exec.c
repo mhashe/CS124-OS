@@ -40,7 +40,6 @@ void execute_command(struct command *cmd) {
         dup2(fd2, STDERR_FILENO);
         close(fd2);
     }
-    fflush(NULL);
 
     // Execute the command with its arguments
     execvp(cmd->exec_fn, cmd->argv);
@@ -50,35 +49,45 @@ void execute_command(struct command *cmd) {
     exit(1);
 }
 
-
-int main(int argc, char *argv[]) {
-    // make sure everything is null terminated?
+void test_single_command() {
     char *args[3];
-    char arg = '/';
-    args[0] = "echo";
-    args[1] = "hi";
+    args[0] = "wc";
+    args[1] = NULL;
     args[2] = NULL;
-    // pid_t pid = fork();
-    // int status;
-    execvp("echo", args);
-    return 0;
-
-    printf("test:\n");
     struct command cmd;
-    cmd.exec_fn = "/bin/ls";
+    cmd.exec_fn = "wc";
     cmd.argv = args;
-    cmd.input_fn = NULL;
-    cmd.output_fn = "";
+    cmd.input_fn = "notes.out";
+    cmd.output_fn = "count.out";
     cmd.error_fn = "";
     cmd.next = NULL;
     execute_command(&cmd);
+}
 
+int main(int argc, char *argv[]) {
+    printf("test:\n");
+    test_single_command();
     return 0;
 }
 
 
 
 /* Deprecated testing functions
+
+void test_single_command() {
+    char *args[3];
+    args[0] = "wc";
+    args[1] = NULL;
+    args[2] = NULL;
+    struct command cmd;
+    cmd.exec_fn = "wc";
+    cmd.argv = args;
+    cmd.input_fn = "notes.out";
+    cmd.output_fn = "count.out";
+    cmd.error_fn = "";
+    cmd.next = NULL;
+    execute_command(&cmd);
+}
 
 void test_piping() {
     int n; // number of lines read/written from file
