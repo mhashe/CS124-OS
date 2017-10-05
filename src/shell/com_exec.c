@@ -32,10 +32,10 @@ int fork_and_exec_commands(struct command *cmd) {
         pid_t pid;
         int fd[2];
 
-        printf("Handling: %s\n", cmd->exec_fn);
+        // printf("Handling: %s\n", cmd->exec_fn);
 
         if (cmd->next != NULL) {
-            printf("making pipe!\n");
+            // printf("making pipe!\n");
             if (pipe(fd) < 0)
                 return -1; // pipe error
         }
@@ -45,14 +45,14 @@ int fork_and_exec_commands(struct command *cmd) {
         if (pid > 0) {
             // we are in the shell process
             if (last_out_fd != -1) {
-                printf("%s: closing last_out_fd\n", cmd->exec_fn);
+                // printf("%s: closing last_out_fd\n", cmd->exec_fn);
                 close(last_out_fd);
             } 
             if (cmd->next == NULL) {
                 break; // we are done forking all commands
             } else {
                 close(fd[1]);
-                printf("%s: setting last_out_fd from fd[0], and going next\n", cmd->exec_fn);
+                // printf("%s: setting last_out_fd from fd[0], and going next\n", cmd->exec_fn);
                 last_out_fd = fd[0];
                 cmd = cmd->next; // process next command in next iter
             }
@@ -61,27 +61,27 @@ int fork_and_exec_commands(struct command *cmd) {
             // we are in the child process
             // if there was a previous command, set its out to this one's input
             if (last_out_fd != -1) {
-                printf("%s: setting in of this to be last_out_fd\n", cmd->exec_fn);
+                // printf("%s: setting in of this to be last_out_fd\n", cmd->exec_fn);
                 dup2(last_out_fd, STDIN_FILENO);
                 close(last_out_fd);
             }
             // if there is a next command, set this one's out to be pipe-input
             if (cmd->next != NULL) {
                 close(fd[0]);
-                printf("%s: setting out of this to be fd[1]\n", cmd->exec_fn);
+                // printf("%s: setting out of this to be fd[1]\n", cmd->exec_fn);
                 dup2(fd[1], STDOUT_FILENO);
                 close(fd[1]);
             }
-            printf("Executing: %s\n", cmd->exec_fn);
+            // printf("Executing: %s\n", cmd->exec_fn);
             execute_command(cmd);
-            fprintf(stderr, "Failed to exec %s\n", cmd->exec_fn);
+            // fprintf(stderr, "Failed to exec %s\n", cmd->exec_fn);
             return -1;
         }
     }
 
     // Make the shell process wait for all child processes to terminate
     wait(NULL);
-    printf("all child processes are finished\n");
+    // printf("all child processes are finished\n");
 
     return 0;
 }

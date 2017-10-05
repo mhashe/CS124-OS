@@ -147,7 +147,8 @@ int main(int argc, char *argv[])
         struct command* cmd = parse_to_chained_commands(comms);
 
         // TODO: Free everything
-        printf("forking result: %d\n", fork_and_exec_commands(cmd));
+        // printf("forking result: %d\n", fork_and_exec_commands(cmd));
+        fork_and_exec_commands(cmd);
     }
 
     return 0;
