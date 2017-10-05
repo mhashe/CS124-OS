@@ -44,7 +44,6 @@ int fork_and_exec_commands(struct command *cmd) {
         }
         if (pid > 0) {
             // we are in the shell process
-            // close(fd[1]); // uncomment out
             if (last_out_fd != -1) {
                 printf("%s: closing last_out_fd\n", cmd->exec_fn);
                 close(last_out_fd);
@@ -52,6 +51,7 @@ int fork_and_exec_commands(struct command *cmd) {
             if (cmd->next == NULL) {
                 break; // we are done forking all commands
             } else {
+                close(fd[1]);
                 printf("%s: setting last_out_fd from fd[0], and going next\n", cmd->exec_fn);
                 last_out_fd = fd[0];
                 cmd = cmd->next; // process next command in next iter
