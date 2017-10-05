@@ -81,7 +81,8 @@ void print_history() {
         if (hist_entry == NULL) {
             return;
         }
-        printf("%s\n", hist_entry->line);
+        // one indexed history commands
+        printf("%4d: %s\n", i+1, hist_entry->line);
         i++;
     }
 }
