@@ -14,6 +14,37 @@
  * in the shell process.
  */
 
+// TODO: How to figure out when the children processes have finished execution? Get this info
+
+
+/* Executes the command after forking and does the io redirection to stdout, 
+stdin, or stderr if needed. The io redirection is done after forking, so the 
+redirection is unique to this process/command. */
+void execute_command(struct command *cmd) {
+    if (cmd->input_fn != NULL) {
+        int fd0 = open(cmd->input_fn, O_RDONLY);
+        dup2(fd0, STDIN_FILENO);
+        close(fd0);
+    }
+    if (cmd->ouput_fn != NULL) {
+        // creat() is equivalent to open(path, O_WRONLY|O_CREAT|O_TRUNC, mode)
+        int fd1 = create(cmd->output_fn, 0644); // TODO: what mode to use? suggested online: 0644
+        dup2(fd1, STDOUT_FILENO);
+        close(fd1);
+    }
+    if (cmd->error_fn != NULL) {
+        int fd2 = create(cmd->error_fn, 0644);
+        dup2(fd2, STDERR_FILENO);
+        close(fd2);
+    }
+
+    // Execute the command with its arguments
+    execvp(command->exec_fn, command->argv);
+    
+    // The executable has control over the process now, or else:
+    printf(STDERR_FILENO, "Failed to exec %s\n", cmd->exec_fn);
+    exit(1);
+}
 
 /* Deprecated testing functions
 
