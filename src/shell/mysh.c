@@ -111,6 +111,9 @@ int main(int argc, char *argv[])
             // Received EOF => stdin is closed, no reason for terminal
             printf("\n");
             return 0;
+        } else if (strlen(line_in) == 0) {
+            // Empty string, don't care to do anything with it, reprompt.
+            continue;
         }
 
         // Add multiline functionality
