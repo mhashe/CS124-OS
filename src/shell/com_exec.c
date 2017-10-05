@@ -102,7 +102,7 @@ void execute_command(struct command *cmd) {
 
         // Append to output if out_a flag is 1, else make empty file
         if (cmd->out_a) {
-            fd1 = open(cmd->output_fn, O_WROLNLY|O_APPEND);
+            fd1 = open(cmd->output_fn, O_WRONLY|O_APPEND);
         } else {
             // 
             fd1 = creat(cmd->output_fn, 0644);        
@@ -115,7 +115,7 @@ void execute_command(struct command *cmd) {
 
         // Append to error if err_a flag is 1, else make empty file
         if (cmd->err_a) {
-            fd2 = open(cmd->output_fn, O_WROLNLY|O_APPEND);
+            fd2 = open(cmd->output_fn, O_WRONLY|O_APPEND);
         }
         else {
             fd2 = creat(cmd->error_fn, 0644);
@@ -133,10 +133,19 @@ void execute_command(struct command *cmd) {
 }
 
 
+
+
+
+/* Deprecated testing functions
+
 int main(int argc, char *argv[]) {
     printf("test:\n");
+    test_chained_commands();
 
-    // test chaining commands:
+    return 0;
+}
+
+void test_chained_commands() {
     char *args[3];
     args[0] = "echo";
     args[1] = "veb";
@@ -163,15 +172,8 @@ int main(int argc, char *argv[]) {
 
     first.next = &second;
 
-    // printf("%s\n", first.exec_fn);
     fork_and_exec_commands(&first);
-
-    return 0;
 }
-
-
-
-/* Deprecated testing functions
 
 void test_single_command() {
     char *args[3];

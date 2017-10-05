@@ -11,6 +11,7 @@
 #include "token.h"
 #include "consts.h"
 #include "com_parser.h"
+#include "com_exec.h"
 #include "mysh.h"
 
 /*
@@ -111,6 +112,9 @@ int main(int argc, char *argv[])
             return 0;
         }
 
+        // Add multiline functionality
+        // printf("%s\n", line_in[strlen(line_in)-1]);
+
         add_history(line_in);
 
         // Tokenize input
@@ -120,28 +124,31 @@ int main(int argc, char *argv[])
         free(line_in);
 
         struct command* cmd = parse_to_chained_commands(comms);
-        char **cmds;
-        int idx;
+        // char **cmds;
+        // int idx;
 
-        while (cmd != NULL) {
-            cmds = cmd->argv;
+        // while (cmd != NULL) {
+        //     cmds = cmd->argv;
 
-            idx = 0;
-            while (cmds[idx] != NULL) {
-                printf("%s\n",cmds[idx]);
-                idx += 1;
-            }
-            printf("=====\n");
-            if (cmd->input_fn != NULL) {
-                printf("%s\n", cmd->input_fn);
-            }
-            if (cmd->output_fn != NULL) {
-                printf("%s\n", cmd->output_fn);
-            }
+        //     idx = 0;
+        //     while (cmds[idx] != NULL) {
+        //         printf("%s\n",cmds[idx]);
+        //         idx += 1;
+        //     }
+        //     printf("=====\n");
+        //     if (cmd->input_fn != NULL) {
+        //         printf("%s\n", cmd->input_fn);
+        //     }
+        //     if (cmd->output_fn != NULL) {
+        //         printf("%s\n", cmd->output_fn);
+        //     }
 
-            cmd = cmd->next;
-            printf("\n");
-        }
+        //     cmd = cmd->next;
+        //     printf("\n");
+        // }
+        // if (cmd->next == NULL) 
+
+        printf("forking result: %d\n", fork_and_exec_commands(cmd));
 
         // TODO: Free statements
     }

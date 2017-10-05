@@ -149,6 +149,7 @@ struct command* new_command(char** pipe_tokens) {
         return NULL;
     }
 
+    printf("first pipe token: %s\n", pipe_tokens[0]);
     // Set up for execvp
     cmd->exec_fn = pipe_tokens[0];
     cmd->argv = pipe_tokens;
@@ -251,6 +252,7 @@ struct command* parse_to_chained_commands(char **argv) {
 
     // Create command struct from tokens
     cmd = new_command(pipe_commands);
+    printf("command's ex_fn: %s\n", cmd->exec_fn);
     if (cmd == NULL) {
         // Invalid I/O redirection - abort parsing, return to prompt.
         return NULL;
