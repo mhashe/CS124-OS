@@ -10,7 +10,6 @@
 // if cmd is internal, execute it and return 1. else, return 0
 // deal with the fact that it may not be the only_command in the terminal by doing nothing (replicate behavior or actual terminal (ie. (ie. exit | echo "hi")))
 int internal_command_handler(struct command *cmd, int only_command) {
-    printf("im in internal command handler! %d\n", only_command);
     char *cmd_name = cmd->exec_fn;
 
     // switch statement in c won't work well
@@ -19,7 +18,11 @@ int internal_command_handler(struct command *cmd, int only_command) {
             exit(0);
         }
     } else if (strcmp(cmd_name, "cd") == 0) {
-        return 0;
+        if ((cmd->argv[1] == NULL) || (strcmp(cmd->argv[1], "~") == 0)) {
+            chdir(getenv("HOME"));
+        } else {
+            chdir(cmd->argv[1]);
+        }
     } else {
         return 0;
     }
