@@ -26,6 +26,7 @@
 io. It then waits for all of them to finish in the shell process. */
 int fork_and_exec_commands(struct command *cmd) {
     int last_out_fd = -1; // there was no previous fd to take as input
+    struct command *cmd_head = cmd;
 
     // Having spawning processes in an infinite while loop seems dangerous: change?
     while (1) {
@@ -44,6 +45,10 @@ int fork_and_exec_commands(struct command *cmd) {
         }
         if (pid > 0) {
             // we are in the shell process
+
+            // save pid to be closed later
+            cmd->pid = pid;
+
             if (last_out_fd != -1) {
                 // printf("%s: closing last_out_fd\n", cmd->exec_fn);
                 close(last_out_fd);
@@ -55,6 +60,7 @@ int fork_and_exec_commands(struct command *cmd) {
                 // printf("%s: setting last_out_fd from fd[0], and going next\n", cmd->exec_fn);
                 last_out_fd = fd[0];
                 cmd = cmd->next; // process next command in next iter
+
             }
         }
         else {
@@ -80,10 +86,26 @@ int fork_and_exec_commands(struct command *cmd) {
     }
 
     // Make the shell process wait for all child processes to terminate
-    wait(NULL);
+    wait_for_commands(cmd_head);
+    printf("done waiting\n");
+    // wait(NULL);
     // printf("all child processes are finished\n");
 
     return 0;
+}
+
+void wait_for_commands(struct command *cmd) {
+    while (1) {
+        int status;
+        while (wait(&status) != cmd->pid);
+        if (cmd->next == NULL) {
+            break;
+        }
+        cmd = cmd->next;
+    }
+
+    // TODO (also, mysh.c needs to give me num_commands)
+    // Also, do internal commands
 }
 
 /* Executes the command after forking and does the io redirection to stdout, 

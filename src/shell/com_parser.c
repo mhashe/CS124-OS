@@ -152,6 +152,7 @@ struct command* new_command(char** pipe_tokens) {
     // Set up for execvp
     cmd->exec_fn = pipe_tokens[0];
     cmd->argv = pipe_tokens;
+    cmd->pid = 0; // pid of command during execution
     cmd->next = NULL; // Potentially changed by piping
     return cmd;
 }

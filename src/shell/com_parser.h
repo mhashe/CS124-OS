@@ -22,6 +22,9 @@ struct command {
     int out_a;
     int err_a;
 
+    // PID of command during its execution
+    pid_t pid;
+
     // If not null, next refers to the next command (whose out is this cmd's in)
     struct command *next; 
 };
