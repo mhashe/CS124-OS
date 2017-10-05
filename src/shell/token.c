@@ -24,6 +24,11 @@ void copy_comm(char** dest, char* src, int word_start, int word_size, int i) {
  * 
  */
 int is_number(char* str, int start_i, int end_i) {
+    // do not allow for number of length 0
+    if (end_i == start_i) {
+        return 0;
+    }
+
     for (int i = start_i; i < end_i; i++) {
         if (!isdigit(str[i])) {
             return 0;
@@ -81,9 +86,8 @@ char** tokenize(char* commands) {
             i++;
             word_start = i;
 
-        } else if (ch == '|') {
-            // treat piping
-            // piping does not allow for file descriptors
+        } else if (ch == '|' || ch == '<' ) {
+            // treat characters not allowing for file descriptors
             
             // case where we are already in the process of parsing a word,
             // finish it up then continue
@@ -117,7 +121,7 @@ char** tokenize(char* commands) {
  
             
 
-        } else if (ch == '<' || ch == '>') {
+        } else if (ch == '>') {
             // if have a redirection character, end the word now and treat it
 
             // case where we are already in the process of parsing a word,
@@ -145,9 +149,24 @@ char** tokenize(char* commands) {
             word_size = i - word_start + 2;
 
             // treat appending special character
-            if (ch == '>' && commands[i+1] == '>') {
+            if (commands[i+1] == '>') {
                 word_size += 1;
             } 
+
+            // handle advanced redirection: duplicating file descriptor
+            // see if fd is being duplicated, denoted by &
+            if (commands[word_start + word_size - 1] == '&') {
+                int fd_start = word_start + word_size;
+                int fd_end = (int)(strchr(commands + fd_start, ' ') - commands);
+                printf("%d\n", fd_end);
+                printf("%d\n", fd_start);
+
+                if (is_number(commands, fd_start, fd_end)) {
+                    // +1 to include &
+                    word_size += fd_end - fd_start + 1;
+                }
+
+            }
 
             // copy into buffer
             copy_comm(toRet, commands, word_start, word_size, comm_num);
