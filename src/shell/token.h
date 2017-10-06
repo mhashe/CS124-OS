@@ -8,7 +8,7 @@ void copy_comm(char** dest, char* src, int word_start, int word_size, int i);
 
 
 /*
- * checks if a string[start_i:end_i] is a positive number
+ * checks if a string[start_i, end_i) is a positive number.
  *
  * Returns:
  *     1: if valid positive number
