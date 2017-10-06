@@ -21,7 +21,7 @@
 // change perror to fprinft(stderr, message)
 // don't return 1/NULL when io error. just print it out. continue parsing command. (but we need the command to fail again in execution, so leave the error-causing stuff in there?)
 
-int set_fn(struct command* cmd, char** pipe_tokens) {
+void set_fn(struct command* cmd, char** pipe_tokens) {
     // Defaults, overridden if applicable
     cmd->input_fn = NULL;
     cmd->output_fn = NULL;
@@ -39,60 +39,18 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
         if (strcmp(pipe_tokens[idx], "<") == 0) {
             // We assume a properly formatted command (i.e., at most one <, >)
             cmd->input_fn = pipe_tokens[idx+1];
-
-            // Ensure that file actually exists, openable
-            FILE *fp;
-            fp = fopen(cmd->input_fn, "r");
-            if (fp == NULL) {
-                perror("Error with redirected input file");
-                return 1;
-            }
-            if (fclose(fp) == EOF) {
-                // Error with closing file.
-                fprintf(stderr, "Error closing file for redirected file "
-                    "input: %s\n", cmd->input_fn);
-                exit(1);
-            }
         }
 
         // Redirected output
         if (strcmp(pipe_tokens[idx], ">") == 0) {
             // Same assumption as above
             cmd->output_fn = pipe_tokens[idx+1];
-
-            // Create file
-            FILE *fp;
-            fp = fopen(cmd->output_fn, "w");
-            if (fp == NULL) {
-                perror("Error in creating output file");
-                return 1;
-            }
-            if (fclose(fp) == EOF) {
-                // Error with closing file.
-                fprintf(stderr, "Error closing file for redirected file "
-                    "output: %s\n", cmd->output_fn);
-                exit(1);
-            }
         }
 
         // Redirected output - append
         if (strcmp(pipe_tokens[idx], ">>") == 0) {
             // Same assumption as above
             cmd->output_fn = pipe_tokens[idx+1];
-
-            // Create file
-            FILE *fp;
-            fp = fopen(cmd->output_fn, "a");
-            if (fp == NULL) {
-                perror("Error in creating output file");
-                return 1;
-            }
-            if (fclose(fp) == EOF) {
-                // Error with closing file.
-                fprintf(stderr, "Error closing file for redirected file "
-                    "output: %s\n", cmd->output_fn);
-                exit(1);
-            }
 
             // Set append flag
             cmd->out_a = 1;
@@ -102,20 +60,6 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
         if (strcmp(pipe_tokens[idx], "2>") == 0) {
             // Same assumption as above
             cmd->error_fn = pipe_tokens[idx+1];
-
-            // Create file
-            FILE *fp;
-            fp = fopen(cmd->error_fn, "w");
-            if (fp == NULL) {
-                perror("Error in creating error file");
-                return 1;
-            }
-            if (fclose(fp) == EOF) {
-                // Error with closing file.
-                fprintf(stderr, "Error closing file for redirected file "
-                    "error: %s\n", cmd->error_fn);
-                exit(1);
-            }
         }
 
         // Redirected error
@@ -123,29 +67,46 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             // Same assumption as above
             cmd->error_fn = pipe_tokens[idx+1];
 
-            // Create file
-            FILE *fp;
-            fp = fopen(cmd->error_fn, "a");
-            if (fp == NULL) {
-                perror("Error in creating error file");
-                return 1;
-            }
-            if (fclose(fp) == EOF) {
-                // Error with closing file.
-                fprintf(stderr, "Error closing file for redirected file "
-                    "error: %s\n", cmd->error_fn);
-                exit(1);
-            }
-
             // Set append flag
             cmd->err_a = 1;
         }
 
         idx += 1;
     }
-    return 0;
+    return;
 }
 
+// char** parse_argv(char** argv) {
+//     char** real_args = (char**)calloc(MAX_LINE, sizeof(char*));
+//     if (real_args == NULL) {
+//         fprintf(stderr, "CALLOC FAILED in command parser.\n");
+//         exit(1);
+//     }
+
+//     int idx = 0;
+//     while(argv[idx] != NULL) {
+//         if (!strchr(argv[idx], '"')) {
+//             // This is not a quote; any >, < characters imply redirection
+//             if (strchr(argv[idx], '>') || strchr(argv[idx], '<')) {
+//                 // Redirection.
+//                 break;
+//             }
+//         }
+
+//         // +1 for null-terminated character
+//         real_args[idx] = (char*)calloc(strlen(argv[idx])+1,sizeof(char));
+//         if (real_args[idx] == NULL) {
+//             fprintf(stderr, "CALLOC FAILED in command parser.\n");
+//             exit(1);
+//         }
+
+//         strncpy(real_args[idx], argv[idx], strlen(argv[idx])+1);
+
+//         idx += 1;
+//     }
+
+//     return real_args;
+// }
 
 struct command* new_command(char** pipe_tokens) {
     struct command *cmd;
@@ -156,11 +117,7 @@ struct command* new_command(char** pipe_tokens) {
     }
 
     // Set redirected I/O, if applicable
-    int set = set_fn(cmd, pipe_tokens);
-    if (set == 1) {
-        // Error with redirected I/O
-        return NULL;
-    }
+    set_fn(cmd, pipe_tokens);
 
     // Set up for execvp
     cmd->exec_fn = pipe_tokens[0];
@@ -264,10 +221,6 @@ struct command* parse_to_chained_commands(char **argv) {
 
     // Create command struct from tokens
     cmd = new_command(pipe_commands);
-    if (cmd == NULL) {
-        // Invalid I/O redirection - abort parsing, return to prompt.
-        return NULL;
-    }
 
     head_cmd = cmd;
     
@@ -283,10 +236,7 @@ struct command* parse_to_chained_commands(char **argv) {
         // Create command struct from tokens
         cmd->next = new_command(pipe_commands);
         cmd = cmd->next;
-        if (cmd == NULL) {
-            // Invalid I/O redirection - abort parsing, return to prompt.
-            return NULL;
-        }
+
         n += 1;
     }
 

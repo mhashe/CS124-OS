@@ -34,13 +34,9 @@ struct command {
  * Inputs:
  *     cmd: A command struct
  *     pipe_tokens: An array of tokens
- *
- * Returns:
- *     1: Error opening/creating I/O files
- *     0: Normal execution
  * 
  */
-int set_fn(struct command* cmd, char** pipe_commands);
+void set_fn(struct command* cmd, char** pipe_commands);
 
 
 /*
