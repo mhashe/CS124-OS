@@ -68,7 +68,7 @@ int fork_and_exec_commands(struct command *cmd) {
             else {
                 // this was the last command to execute so don't bother,
                 // forking off a new process. just return
-                return 0;
+                break;
             }
         }
         
