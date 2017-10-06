@@ -15,11 +15,6 @@
 #include "consts.h"
 #include "com_parser.h"
 
-// TODO: check if executable exists here or just fail at execution?
-// grep "f" < Makefile is treating "<" as another arg
-// do we really need error handling on redirecting output?
-// change perror to fprinft(stderr, message)
-// don't return 1/NULL when io error. just print it out. continue parsing command. (but we need the command to fail again in execution, so leave the error-causing stuff in there?)
 
 void set_fn(struct command* cmd, char** pipe_tokens) {
     // Defaults, overridden if applicable
@@ -38,19 +33,40 @@ void set_fn(struct command* cmd, char** pipe_tokens) {
         // Redirected input
         if (strcmp(pipe_tokens[idx], "<") == 0) {
             // We assume a properly formatted command (i.e., at most one <, >)
-            cmd->input_fn = pipe_tokens[idx+1];
+            char* input_fn = calloc(strlen(pipe_tokens[idx])+1,sizeof(char));
+            if (input_fn == NULL) {
+                perror("Calloc failure for allocating I/O redirects.");
+                exit(1);
+            }
+            strncpy(input_fn, pipe_tokens[idx+1], strlen(pipe_tokens[idx+1])+1);
+
+            cmd->input_fn = input_fn;
         }
 
         // Redirected output
         if (strcmp(pipe_tokens[idx], ">") == 0) {
             // Same assumption as above
-            cmd->output_fn = pipe_tokens[idx+1];
+            char* output_fn = calloc(strlen(pipe_tokens[idx])+1,sizeof(char));
+            if (output_fn == NULL) {
+                perror("Calloc failure for allocating I/O redirects.");
+                exit(1);
+            }
+            strncpy(output_fn, pipe_tokens[idx+1], strlen(pipe_tokens[idx+1])+1);
+
+            cmd->output_fn = output_fn;
         }
 
         // Redirected output - append
         if (strcmp(pipe_tokens[idx], ">>") == 0) {
             // Same assumption as above
-            cmd->output_fn = pipe_tokens[idx+1];
+            char* output_fn = calloc(strlen(pipe_tokens[idx])+1,sizeof(char));
+            if (output_fn == NULL) {
+                perror("Calloc failure for allocating I/O redirects.");
+                exit(1);
+            }
+            strncpy(output_fn, pipe_tokens[idx+1], strlen(pipe_tokens[idx+1])+1);
+
+            cmd->output_fn = output_fn;
 
             // Set append flag
             cmd->out_a = 1;
@@ -59,13 +75,27 @@ void set_fn(struct command* cmd, char** pipe_tokens) {
         // Redirected error
         if (strcmp(pipe_tokens[idx], "2>") == 0) {
             // Same assumption as above
-            cmd->error_fn = pipe_tokens[idx+1];
+            char* error_fn = calloc(strlen(pipe_tokens[idx])+1,sizeof(char));
+            if (error_fn == NULL) {
+                perror("Calloc failure for allocating I/O redirects.");
+                exit(1);
+            }
+            strncpy(error_fn, pipe_tokens[idx+1], strlen(pipe_tokens[idx+1])+1);
+
+            cmd->error_fn = error_fn;
         }
 
         // Redirected error
         if (strcmp(pipe_tokens[idx], "2>>") == 0) {
             // Same assumption as above
-            cmd->error_fn = pipe_tokens[idx+1];
+            char* error_fn = calloc(strlen(pipe_tokens[idx])+1,sizeof(char));
+            if (error_fn == NULL) {
+                perror("Calloc failure for allocating I/O redirects.");
+                exit(1);
+            }
+            strncpy(error_fn, pipe_tokens[idx+1], strlen(pipe_tokens[idx+1])+1);
+
+            cmd->error_fn = error_fn;
 
             // Set append flag
             cmd->err_a = 1;
@@ -77,7 +107,8 @@ void set_fn(struct command* cmd, char** pipe_tokens) {
 }
 
 char** parse_argv(char** argv) {
-    char** real_args = (char**)calloc(MAX_LINE, sizeof(char*));
+    // +1 for final NULL command
+    char** real_args = (char**)calloc(MAX_LINE+1, sizeof(char*));
     if (real_args == NULL) {
         fprintf(stderr, "CALLOC FAILED in command parser.\n");
         exit(1);
@@ -110,7 +141,7 @@ char** parse_argv(char** argv) {
 
 struct command* new_command(char** pipe_tokens) {
     struct command *cmd;
-    cmd = (struct command *) calloc(1, sizeof(struct command));
+    cmd = (struct command* )calloc(1, sizeof(struct command));
     if (cmd == NULL) {
         perror("Calloc failure for allocating command struct.");
         exit(1);
@@ -120,10 +151,26 @@ struct command* new_command(char** pipe_tokens) {
     set_fn(cmd, pipe_tokens);
 
     // Set up for execvp
-    cmd->exec_fn = pipe_tokens[0];
+    char* exec_fn = calloc(strlen(pipe_tokens[0])+1,sizeof(char));
+    if (exec_fn == NULL) {
+        perror("Calloc failure for allocating exec function.");
+        exit(1);
+    }
+    strncpy(exec_fn, pipe_tokens[0], strlen(pipe_tokens[0])+1);
+
+    cmd->exec_fn = exec_fn;
     cmd->argv = parse_argv(pipe_tokens);
-    // cmd->argv = pipe_tokens;
     cmd->next = NULL; // Potentially changed by piping
+
+    // Free PIPE_TOKENS
+    int idx = 0;
+    while (pipe_tokens[idx] != NULL) {
+        free(pipe_tokens[idx]);
+        idx += 1;
+    }
+    free(pipe_tokens[idx]);
+    free(pipe_tokens);
+
     return cmd;
 }
 
@@ -201,7 +248,7 @@ char** split_by_pipe_symbol(char **argv, int n) {
         strcpy(pipe_tokens[i-lower], argv[i]);
     }
     // Terminate with a NULL
-    pipe_tokens[upper-lower+2] = NULL;
+    pipe_tokens[upper-lower+1] = NULL;
 
     return pipe_tokens;
 }

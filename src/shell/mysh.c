@@ -130,6 +130,33 @@ char* history_n(int n) {
     return hist_entry->line;
 }
 
+void print_cmd(struct command* cmd) {
+    printf("Exec: %s\n", cmd->exec_fn);
+    int idx = 0;
+    while(cmd->argv[idx] != NULL) {
+        printf("Arg: %s\n", cmd->argv[idx]);
+        idx += 1;
+    }
+    if (cmd->input_fn) {
+        printf("Input: %s\n", cmd->input_fn);
+    } else {
+        printf("Input: stdin\n");
+    }
+    if (cmd->output_fn) {
+        printf("Output %s\n", cmd->output_fn);
+    } else {
+        printf("Output: stdout\n");
+    }
+    if (cmd->error_fn) {
+        printf("Error %s\n", cmd->error_fn);
+    } else {
+        printf("Error: stderr\n");
+    }
+
+    printf("Out_a: %d\n", cmd->out_a);
+    printf("Err_a: %d\n", cmd->err_a);
+}
+
 int main(int argc, char *argv[])
 {
     char* prompt;
@@ -231,7 +258,32 @@ int main(int argc, char *argv[])
         free(comms);
 
         fork_and_exec_commands(cmd);
-        // TODO: Free cmd
+        
+        struct command* temp;
+        while (cmd != NULL) {
+            free(cmd->exec_fn);
+
+            int cidx = 0;
+            while (cmd->argv[cidx]) {
+                free(cmd->argv[cidx]);
+                cidx += 1;
+            }
+            free(cmd->argv);
+
+            if (cmd->input_fn) {
+                free(cmd->input_fn);
+            }
+            if (cmd->output_fn) {
+                free(cmd->output_fn);
+            }
+            if (cmd->error_fn) {
+                free(cmd->error_fn);
+            }
+            
+            temp = cmd->next;
+            free(cmd);
+            cmd = temp;
+        }
     }
 
     return 0;
