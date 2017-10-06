@@ -93,15 +93,14 @@ char* generate_prompt() {
 
 void print_history() {
     HIST_ENTRY** hist_list = history_list();
-    int i = 0;
-    while (1) {
+
+    for (int i = 0; i < history_length; i++) {
         HIST_ENTRY* hist_entry = hist_list[i];
         if (hist_entry == NULL) {
             return;
         }
         // one indexed history commands
         printf("%4d: %s\n", i+1, hist_entry->line);
-        i++;
     }
 }
 
@@ -116,11 +115,17 @@ void print_history() {
  */
 
 char* history_n(int n) {
+    // start of history is at 1 and end of history is at history_length
+    if (n < 1 || n > history_length) {
+        return NULL;
+    }
+
     HIST_ENTRY** hist_list = history_list();
     // one indexed history commands
+    printf("%d\n", history_length);
     HIST_ENTRY* hist_entry = hist_list[n-1];
     if (hist_entry == NULL) {
-        return 0;
+        return NULL;
     }
     return hist_entry->line;
 }
@@ -193,6 +198,11 @@ int main(int argc, char *argv[])
 
                 int n = atoi(comms[0] + 1);
                 full_in = history_n(n);
+
+                if (full_in == NULL) {
+                    fprintf(stderr, "Invalid history entry.\n");
+                    continue;
+                }
                 printf("%s\n", full_in);
                 comms = tokenize(full_in);
             }
