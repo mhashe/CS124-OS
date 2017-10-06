@@ -253,7 +253,7 @@ void execute_command(struct command *cmd) {
 
         // append to error if err_a flag is 1, else make an empty file
         if (cmd->err_a) {
-            fd2 = open(cmd->output_fn, O_WRONLY|O_APPEND);
+            fd2 = open(cmd->error_fn, O_WRONLY|O_APPEND);
         }
         else {
             fd2 = creat(cmd->error_fn, OWNER_WRT);
