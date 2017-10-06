@@ -72,9 +72,10 @@ int fork_and_exec_commands(struct command *cmd) {
         // if this is the last command, we do not need to create a pipe to a  
         // consecutive command
         if (cmd->next != NULL) {
-            if (pipe(fd) == -1)
+            if (pipe(fd) == -1) {
                 perror("Pipe error");
                 exit(1);
+            }
         }
 
         // execute the command in a forked child process (not shell process)

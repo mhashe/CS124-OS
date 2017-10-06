@@ -74,7 +74,7 @@ char* generate_prompt() {
     char* prompt = (char*)calloc(strlen(uname)+1+strlen(cwd)+3+(COL_LENGTH*2)+1, 
         sizeof(char));
     if (prompt == NULL) {
-        fprintf(stderr, "Error allocating prompt string.");
+        perror("Error allocating prompt string.");
         exit(1);
     }
 
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
     while(1) {
         char* full_in = (char*)calloc(MAX_LINE, sizeof(char));
         if (full_in == NULL) {
-            fprintf(stderr, "Error allocating input line.\n");
+            perror("Error allocating input line.");
             exit(1);
         }
 

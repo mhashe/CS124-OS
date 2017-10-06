@@ -19,7 +19,7 @@
 void copy_comm(char** dest, char* src, int word_start, int word_size, int i) {
     dest[i] = (char*) malloc(word_size * sizeof(char));
     if (dest[i] == NULL) {
-        fprintf(stderr, "MALLOC FAILED in tokenizer\n");
+        perror("MALLOC FAILED in tokenizer");
         exit(1);
     }
     strncpy(dest[i], src + word_start, word_size);
@@ -43,12 +43,11 @@ int is_number(char* str, int start_i, int end_i) {
 
 
 char** tokenize(char* commands) {
-
     // assuming a single line of commands cannot contain more than MAX_LINE
     // commands
     char** toRet = (char**)calloc(MAX_LINE, sizeof(char*));
     if (toRet == NULL) {
-        fprintf(stderr, "CALLOC FAILED in tokenizer\n");
+        perror("CALLOC FAILED in tokenizer");
         exit(1);
     }
 
@@ -174,7 +173,7 @@ char** tokenize(char* commands) {
                         (strchr(commands + fd_start, '\n') - commands);
 
                     if (fd_end < 0) {
-                        fprintf(stderr, "fc duplication FAILED\n");
+                        fprintf(stderr, "fd duplication FAILED\n");
                         exit(1);
                     }
                 }
