@@ -76,37 +76,37 @@ void set_fn(struct command* cmd, char** pipe_tokens) {
     return;
 }
 
-// char** parse_argv(char** argv) {
-//     char** real_args = (char**)calloc(MAX_LINE, sizeof(char*));
-//     if (real_args == NULL) {
-//         fprintf(stderr, "CALLOC FAILED in command parser.\n");
-//         exit(1);
-//     }
+char** parse_argv(char** argv) {
+    char** real_args = (char**)calloc(MAX_LINE, sizeof(char*));
+    if (real_args == NULL) {
+        fprintf(stderr, "CALLOC FAILED in command parser.\n");
+        exit(1);
+    }
 
-//     int idx = 0;
-//     while(argv[idx] != NULL) {
-//         if (!strchr(argv[idx], '"')) {
-//             // This is not a quote; any >, < characters imply redirection
-//             if (strchr(argv[idx], '>') || strchr(argv[idx], '<')) {
-//                 // Redirection.
-//                 break;
-//             }
-//         }
+    int idx = 0;
+    while(argv[idx] != NULL) {
+        if (!strchr(argv[idx], '"')) {
+            // This is not a quote; any >, < characters imply redirection
+            if (strchr(argv[idx], '>') || strchr(argv[idx], '<')) {
+                // Redirection.
+                break;
+            }
+        }
 
-//         // +1 for null-terminated character
-//         real_args[idx] = (char*)calloc(strlen(argv[idx])+1,sizeof(char));
-//         if (real_args[idx] == NULL) {
-//             fprintf(stderr, "CALLOC FAILED in command parser.\n");
-//             exit(1);
-//         }
+        // +1 for null-terminated character
+        real_args[idx] = (char*)calloc(strlen(argv[idx])+1,sizeof(char));
+        if (real_args[idx] == NULL) {
+            fprintf(stderr, "CALLOC FAILED in command parser.\n");
+            exit(1);
+        }
 
-//         strncpy(real_args[idx], argv[idx], strlen(argv[idx])+1);
+        strncpy(real_args[idx], argv[idx], strlen(argv[idx])+1);
 
-//         idx += 1;
-//     }
+        idx += 1;
+    }
 
-//     return real_args;
-// }
+    return real_args;
+}
 
 struct command* new_command(char** pipe_tokens) {
     struct command *cmd;
@@ -121,7 +121,8 @@ struct command* new_command(char** pipe_tokens) {
 
     // Set up for execvp
     cmd->exec_fn = pipe_tokens[0];
-    cmd->argv = pipe_tokens;
+    cmd->argv = parse_argv(pipe_tokens);
+    // cmd->argv = pipe_tokens;
     cmd->next = NULL; // Potentially changed by piping
     return cmd;
 }
