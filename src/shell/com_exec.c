@@ -23,9 +23,6 @@
 #include "com_int.h"
 
 
-// TODO: Either 1. Remove debug info or 2. Make debug mode
-
-
 int fork_and_exec_commands(struct command *cmd) {
     // stores the file descriptor of the read end of pipe created by the last 
     // command that was forked
@@ -38,8 +35,6 @@ int fork_and_exec_commands(struct command *cmd) {
 
         // file descriptors containing read and write ends of a pipe
         int fd[2];
-
-        // printf("Handling: %s\n", cmd->exec_fn);
 
         // handle command internally if it is internal 
         if (internal_command_handler(cmd, (cmd->next == NULL) && 
@@ -72,9 +67,10 @@ int fork_and_exec_commands(struct command *cmd) {
         // if this is the last command, we do not need to create a pipe to a  
         // consecutive command
         if (cmd->next != NULL) {
-            if (pipe(fd) == -1)
+            if (pipe(fd) == -1) {
                 perror("Pipe error");
                 exit(1);
+            }
         }
 
         // execute the command in a forked child process (not shell process)
@@ -88,7 +84,6 @@ int fork_and_exec_commands(struct command *cmd) {
 
             // close the read end of the last command's pipe if it exists
             if (last_out_fd != -1) {
-                // printf("%s: closing last_out_fd\n", cmd->exec_fn);
 
                 if (close(last_out_fd) == -1) {
                     perror("Error in closing a pipe's read end from shell");
@@ -108,8 +103,6 @@ int fork_and_exec_commands(struct command *cmd) {
                     exit(1);
                 }
 
-                // printf("%s: setting last_out_fd from fd[0], and going next\n", cmd->exec_fn);
-
                 // save the pipe's read end into last_out_fd for the next
                 // command
                 last_out_fd = fd[0];
@@ -125,8 +118,6 @@ int fork_and_exec_commands(struct command *cmd) {
             // if there was a previous command, set its output in last_out_fd 
             // to be the input of this and close its file descriptor
             if (last_out_fd != -1) {
-                // printf("%s: setting in of this to be last_out_fd\n", cmd->exec_fn);
-
                 if (dup2(last_out_fd, STDIN_FILENO) == -1) {
                     perror("Error in redirecting pipe's read-end file " 
                         "descriptor to stdin");
@@ -146,8 +137,6 @@ int fork_and_exec_commands(struct command *cmd) {
                     exit(1);
                 }
 
-                // printf("%s: setting out of this to be fd[1]\n", cmd->exec_fn);
-
                 if (dup2(fd[1], STDOUT_FILENO) == -1) {
                     perror("Error in redirecting pipe's write-end file " 
                         "descriptor to stdout");
@@ -159,8 +148,6 @@ int fork_and_exec_commands(struct command *cmd) {
                     exit(1);
                 }
             }
-
-            // printf("Executing: %s\n", cmd->exec_fn);
 
             execute_command(cmd);
 
@@ -176,8 +163,6 @@ int fork_and_exec_commands(struct command *cmd) {
     if (fflush(stdout) == EOF) {
         perror("Error in fflush(stdout) post command execution");
     }
-
-    // printf("all child processes are finished\n");
 
     return 0;
 }
