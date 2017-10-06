@@ -43,7 +43,7 @@ int internal_command_handler(struct command *cmd, int only_command) {
 
         // handle if an error is returned
         if (err_val == -1) {
-            print_err();
+            perror("Error in chdir");
         }
 
     } else if (strcmp(cmd_name, "history") == 0) {
@@ -52,6 +52,6 @@ int internal_command_handler(struct command *cmd, int only_command) {
     } else {
         return 0;
     }
-    
+
     return 1;
 }

@@ -57,7 +57,7 @@ int fork_and_exec_commands(struct command *cmd) {
                 // and close the last pipe's read fd
                 if (last_out_fd != -1) {
                     if (close(last_out_fd) == -1) {
-                        print_err();
+                        perror("Error in closing a pipe's read end");
                         exit(1);
                     }
 
@@ -76,13 +76,13 @@ int fork_and_exec_commands(struct command *cmd) {
         // consecutive command
         if (cmd->next != NULL) {
             if (pipe(fd) == -1)
-                print_err();
+                perror("Pipe error");
                 exit(1);
         }
 
         // execute the command in a forked child process (not shell process)
         if ((pid = fork()) < 0) {
-            print_err();
+            perror("Fork error");
             exit(1);
         }
 
@@ -94,7 +94,7 @@ int fork_and_exec_commands(struct command *cmd) {
                 // printf("%s: closing last_out_fd\n", cmd->exec_fn);
 
                 if (close(last_out_fd) == -1) {
-                    print_err();
+                    perror("Error in closing a pipe's read end from shell");
                     exit(1);
                 }
             }
@@ -107,7 +107,7 @@ int fork_and_exec_commands(struct command *cmd) {
                 // there is a command after this, so a pipe exists, and we 
                 // need to close it's write end
                 if (close(fd[1]) == -1) {
-                    print_err();
+                    perror("Error in closing a pipe's write end from shell");
                     exit(1);
                 }
 
@@ -131,12 +131,13 @@ int fork_and_exec_commands(struct command *cmd) {
                 // printf("%s: setting in of this to be last_out_fd\n", cmd->exec_fn);
 
                 if (dup2(last_out_fd, STDIN_FILENO) == -1) {
-                    print_err();
+                    perror("Error in redirecting pipe's read-end file " 
+                        "descriptor to stdin");
                     exit(1);
                 }
 
                 if (close(last_out_fd) == -1) {
-                    print_err();
+                    perror("Error in closing a pipe's read end from child");
                     exit(1);
                 }
             }
@@ -144,19 +145,20 @@ int fork_and_exec_commands(struct command *cmd) {
             // redirected to the pipe's input
             if (cmd->next != NULL) {
                 if (close(fd[0]) == -1) {
-                    print_err();
+                    perror("Error in closing a pipe's read end from child");
                     exit(1);
                 }
 
                 // printf("%s: setting out of this to be fd[1]\n", cmd->exec_fn);
 
                 if (dup2(fd[1], STDOUT_FILENO) == -1) {
-                    print_err();
+                    perror("Error in redirecting pipe's write-end file " 
+                        "descriptor to stdout");
                     exit(1);
                 }
 
                 if (close(fd[1]) == -1) {
-                    print_err();
+                    perror("Error in closing a pipe's write end from child");
                     exit(1);
                 }
             }
@@ -175,7 +177,7 @@ int fork_and_exec_commands(struct command *cmd) {
     // make sure everything form stdout has been received, so that the shell 
     // does receive any output from the forked commands it executed
     if (fflush(stdout) == EOF) {
-        print_err();
+        perror("Error in fflush(stdout) post command execution");
     }
 
     // printf("all child processes are finished\n");
@@ -195,7 +197,7 @@ void wait_for_children() {
             if (errno == ECHILD) {
                 return;
             }
-            print_err();
+            perror("Wait error");
             exit(1);
         }
 
@@ -216,18 +218,21 @@ void execute_command(struct command *cmd) {
         int fd0;
 
         if ((fd0 = open(cmd->input_fn, O_RDONLY)) == -1) {
-            print_err();
+            fprintf(stderr, "Error in open(%s) for command: %s\number", 
+                cmd->input_fn, cmd->exec_fn);
             exit(1);
         }
 
         // replace the file descriptor of stdin with the file for redirection
         if (dup2(fd0, STDIN_FILENO) == -1) {
-            print_err();
+            fprintf(stderr, "Error in redirecting %s to stdin for " 
+                "command: %s\n", cmd->input_fn, cmd->exec_fn);
             exit(1);
         }
 
         if (close(fd0) == -1) {
-            print_err();
+            fprintf(stderr, "Error in close(%s) for command: %s\n", 
+                cmd->input_fn, cmd->exec_fn);
             exit(1);
         }
     }
@@ -240,19 +245,23 @@ void execute_command(struct command *cmd) {
         } else {
             fd1 = creat(cmd->output_fn, 0644);        
         }
+
         if (fd1 == -1) {
-            print_err();
+            fprintf(stderr, "Error in open() or create of %s for command: %s\n", 
+                cmd->output_fn, cmd->exec_fn);
             exit(1);
         }
 
         // replace the file descriptor of stdin with the file for redirection
         if (dup2(fd1, STDOUT_FILENO) == -1) {
-            print_err();
+            fprintf(stderr, "Error in redirecting %s to stdout for " 
+                "command: %s\n", cmd->output_fn, cmd->exec_fn);
             exit(1);
         }
 
         if (close(fd1) == -1) {
-            print_err();
+            fprintf(stderr, "Error in close(%s) for command: %s\n", 
+                cmd->output_fn, cmd->exec_fn);
             exit(1);
         }
     }
@@ -266,112 +275,32 @@ void execute_command(struct command *cmd) {
         else {
             fd2 = creat(cmd->error_fn, 0644);
         }
+
         if (fd2 == -1) {
-            print_err();
+            fprintf(stderr, "Error in open() or create of %s for command: %s\n", 
+                cmd->error_fn, cmd->exec_fn);
             exit(1);
         }
 
         // replace the file descriptor of stdin with the file for redirection
         if (dup2(fd2, STDERR_FILENO) == -1) {
-            print_err();
+            fprintf(stderr, "Error in redirecting %s to stderr for " 
+                "command: %s\n", cmd->error_fn, cmd->exec_fn);
             exit(1);
         }
 
         if (close(fd2) == -1) {
-            print_err();
+            fprintf(stderr, "Error in close(%s) for command: %s\n", 
+                cmd->error_fn, cmd->exec_fn);
             exit(1);
         }
     }
 
     // execute the command with its arguments
-    if (execvp(cmd->exec_fn, cmd->argv) == -1) {
-        print_err();
-    }
+    execvp(cmd->exec_fn, cmd->argv);
     
     // the executable has control over the process now, or else it failed and:
-    fprintf(stderr, "%s: command not found\n", cmd->exec_fn);
+    fprintf(stderr, "%s: command not found or not executable\n", cmd->exec_fn);
     exit(1);
 }
-
-
-
-
-/* Deprecated testing functions
-
-int main(int argc, char *argv[]) {
-    printf("test:\n");
-    test_chained_commands();
-
-    return 0;
-}
-
-void test_chained_commands() {
-    char *args[3];
-    args[0] = "echo";
-    args[1] = "veb";
-    args[2] = NULL;
-    struct command first;
-    first.exec_fn = "echo";
-    first.argv = args;
-    first.input_fn = NULL;
-    first.output_fn = NULL;
-    first.error_fn = NULL;
-    first.next = NULL;
-
-    char *args2[3];
-    args2[0] = "grep";
-    args2[1] = "v"; //"h";
-    args2[2] = NULL;
-    struct command second;
-    second.exec_fn = "grep";
-    second.argv = args2;
-    second.input_fn = NULL;
-    second.output_fn = "results.out";
-    second.error_fn = "";
-    second.next = NULL;
-
-    first.next = &second;
-
-    fork_and_exec_commands(&first);
-}
-
-void test_single_command() {
-    char *args[3];
-    args[0] = "wc";
-    args[1] = NULL;
-    args[2] = NULL;
-    struct command cmd;
-    cmd.exec_fn = "wc";
-    cmd.argv = args;
-    cmd.input_fn = "notes.out";
-    cmd.output_fn = "count.out";
-    cmd.error_fn = "";
-    cmd.next = NULL;
-    execute_command(&cmd);
-}
-
-void test_piping() {
-    int n; // number of lines read/written from file
-    int fd[2];
-    pid_t pid; // pid of the child process
-    char line[MAXLINE];
-
-    if (pipe(fd) < 0)
-        return -1; // pipe error
-    if ((pid = fork()) < 0) {
-        return -1; // fork error
-    } else if (pid > 0) {
-        // we are in the parent process
-        close(fd[0]);
-        write(fd[1], "hello world\n", 12);
-    } else {
-        // we are in the child preocess
-        close(fd[1]);
-        n = read(fd[0], line, MAXLINE);
-        printf("number of bites read: %d\n", n);
-        write(STDOUT_FILENO, line, n);
-    }
-}
-*/
-
 
