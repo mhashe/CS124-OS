@@ -60,9 +60,9 @@ which parts.
 >> L1: How many hours did each team member spend on this assignment?
    Make sure that each member's total time is listed.
 
-Vaibhav: ~20
-Nikhil :                                                                        TODO
-Michael:                                                                        TODO
+Vaibhav: ~20 hours
+Nikhil : ~15 hours
+Michael: ~15 hours
 
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
@@ -91,7 +91,7 @@ three commands (represented below in json-like format):
     {exec:"b", args:["arg1"], "in":null, "out":null, next:ptr}
     {exec:"c", args:["arg1", "arg2", "arg3"], "in":null, "out":null, next:null}
 Note that:
-    "in" and "out" refer to the i/o redirection form (<, >, <<, >>) in command 
+    "in" and "out" refer to the i/o redirection form (<, >, >>) in command 
     and not piping (which is below) i/o redirection
 This is the actual struct for a command:
 struct command {
@@ -132,8 +132,7 @@ redirection will be done spawned child processes for each command between pipes.
 All i/o redirection occurs after forking commands.
 
 The process for command "a" is forked off from the shell process (after 
-creation of pipes, if any). The i/o redirection for piping between a sequence  
-of commands is done first. 
+creation of pipes, if any). 
 
 The forked process contains the command struct with i/o redirect information. 
 It redirects its stdin to inp.txt and its stdout to out.txt from this info.
@@ -152,7 +151,6 @@ redirection.
 
 The shell process sets up the needed pipes before forking.
 Next, the child processes redirect stdin/stdout using the pipes.
-Next, the children redirect to files (<, >) if needed.
 
 
 >> A5: Similarly, describe the details of how terminated processes are

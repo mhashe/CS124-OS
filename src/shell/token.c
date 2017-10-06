@@ -74,8 +74,8 @@ char** tokenize(char* commands) {
                 exit(1);
             }
 
-            // skip the starting quote
-            word_start++;
+            // include the closing quote
+            i++;
 
             // + 1 for null termination
             word_size = i - word_start + 1;
@@ -87,7 +87,6 @@ char** tokenize(char* commands) {
             token_num++;
 
             // onto the next one 
-            i++;
             word_start = i;
 
         } else if (word_start == i && (ch == ' ' || ch == '\t')) {
