@@ -7,9 +7,7 @@
 #include "token.h"
 #include "consts.h"
 
-/*
- * copy src[word_start:word_start+word_size] into dest[i] as a null term string
- */ 
+
 void copy_comm(char** dest, char* src, int word_start, int word_size, int i) {
     dest[i] = (char*) malloc(word_size * sizeof(char));
     if (dest[i] == NULL) {
@@ -20,14 +18,6 @@ void copy_comm(char** dest, char* src, int word_start, int word_size, int i) {
     dest[i][word_size-1] = '\0';
 }
 
-/*
- * checks if a string[start_i:end_i] is a positive number
- *
- * return:
- *     1 if valid positive number
- *     0 otherwise
- * 
- */
 int is_number(char* str, int start_i, int end_i) {
     // do not allow for number of length 0
     if (end_i == start_i) {
@@ -42,13 +32,7 @@ int is_number(char* str, int start_i, int end_i) {
     return 1;
 }
 
-/*
- * tokenizes a string for command parsing
- *
- * commands: command to be parsed
- *
- * ret: array of char pointers (strings) of tokenized values
- */
+
 char** tokenize(char* commands) {
 
     // assuming a single line of commands cannot contain more than MAX_LINE

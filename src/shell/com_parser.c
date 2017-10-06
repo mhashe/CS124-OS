@@ -1,3 +1,11 @@
+/*
+ * The Breakfast Club, CS 124, Fall 2017
+ * Vaibhav Anand, Nikhil Gupta, Michael Hashe
+ *
+ * This file contains methods to parse a tokenized command string into a useful
+ * command struct for execution.
+ */
+
 #include <unistd.h> // read, write
 #include <stdio.h> // printf
 #include <stdlib.h>
@@ -36,7 +44,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             FILE *fp;
             fp = fopen(cmd->input_fn, "r");
             if (fp == NULL) {
-                perror("Error with redirected input file");
+                fprintf(stderr, "Error with redirected input file\n");
                 return 1;
             }
             if (fclose(fp) == EOF) {
@@ -56,7 +64,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             FILE *fp;
             fp = fopen(cmd->output_fn, "w");
             if (fp == NULL) {
-                perror("Error in creating output file");
+               fprintf(stderr, "Error in creating output file\n");
                 return 1;
             }
             if (fclose(fp) == EOF) {
@@ -76,7 +84,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             FILE *fp;
             fp = fopen(cmd->output_fn, "a");
             if (fp == NULL) {
-                perror("Error in creating output file");
+                fprintf(stderr, "Error in creating output file\n");
                 return 1;
             }
             if (fclose(fp) == EOF) {
@@ -99,7 +107,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             FILE *fp;
             fp = fopen(cmd->error_fn, "w");
             if (fp == NULL) {
-                perror("Error in creating error file");
+                fprintf(stderr, "Error in creating error file\n");
                 return 1;
             }
             if (fclose(fp) == EOF) {
@@ -119,7 +127,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             FILE *fp;
             fp = fopen(cmd->error_fn, "a");
             if (fp == NULL) {
-                perror("Error in creating error file");
+                fprintf(stderr, "Error in creating error file\n");
                 return 1;
             }
             if (fclose(fp) == EOF) {
