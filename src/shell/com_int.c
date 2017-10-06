@@ -18,7 +18,6 @@
 
 #include "com_parser.h"
 #include "mysh.h"
-#include "err_hand.h"
 
 
 int internal_command_handler(struct command *cmd, int only_command) {

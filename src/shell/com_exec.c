@@ -21,12 +21,9 @@
 #include "com_parser.h"
 #include "com_exec.h"
 #include "com_int.h"
-#include "err_hand.h"
 
 
-// TODO: Free memory from other parts of the program
 // TODO: Either 1. Remove debug info or 2. Make debug mode
-// TODO: Remove deprecated code below
 
 
 int fork_and_exec_commands(struct command *cmd) {
@@ -218,7 +215,7 @@ void execute_command(struct command *cmd) {
         int fd0;
 
         if ((fd0 = open(cmd->input_fn, O_RDONLY)) == -1) {
-            fprintf(stderr, "Error in open(%s) for command: %s\number", 
+            fprintf(stderr, "Error in open(%s) for command: %s\n", 
                 cmd->input_fn, cmd->exec_fn);
             exit(1);
         }
