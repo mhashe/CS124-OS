@@ -44,7 +44,8 @@ int fork_and_exec_commands(struct command *cmd) {
         // printf("Handling: %s\n", cmd->exec_fn);
 
         // handle command internally if it is internal 
-        if (internal_command_handler(cmd, (cmd->next == NULL) && (last_out_fd == -1))) {
+        if (internal_command_handler(cmd, (cmd->next == NULL) && 
+            (last_out_fd == -1))) {
 
             // if the handler returned 1, it was internal
             if (cmd->next != NULL) {
@@ -111,7 +112,8 @@ int fork_and_exec_commands(struct command *cmd) {
 
                 // printf("%s: setting last_out_fd from fd[0], and going next\n", cmd->exec_fn);
 
-                // save the pipe's read end into last_out_fd for the next command
+                // save the pipe's read end into last_out_fd for the next
+                // command
                 last_out_fd = fd[0];
 
                 // process the next command in the next iteration

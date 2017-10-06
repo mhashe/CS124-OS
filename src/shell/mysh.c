@@ -208,9 +208,20 @@ int main(int argc, char *argv[])
 
         struct command* cmd = parse_to_chained_commands(comms);
 
-        // TODO: Free everything
-        // printf("forking result: %d\n", fork_and_exec_commands(cmd));
+        // free the tokenized structure
+        int i = 0;
+        while (1) {
+            if (comms[i] == NULL) {
+                break;
+            }
+
+            free(comms[i]);
+            i++;
+        }
+        free(comms);
+
         fork_and_exec_commands(cmd);
+        // TODO: Free cmd
     }
 
     return 0;
