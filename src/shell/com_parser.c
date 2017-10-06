@@ -44,7 +44,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             FILE *fp;
             fp = fopen(cmd->input_fn, "r");
             if (fp == NULL) {
-                fprintf(stderr, "Error with redirected input file\n");
+                perror("Error with redirected input file");
                 return 1;
             }
             if (fclose(fp) == EOF) {
@@ -64,7 +64,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             FILE *fp;
             fp = fopen(cmd->output_fn, "w");
             if (fp == NULL) {
-               fprintf(stderr, "Error in creating output file\n");
+                perror("Error in creating output file");
                 return 1;
             }
             if (fclose(fp) == EOF) {
@@ -84,7 +84,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             FILE *fp;
             fp = fopen(cmd->output_fn, "a");
             if (fp == NULL) {
-                fprintf(stderr, "Error in creating output file\n");
+                perror("Error in creating output file");
                 return 1;
             }
             if (fclose(fp) == EOF) {
@@ -107,7 +107,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             FILE *fp;
             fp = fopen(cmd->error_fn, "w");
             if (fp == NULL) {
-                fprintf(stderr, "Error in creating error file\n");
+                perror("Error in creating error file");
                 return 1;
             }
             if (fclose(fp) == EOF) {
@@ -127,7 +127,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
             FILE *fp;
             fp = fopen(cmd->error_fn, "a");
             if (fp == NULL) {
-                fprintf(stderr, "Error in creating error file\n");
+                perror("Error in creating error file");
                 return 1;
             }
             if (fclose(fp) == EOF) {
@@ -151,7 +151,7 @@ struct command* new_command(char** pipe_tokens) {
     struct command *cmd;
     cmd = (struct command *) calloc(1, sizeof(struct command));
     if (cmd == NULL) {
-        fprintf(stderr, "Calloc failure for allocating command struct.\n");
+        perror("Calloc failure for allocating command struct.");
         exit(1);
     }
 
@@ -220,7 +220,7 @@ char** split_by_pipe_symbol(char **argv, int n) {
 
     // Sanity check
     if ((lower == -1) || (upper == -1)){
-        fprintf(stderr, "Unexpected error in split_by_pipe_symbol!\n");
+        perror("Unexpected error in split_by_pipe_symbol!");
         fprintf(stderr, "(lower, upper) = (%d,%d)\n", lower, upper);
         exit(1);
     }
@@ -228,7 +228,7 @@ char** split_by_pipe_symbol(char **argv, int n) {
     // Store relevant commands in new array
     char** pipe_tokens = (char**)calloc(upper - lower + 2, sizeof(char*));
     if (pipe_tokens == NULL) {
-        fprintf(stderr, "Calloc failure for allocating pipe_tokens array.\n");
+        perror("Calloc failure for allocating pipe_tokens array.");
         exit(1);
     }
 
@@ -236,7 +236,7 @@ char** split_by_pipe_symbol(char **argv, int n) {
         // Copy token into new array
         pipe_tokens[i-lower] = (char*)calloc(strlen(argv[i])+1, sizeof(char));
         if (pipe_tokens[i-lower] == NULL) {
-            fprintf(stderr, "Calloc failure for allocating token.\n");
+            perror("Calloc failure for allocating token.");
             exit(1);
         }
 
