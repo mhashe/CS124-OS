@@ -20,7 +20,7 @@ Michael Hashe <mhashe@caltech.edu>
    on Moodle.)
 
    Repository URL:  https://github.com/MichaelHashe/CS124-OS
-   commit ...                                                                   TODO
+   commit ...                             
 
 ---- PRELIMINARIES ----
 
@@ -28,19 +28,19 @@ Michael Hashe <mhashe@caltech.edu>
 >> TAs, or extra credit, please include them here.
 
 extra credit:
-multi-line commands
-append output redirection (>>)
-redirection using an integer file descriptor (2>)
-advanced redirection: duplicating file-descriptor (2>&1)
+	multi-line commands
+	append output redirection (>>)
+	redirection of stderr (2>)
     history command and associated functionality
     allowed to run old command with !n
 
 extra functionality:
     replace home directory with ~
     color prompt in shell
+    valgrind reports no lost memory
 
 required packages:
-  libreadline-gplv2-dev
+  	libreadline-gplv2-dev
 
 >> Please cite any offline or online sources you consulted while
 >> preparing your submission, other than the Pintos documentation, course
@@ -83,29 +83,41 @@ and main loop.
 >> shell internally represent such a command?
 
 First, the line is tokenized into its component pieces such as words, strings,
-redirects, pipes, etc.
+redirects, pipes, etc. An array of these tokens is passed into a command
+parser.
 
-Then this information is placed into a command struct, into which i/o 
-redirection information, which is also parsed from the line, is placed. 
+This information is then organized into a linked list of command structs, into 
+which i/o redirection information and arrays of arguments are placed.
 In the example above, the line would be processed into a linked list of 
-three commands (represented below in json-like format):
-    {exec:"a", args:["arg1", "arg2"], "in":null, "out":null, next:ptr}
-    {exec:"b", args:["arg1"], "in":null, "out":null, next:ptr}
-    {exec:"c", args:["arg1", "arg2", "arg3"], "in":null, "out":null, next:null}
+three commands:
+    {exec:"a", args:["arg1", "arg2", NULL], "in":null, "out":null, 
+    	out_a:0, err_a:0, next:ptr}
+    {exec:"b", args:["arg1", NULL], "in":null, "out":null, 
+    	out_a:0, err_a:0, next:ptr}
+    {exec:"c", args:["arg1", "arg2", "arg3", NULL], "in":null, "out":null, 
+    	out_a:0, err_a:0, next:null}
+
 Note that:
-    "in" and "out" refer to the i/o redirection form (<, >, >>) in command 
-    and not piping (which is below) i/o redirection
+    -"in" and "out" refer to the i/o redirection form (<, >, >>) in command 
+     and not piping (which is below) i/o redirection
+    -out_a and err_a are booleans, determining whether we should append to or
+     write to the output_fn and error_fn files.
+
 This is the actual struct for a command:
 struct command {
     char *exec_fn; // Filename of executable (ie. "ls", "cat", etc)
+
     char **argv; // List of args for executable
+
     // Filenames for input/output/error redirection (null if doesn't exist) 
     char *input_fn;
     char *output_fn;
     char *error_fn;
+
     // Output/error append flags (whether to open file for write or appending)
     int out_a;
     int err_a;
+
     struct command *next; // refers to next command if not null
 };
 
@@ -115,14 +127,17 @@ struct command {
 >> Briefly explain specifically how the redirections are parsed and
 >> represented, and by what processes.
 
-In this specific example, first the command would be tokenized into all its
-component pieces. Since this is a nice command, it would just be tokenized by
-the spaces.
+In this specific example, the command would first be tokenized. Since this is a 
+"nice" command, it would just be tokenized by separating by spaces.
 
-[more explanation about parsing/representation?]                                TODO
+In creating the command object, all tokens for a particular command are 
+sequentially examined. Once we reach a redirect command, the following token
+is stored in in the appropriate *_fn pointer, i.e. once we read an input token,
+we store the immediately following token in input_fn. This parsing is handled
+in com_parser.c
 
-All parsing occurs in the main shell process. Eventually, the execution and 
-redirection will be done spawned child processes for each command between pipes.
+All parsing occurs in the main shell process. The execution and redirection is 
+done in spawned child processes for each command between pipes.
 
 
 ---- ALGORITHMS ----
@@ -136,10 +151,10 @@ All i/o redirection occurs after forking commands.
 The process for command "a" is forked off from the shell process (after 
 creation of pipes, if any). 
 
-The forked process contains the command struct with i/o redirect information. 
+This single child process contains a corresponding command struct cmd, 
+containing any redirection information. For the provided example, it would have  
+cmd->input_fn = inp.txt and cmd->output_fn = out.txt. 
 It redirects its stdin to inp.txt and its stdout to out.txt from this info.
-Therefore, i/o redirection within commands takes precedence over piping i/o 
-redirection.
 
 
 >> A4: Illustrate how you solved the problem of setting up the pipes
@@ -151,7 +166,7 @@ redirection.
 >> Keep your description of each process' responsibilities limited to
 >> ~25 words or less.
 
-The shell process sets up the needed pipes before forking.
+The shell process sets up the needed pipes and command structs before forking.
 Next, the child processes redirect stdin/stdout using the pipes.
 
 
@@ -200,12 +215,10 @@ We chose a layered design (handle all pipe i/o first, then overwrite (if
 needed) with file i/o to prevent possible sources of error in complex 
 management/memory of what has been already redirected to what.
 
-We chose to contain all command information in a struct, rather than passing 
-around as args to isolate any parsing from execution (parse to struct, then 
-execute struct) since execution occurs is facilitated if we can make 
-assumptions about what to expect (and not deduce as we go).
-
-[something about parsing or tokenization?]                                      TODO
+We chose to contain all command information in a struct, rather than passing
+around as args to isolate any parsing from execution (parse to struct, then
+execute struct) since execution is facilitated if we can make assumptions about
+what to expect.
 
 
 >> A9: Did you take any steps to facilitate development of the command
