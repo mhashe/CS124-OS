@@ -1,3 +1,19 @@
+/*
+ * The Breakfast Club, CS 124, Fall 2017
+ * Vaibhav Anand, Nikhil Gupta, Michael Hashe
+ *
+ * This file contains the main loop for a shell program. It first tokenizes the
+ * command, parses the tokens into a useful command struct, then executes the
+ * command. 
+ *
+ * The list of features are:
+ *     history fully implemented
+ *     prompt coloring
+ *     error redirection
+ *     file descriptor duplication
+ *     multiline commands
+ */
+
 #include <stdlib.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -18,7 +34,8 @@
  * generates the prompt for the shell
  * username:cwd $ 
  *
- * ret: string containing above prompt
+ * Returns:
+ *     string containing above prompt
  */
 char* generate_prompt() {
     // User ID. Function guaranteed to be successful.
@@ -74,9 +91,6 @@ char* generate_prompt() {
     return prompt;
 }
 
-/*
- * function to print history to stdout
- */
 void print_history() {
     HIST_ENTRY** hist_list = history_list();
     int i = 0;
@@ -93,6 +107,12 @@ void print_history() {
 
 /*
  * retrieve history item n and return that string
+ *
+ * Inputs:
+ *     n: index in history
+ *
+ * Returns:
+ *     line: untokenized line containing item n
  */
 
 char* history_n(int n) {

@@ -1,4 +1,7 @@
 /*
+ * The Breakfast Club, CS 124, Fall 2017
+ * Vaibhav Anand, Nikhil Gupta, Michael Hashe
+ *
  * This handles the errors as defined in errno.h
  * It prints the error message to stderr.
  * 
@@ -10,12 +13,6 @@
 #include "err_hand.h"
 
 
-/*
- * This function reads errno and prints the associated error statement. Had to
- * remove EDEADLOCK, ENOTSUP, EWOULDBLOCK as they are duplicated error codes.
- *
- * returns errno if error code is found, else returns 0.
- */
 int print_err() {
     int errsv = errno;
 

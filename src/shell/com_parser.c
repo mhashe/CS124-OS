@@ -1,3 +1,11 @@
+/*
+ * The Breakfast Club, CS 124, Fall 2017
+ * Vaibhav Anand, Nikhil Gupta, Michael Hashe
+ *
+ * This file contains methods to parse a tokenized command string into a useful
+ * command struct for execution.
+ */
+
 #include <unistd.h> // read, write
 #include <stdio.h> // printf
 #include <stdlib.h>

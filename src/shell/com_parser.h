@@ -32,12 +32,13 @@ struct command {
  * commands are well-structured, i.e. at most one redirected file of each type.
  *
  * Inputs:
- *      cmd: A command struct
- *      pipe_tokens: An array of tokens
+ *     cmd: A command struct
+ *     pipe_tokens: An array of tokens
  *
  * Returns:
- *      1: Error opening/creating I/O files
- *      0: Normal execution
+ *     1: Error opening/creating I/O files
+ *     0: Normal execution
+ *      
  * 
  */
 int set_fn(struct command* cmd, char** pipe_commands);
@@ -47,11 +48,11 @@ int set_fn(struct command* cmd, char** pipe_commands);
  * Creates a single new command struct from a series of tokens.
  *
  * Inputs:
- *      pipe_tokens: An array of tokens
+ *     pipe_tokens: An array of tokens
  *
  * Returns:
- *      NULL: Error with redirected I/O
- *      cmd: Normal execution; a command struct.
+ *     NULL: Error with redirected I/O
+ *     cmd: Normal execution; a command struct.
  * 
  */
 struct command* new_command(char **argv);
@@ -61,11 +62,11 @@ struct command* new_command(char **argv);
  * Return tokens between the nth and (n+1)st piping symbols (|).
  *
  * Inputs:
- *      argv: A list of tokens, potentially including piping symbols.
+ *     argv: A list of tokens, potentially including piping symbols.
  *
  * Returns:
- *      NULL: The requested command cannot be found.
- *      pipe_tokens: The tokens corresponding to the requested command.
+ *     NULL: The requested command cannot be found.
+ *     pipe_tokens: The tokens corresponding to the requested command.
  * 
  */
 char** split_by_pipe_symbol(char **argv, int n);
@@ -76,11 +77,11 @@ char** split_by_pipe_symbol(char **argv, int n);
  * potentially including piping symbols (|).
  *
  * Inputs:
- *      argv: An array of tokens
+ *     argv: An array of tokens
  *
  * Returns:
- *      NULL: Invalid command
- *		head_cmd: The head of the linked list of commands
+ *     NULL: Invalid command
+ *     head_cmd: The head of the linked list of commands
  * 
  */
 struct command* parse_to_chained_commands(char **argv);

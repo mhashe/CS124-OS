@@ -5,6 +5,9 @@
 #define COL_RESET  "\x1B[39m"
 #define COL_LENGTH 5
 
+/*
+ * function to print history to stdout
+ */
 void print_history();
 
 #endif
