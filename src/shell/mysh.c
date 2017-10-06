@@ -122,39 +122,11 @@ char* history_n(int n) {
 
     HIST_ENTRY** hist_list = history_list();
     // one indexed history commands
-    printf("%d\n", history_length);
     HIST_ENTRY* hist_entry = hist_list[n-1];
     if (hist_entry == NULL) {
         return NULL;
     }
     return hist_entry->line;
-}
-
-void print_cmd(struct command* cmd) {
-    printf("Exec: %s\n", cmd->exec_fn);
-    int idx = 0;
-    while(cmd->argv[idx] != NULL) {
-        printf("Arg: %s\n", cmd->argv[idx]);
-        idx += 1;
-    }
-    if (cmd->input_fn) {
-        printf("Input: %s\n", cmd->input_fn);
-    } else {
-        printf("Input: stdin\n");
-    }
-    if (cmd->output_fn) {
-        printf("Output %s\n", cmd->output_fn);
-    } else {
-        printf("Output: stdout\n");
-    }
-    if (cmd->error_fn) {
-        printf("Error %s\n", cmd->error_fn);
-    } else {
-        printf("Error: stderr\n");
-    }
-
-    printf("Out_a: %d\n", cmd->out_a);
-    printf("Err_a: %d\n", cmd->err_a);
 }
 
 int main(int argc, char *argv[])

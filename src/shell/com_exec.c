@@ -22,6 +22,8 @@
 #include "com_exec.h"
 #include "com_int.h"
 
+#define  OWNER_WRT 0644
+
 
 int fork_and_exec_commands(struct command *cmd) {
     // stores the file descriptor of the read end of pipe created by the last 
@@ -111,8 +113,7 @@ int fork_and_exec_commands(struct command *cmd) {
                 cmd = cmd->next;
 
             }
-        }
-        else {
+        } else {
             // we are in the child process, so setup redirection and execute cmd
 
             // if there was a previous command, set its output in last_out_fd 
@@ -225,7 +226,7 @@ void execute_command(struct command *cmd) {
         if (cmd->out_a) {
             fd1 = open(cmd->output_fn, O_WRONLY|O_APPEND);
         } else {
-            fd1 = creat(cmd->output_fn, 0644);        
+            fd1 = creat(cmd->output_fn, OWNER_WRT);        
         }
 
         if (fd1 == -1) {
@@ -255,7 +256,7 @@ void execute_command(struct command *cmd) {
             fd2 = open(cmd->output_fn, O_WRONLY|O_APPEND);
         }
         else {
-            fd2 = creat(cmd->error_fn, 0644);
+            fd2 = creat(cmd->error_fn, OWNER_WRT);
         }
 
         if (fd2 == -1) {
