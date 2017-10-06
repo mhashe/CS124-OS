@@ -149,7 +149,7 @@ int set_fn(struct command* cmd, char** pipe_tokens) {
 
 struct command* new_command(char** pipe_tokens) {
     struct command *cmd;
-    cmd = (struct command *)calloc(1, sizeof(struct command));
+    cmd = (struct command *) calloc(1, sizeof(struct command));
     if (cmd == NULL) {
         fprintf(stderr, "Calloc failure for allocating command struct.\n");
         exit(1);

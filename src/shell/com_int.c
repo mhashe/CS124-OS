@@ -6,6 +6,7 @@
  * currently handles exit, cd, chdir, and history. It does not have any i/o 
  * redirecting to or from other piped commands (possibly do this in the 
  * future, ie. "history | grep x").
+ * If the number of commands grows, they can be abstracted out as functions.
  */
 
 #include <unistd.h> // read, write
@@ -29,8 +30,10 @@ int internal_command_handler(struct command *cmd, int only_command) {
         if (only_command) {
             exit(0);
         }
+    
     } else if ((strcmp(cmd_name, "cd") == 0) || 
                (strcmp(cmd_name, "chdir") == 0)) {
+
         int err_val;
         if ((cmd->argv[1] == NULL) || (strcmp(cmd->argv[1], "~") == 0)) {
             err_val = chdir(getenv("HOME"));
@@ -45,8 +48,10 @@ int internal_command_handler(struct command *cmd, int only_command) {
 
     } else if (strcmp(cmd_name, "history") == 0) {
         print_history();
+    
     } else {
         return 0;
     }
+    
     return 1;
 }

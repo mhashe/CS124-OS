@@ -20,7 +20,7 @@ Michael Hashe <mhashe@caltech.edu>
    on Moodle.)
 
    Repository URL:  https://github.com/MichaelHashe/CS124-OS
-   commit ...
+   commit ...                                                                   TODO
 
 ---- PRELIMINARIES ----
 
@@ -28,7 +28,7 @@ Michael Hashe <mhashe@caltech.edu>
 >> TAs, or extra credit, please include them here.
 
 extra credit:
-multiline commands
+multi-line commands
 append output redirection (>>)
 redirection using an integer file descriptor (2>)
 advanced redirection: duplicating file-descriptor (2>&1)
@@ -60,15 +60,15 @@ which parts.
 >> L1: How many hours did each team member spend on this assignment?
    Make sure that each member's total time is listed.
 
-Vaibhav: 
-Nikhil : 
-Michael: 
+Vaibhav: ~20
+Nikhil :                                                                        TODO
+Michael:                                                                        TODO
 
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
 
-Vaibhav: Vaibhav focused on the command execution including redirecting file
-descriptors.
+Vaibhav: Vaibhav focused on the command execution including redirecting i/o 
+and piping.
 Nikhil: Nikhil focused on the tokenizer, main loop, and history implementation.
 Michael: Michael focused on the command parser (putting the tokens into structs)
 and main loop.
@@ -83,20 +83,63 @@ and main loop.
 First, the line is tokenized into its component pieces such as words, strings,
 redirects, pipes, etc.
 
+Then this information is placed into a command struct, into which i/o 
+redirection information, which is also parsed from the line, is placed. 
+In the example above, the line would be processed into a linked list of 
+three commands (represented below in json-like format):
+    {exec:"a", args:["arg1", "arg2"], "in":null, "out":null, next:ptr}
+    {exec:"b", args:["arg1"], "in":null, "out":null, next:ptr}
+    {exec:"c", args:["arg1", "arg2", "arg3"], "in":null, "out":null, next:null}
+Note that:
+    "in" and "out" refer to the i/o redirection form (<, >, <<, >>) in command 
+    and not piping (which is below) i/o redirection
+This is the actual struct for a command:
+struct command {
+    char *exec_fn; // Filename of executable (ie. "ls", "cat", etc)
+    char **argv; // List of args for executable
+    // Filenames for input/output/error redirection (null if doesn't exist) 
+    char *input_fn;
+    char *output_fn;
+    char *error_fn;
+    // Output/error append flags (whether to open file for write or appending)
+    int out_a;
+    int err_a;
+    struct command *next; // refers to next command if not null
+};
+
+
 >> A2: Now, given the command:
 >> "a arg1 arg2 < inp.txt | b arg1 | c arg1 arg2 arg3 > out.txt"
 >> Briefly explain specifically how the redirections are parsed and
 >> represented, and by what processes.
 
-For this specific example, first the command would be tokenized into all its
+In this specific example, first the command would be tokenized into all its
 component pieces. Since this is a nice command, it would just be tokenized by
 the spaces.
+
+[more explanation about parsing/representation?]                                TODO
+
+All parsing occurs in the main shell process. Eventually, the execution and 
+redirection will be done spawned child processes for each command between pipes.
+
 
 ---- ALGORITHMS ----
 
 >> A3: Illustrate how you solved the problem of setting up
 >> redirection in a simple command like "a < inp.txt > out.txt", by
 >> describing what process takes care of the redirection and when.
+
+All i/o redirection occurs after forking commands.
+
+The process for command "a" is forked off from the shell process (after 
+creation of pipes, if any). The i/o redirection for piping between a sequence  
+of commands is done first. 
+
+The forked process contains the command struct with i/o redirect information. 
+It redirects its stdin to inp.txt and its stdout to out.txt from this info.
+Therefore, i/o redirection within commands takes precedence over piping i/o 
+redirection.
+
 
 >> A4: Illustrate how you solved the problem of setting up the pipes
 >> between multiple operations in a single command, by describing
@@ -107,25 +150,63 @@ the spaces.
 >> Keep your description of each process' responsibilities limited to
 >> ~25 words or less.
 
+The shell process sets up the needed pipes before forking.
+Next, the child processes redirect stdin/stdout using the pipes.
+Next, the children redirect to files (<, >) if needed.
+
+
 >> A5: Similarly, describe the details of how terminated processes are
 >> reaped in the example command "a | b | c".
+
+The main shell process, which spawned each of the process for "a", "b", and 
+"c", waits in a while loop for all children to terminate using wait().
+It stops when wait() returns a code signifying the process has no more children.
+
 
 >> A6: Similarly, describe which processes are responsible for setting
 >> up the redirections in the example command
 >> "a < inp.txt | b | c > out.txt".
+
+Shell process creates 2 pipes with descriptors [write:fd0, read:fd1] and 
+[write:fd2, read:fd3]. It will closes them after spawning children "a", "b", "c"
+Process of "a" redirects inp.txt to its stdin and its stdout to fd0
+Process of "b" redirects fd1 to its stdin and its stdout to fd2
+Process of "c" redirects fd3 to its stdin and its stdout to out.txt
 
 ---- RATIONALE ----
 
 >> A7: Why must the chdir and exit commands be implemented as built-in
 >> functions, rather than external programs?
 
-They must be built in functions in case everything breaks (you override the PATH
-variable, delete the bin directory, etc.), you still want some basic
+If they are treated as external programs, they will be executed after being 
+forked from the main shell. Changing the directory after forking will just 
+apply to the forked command and not the shell. Exiting will just terminate the 
+forked command and not the shell.
+
+Also, they must be built in functions in case everything breaks (you override 
+the PATH variable, delete the bin directory, etc.), you still want some basic
 functionality such as the ability to exit the shell or move around to see what
 is wrong.
 
+
 >> A8: Why did you ultimately choose this design?  In what ways is it
 >> superior to other designs you considered as you developed your solution?
+
+We chose to do all i/o redirection after forking so that the processes 
+could not overlap any stdin/stdout and the number of open file descriptors in 
+each is minimized.
+
+We chose a layered design (handle all pipe i/o first, then overwrite (if 
+needed) with file i/o to prevent possible sources of error in complex 
+management/memory of what has been already redirected to what.
+
+We chose to contain all command information in a struct, rather than passing 
+around as args to isolate any parsing from execution (parse to struct, then 
+execute struct) since execution occurs is facilitated if we can make 
+assumptions about what to expect (and not deduce as we go).
+
+[something about parsing or tokenization?]                                      TODO
+
 
 >> A9: Did you take any steps to facilitate development of the command
 >> shell in parallel, e.g. designing shared data structures or integration
@@ -157,7 +238,7 @@ proper time.
 >> Did you find that working on a particular part of the assignment gave
 >> you greater insight into some aspect of OS design?
 
-Having to install all the file descriptors to redirect inputs and outputs gave a
+Having to setup all the file descriptors to redirect inputs and outputs gave a
 lot of insight into how the system actually opens and maintains files.
 
 >> Were there any parts of the assignment that you felt were unnecessarily

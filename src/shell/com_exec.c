@@ -26,6 +26,7 @@
 
 // TODO: Free memory from other parts of the program
 // TODO: Either 1. Remove debug info or 2. Make debug mode
+// TODO: Remove deprecated code below
 
 
 int fork_and_exec_commands(struct command *cmd) {
