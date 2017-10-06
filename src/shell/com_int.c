@@ -1,5 +1,5 @@
 #include <unistd.h> // read, write
-#include <stdio.h> // cout, cin
+#include <stdio.h> // printf
 #include <stdlib.h>
 #include <assert.h>
 #include <sys/types.h> // pid_t, wait
@@ -7,6 +7,7 @@
 
 #include "com_parser.h"
 #include "mysh.h"
+#include "err_hand.h"
 
 // if cmd is internal, execute it and return 1. else, return 0
 // deal with the fact that it may not be the only_command in the terminal by doing nothing (replicate behavior or actual terminal (ie. (ie. exit | echo "hi")))
@@ -19,11 +20,18 @@ int internal_command_handler(struct command *cmd, int only_command) {
             exit(0);
         }
     } else if ((strcmp(cmd_name, "cd") == 0) || (strcmp(cmd_name, "chdir") == 0)) {
+        int err_val;
         if ((cmd->argv[1] == NULL) || (strcmp(cmd->argv[1], "~") == 0)) {
-            chdir(getenv("HOME"));
+            err_val = chdir(getenv("HOME"));
         } else {
-            chdir(cmd->argv[1]);
+            err_val = chdir(cmd->argv[1]);
         }
+
+        // handle if an error is returned
+        if (err_val == -1) {
+            print_err();
+        }
+
     } else if (strcmp(cmd_name, "history") == 0) {
         // TODO: maybe, in the future, allow piping the results of this into the next cmd
         print_history();

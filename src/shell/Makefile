@@ -1,6 +1,6 @@
 CFLAGS = -Wall -g
 
-OBJS = mysh.o token.o com_parser.o com_exec.o com_int.o
+OBJS = mysh.o token.o com_parser.o com_exec.o com_int.o err_hand.o
 
 LDFLAGS = -lreadline
 
@@ -13,6 +13,9 @@ com_exec: com_exec.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 com_parser: com_parser.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)	
+
+err_hand: err_hand.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)	
 
 clean: 
