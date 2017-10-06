@@ -7,6 +7,11 @@
 #include "consts.h"
 #include "com_parser.h"
 
+// TODO: check if executable exists here or just fail at execution?
+// grep "f" < Makefile is treating "<" as another arg
+// do we really need error handling on redirecting output?
+// change perror to fprinft(stderr, message)
+// don't return 1/NULL when io error. just print it out. continue parsing command. (but we need the command to fail again in execution, so leave the error-causing stuff in there?)
 
 int set_fn(struct command* cmd, char** pipe_tokens) {
     // Defaults, overridden if applicable
