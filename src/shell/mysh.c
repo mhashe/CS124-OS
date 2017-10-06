@@ -231,6 +231,7 @@ int main(int argc, char *argv[])
 
         fork_and_exec_commands(cmd);
         
+        // free the command struct
         struct command* temp;
         while (cmd != NULL) {
             free(cmd->exec_fn);
