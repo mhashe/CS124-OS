@@ -3,7 +3,9 @@
  * Vaibhav Anand, Nikhil Gupta, Michael Hashe
  *
  * This file contains a method to handle all shell built in commands. It
- * currently handles exit, cd, chdir, and history.
+ * currently handles exit, cd, chdir, and history. It does not have any i/o 
+ * redirecting to or from other piped commands (possibly do this in the 
+ * future, ie. "history | grep x").
  */
 
 #include <unistd.h> // read, write
@@ -21,7 +23,8 @@
 int internal_command_handler(struct command *cmd, int only_command) {
     char *cmd_name = cmd->exec_fn;
 
-    // switch statement in c won't work well
+    // compare cmd_name with all internal possible commands (switch statement 
+    // in c won't work well) and handle accordingly
     if (strcmp(cmd_name, "exit") == 0) {
         if (only_command) {
             exit(0);
@@ -41,8 +44,6 @@ int internal_command_handler(struct command *cmd, int only_command) {
         }
 
     } else if (strcmp(cmd_name, "history") == 0) {
-        // TODO: maybe, in the future, allow piping the results of this into the
-        // next cmd
         print_history();
     } else {
         return 0;
