@@ -1,3 +1,11 @@
+/*
+ * The Breakfast Club, CS 124, Fall 2017
+ * Vaibhav Anand, Nikhil Gupta, Michael Hashe
+ *
+ * This file contains the tokenizing for a command sequence. It can tokenize
+ * redirection using file descriptors and file descriptor duplication as well.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +25,7 @@ void copy_comm(char** dest, char* src, int word_start, int word_size, int i) {
     strncpy(dest[i], src + word_start, word_size);
     dest[i][word_size-1] = '\0';
 }
+
 
 int is_number(char* str, int start_i, int end_i) {
     // do not allow for number of length 0

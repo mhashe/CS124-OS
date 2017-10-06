@@ -21,7 +21,7 @@ int is_number(char* str, int start_i, int end_i);
 /*
  * tokenizes a string for command parsing
  *
- * commands: 
+ * Inputs: 
  *     command to be parsed
  *
  * Returns:
