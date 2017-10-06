@@ -110,28 +110,44 @@ char** parse_argv(char** argv) {
     // +1 for final NULL command
     char** real_args = (char**)calloc(MAX_LINE+1, sizeof(char*));
     if (real_args == NULL) {
-        fprintf(stderr, "CALLOC FAILED in command parser.\n");
+        perror("CALLOC FAILED in command parser");
         exit(1);
     }
 
     int idx = 0;
     while(argv[idx] != NULL) {
+
         if (!strchr(argv[idx], '"')) {
             // This is not a quote; any >, < characters imply redirection
             if (strchr(argv[idx], '>') || strchr(argv[idx], '<')) {
                 // Redirection.
                 break;
             }
+
+            // Non-quoted text
+            // +1 for null-terminated character
+            real_args[idx] = (char*)calloc(strlen(argv[idx])+1,sizeof(char));
+            if (real_args[idx] == NULL) {
+                perror("CALLOC FAILED in command parser");
+                exit(1);
+            }
+
+            strncpy(real_args[idx], argv[idx], strlen(argv[idx])+1);
+        } else {
+            // Quoted command.
+            // +1 for null-terminated character, -2 for quotation marks
+            real_args[idx] = (char*)calloc(strlen(argv[idx])-1,sizeof(char));
+            if (real_args[idx] == NULL) {
+                perror("CALLOC FAILED in command parser");
+                exit(1);
+            }
+
+            // -1 first character, -1 last character. Manually add in 
+            // null-terminated character.
+            strncpy(real_args[idx], ((char*)argv[idx])+1, strlen(argv[idx])-2);
+            real_args[idx][strlen(argv[idx])-2] = '\0';
         }
 
-        // +1 for null-terminated character
-        real_args[idx] = (char*)calloc(strlen(argv[idx])+1,sizeof(char));
-        if (real_args[idx] == NULL) {
-            fprintf(stderr, "CALLOC FAILED in command parser.\n");
-            exit(1);
-        }
-
-        strncpy(real_args[idx], argv[idx], strlen(argv[idx])+1);
 
         idx += 1;
     }
