@@ -1,0 +1,6 @@
+boot.bin
+program.bin
+floppy.img
+prog.lds.s
+*.o
+
