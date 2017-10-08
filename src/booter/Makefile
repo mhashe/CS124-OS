@@ -57,8 +57,9 @@ run-qemu: $(FLOPPY_IMG)
 debug-qemu: $(FLOPPY_IMG)
 	qemu-system-i386 -soundhw pcspk -s -S -drive file=$(FLOPPY_IMG),format=raw
 
+# Currently compiling floppy.img on VM, running natively.
 clean:
-	rm -f *.o prog.lds.s $(BOOT_BIN) $(PROGRAM_BIN) $(FLOPPY_IMG)
+	rm -f *.o prog.lds.s $(BOOT_BIN) $(PROGRAM_BIN) #$(FLOPPY_IMG)
 
 .PHONY: all clean run-qemu debug-qemu
 
