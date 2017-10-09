@@ -1,6 +1,4 @@
-// #include <stdio.h>
 /* This is the entry-point for the game! */
-
 void c_start(void) {
     /* TODO:  You will need to initialize various subsystems here.  This
      *        would include the interrupt handling mechanism, and the various

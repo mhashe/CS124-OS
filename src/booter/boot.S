@@ -50,17 +50,17 @@ boot_start:
     #
     #        REMOVE THIS COMMENT BLOCK WHEN YOU WRITE THIS CODE.
     #---------------------------------------------------------------------
-    xor %eax, %eax      # starting index of sectors to read
-    push %eax
-    push %eax
 
-    mov $PROGRAM_SEGMENT, %ax    # segment:offset of buffer to receive data
-    push %ax
-    mov $PROGRAM_OFFSET, %ax
-    push %ax
+    # Start first read at sector 1
+    push $0x0
+    push $0x0
+    push $0x0
+    push $0x1
 
-    mov $1, %ax      # number of 512-byte sectors to read
-    push %ax
+    push $PROGRAM_SEGMENT # segment:offset of buffer to receive data
+    push $PROGRAM_OFFSET
+     
+    push $1 # number of 512-byte sectors to read
 
     xor %ah, %ah        # unused
     mov $0x10, %al      # size of packet
@@ -74,7 +74,7 @@ boot_start:
 
     int $0x13
 
-    # TODO: Pop from stack
+    # TODO: Pop from stack, check for errors
 
     mov $STR_LOADED, %si
     call    print_str
@@ -190,13 +190,10 @@ call_c_entry:
     #        REMOVE THIS COMMENT BLOCK WHEN YOU WRITE THIS CODE.  (FEEL
     #        FREE TO INCORPORATE ANY OF THE ABOVE COMMENTS INTO YOUR CODE!)
     #---------------------------------------------------------------------
-    push %ebp # Set base pointer
-    mov %ebp, %esp 
+ 
     mov $PROGRAM_BASE_ADDR, %eax
-    add $0x94, %eax
-    call %eax
-
-    jmp end
+    add $0x18, %eax
+    call *%eax
 
     #=====================================================================
     # The rest of this file contains helper functions for the 16-bit
@@ -264,5 +261,3 @@ gdtdesc:
     .org BOOT_SIG_ADDR - BOOT_BASE_ADDR
     .word 0xaa55
 
-end:
-    # Just stop
