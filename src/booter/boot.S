@@ -50,6 +50,31 @@ boot_start:
     #
     #        REMOVE THIS COMMENT BLOCK WHEN YOU WRITE THIS CODE.
     #---------------------------------------------------------------------
+    xor %eax, %eax      # starting index of sectors to read
+    push %eax
+    push %eax
+
+    mov $PROGRAM_SEGMENT, %ax    # segment:offset of buffer to receive data
+    push %ax
+    mov $PROGRAM_OFFSET, %ax
+    push %ax
+
+    mov $1, %ax      # number of 512-byte sectors to read
+    push %ax
+
+    xor %ah, %ah        # unused
+    mov $0x10, %al      # size of packet
+    push %ax
+
+    xor %esi, %esi      # make sure upper bytes of si don't influece int
+    mov %ss, %ax        # set up segment pointer to DAP
+    mov %ax, %ds
+    mov %sp, %si        # set up offset pointer to DAP
+    mov $0x42, %ah      # use extended read sectors
+
+    int $0x13
+
+    # TODO: Pop from stack
 
     mov $STR_LOADED, %si
     call    print_str
@@ -110,6 +135,11 @@ start_protected:
     #        REMOVE THIS COMMENT BLOCK WHEN YOU WRITE THIS CODE.  (FEEL
     #        FREE TO INCORPORATE ANY OF THE ABOVE COMMENTS INTO YOUR CODE!)
     #---------------------------------------------------------------------
+    cli         # Disable interrupts
+    data32 addr32 lgdt gdtdesc # Load GDT into GDTR
+    mov %cr0, %eax  # Copy CR0 
+    or $CR0_PE, %eax # Set flag
+    mov %eax, %cr0  # Move back to CR0
 
     # We're now in protected mode, but still in a 16-bit segment.  The
     # CPU still has the real-mode code segment cached in %cs's segment
@@ -160,6 +190,13 @@ call_c_entry:
     #        REMOVE THIS COMMENT BLOCK WHEN YOU WRITE THIS CODE.  (FEEL
     #        FREE TO INCORPORATE ANY OF THE ABOVE COMMENTS INTO YOUR CODE!)
     #---------------------------------------------------------------------
+    push %ebp # Set base pointer
+    mov %ebp, %esp 
+    mov $PROGRAM_BASE_ADDR, %eax
+    add $0x94, %eax
+    call %eax
+
+    jmp end
 
     #=====================================================================
     # The rest of this file contains helper functions for the 16-bit
@@ -227,3 +264,5 @@ gdtdesc:
     .org BOOT_SIG_ADDR - BOOT_BASE_ADDR
     .word 0xaa55
 
+end:
+    # Just stop

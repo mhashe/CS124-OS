@@ -10,6 +10,9 @@
 
 /* The main program expects to be loaded at address 0x00020000 */
 #define PROGRAM_BASE_ADDR 0x00020000
+#define PROGRAM_SEGMENT   0x2000
+#define PROGRAM_OFFSET    0x0
+
 
 /* Flags in control register 0. */
 #define CR0_PE 0x00000001      /* Protection Enable. */
