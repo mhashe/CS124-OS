@@ -3,6 +3,7 @@
 #include "interrupts.h"
 #include "handlers.h"
 
+
 /*============================================================================
  * PROGRAMMABLE INTERVAL TIMER
  *
@@ -32,8 +33,10 @@
  * about the Programmable Interval Timer.
  */
 
+
 /* Frequency of the PIT's input clock. */
 #define PIT_FREQ 1193182
+
 
 /* Ports for the Programmable Interval Timer (PIT). */
 #define PIT_CHAN0_DATA 0x40
@@ -42,10 +45,12 @@
 #define PIT_MODE_CMD   0x43
 
 
+/* Timer count. */
 static volatile int time;
 
 
 void timer_handler(void) {
+    /* Advanced time ("clock tick"). */
     time++;
 }
 
@@ -58,26 +63,24 @@ void init_timer(void) {
     /* Tell channel 0 to trigger 100 times per second.  The value we load
      * here is a divider for the 1193182 Hz timer.  1193182 / 100 ~= 11932.
      * 11932 = 0x2e9c.
-     *
-     * Always write the low byte first, then high byte second.
      */
     outb(PIT_CHAN0_DATA, 0x9c);
     outb(PIT_CHAN0_DATA, 0x2e);
 
+    /* Initialize timer to 0. */
     time = 0;
 
-    /* TODO:  You might want to install your timer interrupt handler
-     *        here as well.
-     */
+    /* Install timer interrupt handler. */
     install_interrupt_handler(TIMER_INTERRUPT, timer_handler);
 }
 
 
 void sleep(float sec) {
-    // Sleep for sec seconds
+    /* Sleep for sec seconds. */
     float low = (float) time;
+    
     while (((float)time - low) / 100.0 < sec) {
-        // Loop until ms milliseconds elapsed
+        /* Loop until ms milliseconds elapsed. */
     }
 }
 
