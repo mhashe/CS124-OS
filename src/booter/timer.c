@@ -74,7 +74,11 @@ void init_timer(void) {
     install_interrupt_handler(TIMER_INTERRUPT, timer_handler);
 }
 
-
+/*=============================================================================
+ * Handles timer interrupts by incrementing the clock (in terms of ms).
+ *
+ * Deliberately not exposed to remainder of program.
+ */
 void sleep(float sec) {
     /* Sleep for sec seconds. */
     float low = (float) time;
