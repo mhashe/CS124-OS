@@ -1,3 +1,5 @@
+#include "keyboard.h"
+
 /* This is the entry-point for the game! */
 void c_start(void) {
     /* TODO:  You will need to initialize various subsystems here.  This
@@ -6,12 +8,6 @@ void c_start(void) {
      *        enable_interrupts() to start interrupt handling, and go on to
      *        do whatever else you decide to do!
      */
-
-    /* Loop forever, so that we don't fall back into the bootloader code. */
-    // puts("Hello World!\n");
-    // printf("Magic: %d\n", magic);
-    while (1) {
-        int i = 1 + 1;
-    }
+    init_keyboard();
 }
 

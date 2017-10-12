@@ -51,23 +51,51 @@
  *        so that nothing gets mangled...
  */
 
-static volatile int keycode_queue[KEYCODE_QUEUE_SIZE];
-static int queue_read_index;
-static int queue_write_index;
+static volatile char key_queue[KEYCODE_QUEUE_SIZE];
+static uint32_t queue_read_index;
+static uint32_t queue_write_index;
+
 
 void init_keyboard(void) {
-    /* TODO:  Initialize any state required by the keyboard handler. */
+    // initialize state required by the keyboard handler
     queue_read_index = 0;
     queue_write_index = 0;
 
-    /* TODO:  You might want to install your keyboard interrupt handler
-     *        here as well.
-     */
+    // install your keyboard interrupt handler
     install_interrupt_handler(KEYBOARD_INTERRUPT, irq1_handler);
+
+    // TODO: remove
     while(1) {  }
 }
 
 void key_handler(void) {
-    char keycode = inb(KEYBOARD_PORT);
-    int test = 79;
+    char keycode = inb(KEYBOARD_PORT); // puts keycode in rdi register; TODO: remove
+    uint32_t test = 79; // test rsi register is 79 in debugging; TODO: remove
+
+    disable_interrupts();
+
+    key_queue[queue_write_index] = keycode;
+    queue_write_index++;
+
+    enable_interrupts();
+}
+
+// reads char from queue. 
+char key_queue_pop(void) {
+    char keycode;
+
+    disable_interrupts();
+
+    if (queue_read_index == queue_write_index) {
+        enable_interrupts();
+        return KEY_QUEUE_EMPTY;
+    }
+
+    keycode = key_queue[queue_read_index];
+
+    queue_read_index++;
+
+    enable_interrupts();
+
+    return keycode;
 }
