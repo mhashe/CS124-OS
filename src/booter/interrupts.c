@@ -39,13 +39,13 @@ static IDT_Descriptor interrupt_descriptor_table[NUM_INTERRUPTS];
  * instruction wants...  See IA32 manual for details.)
  */
 static inline void lidt(void* base, uint16_t size) {
-    // This function works in 32 and 64bit mode
+    /* This function works in 32 and 64bit mode. */
     struct {
         uint16_t length;
         void*    base;
     } __attribute__((packed)) IDTR = { size, base };
  
-    // let the compiler choose an addressing mode
+    /* Let the compiler choose an addressing mode. */
     asm ( "lidt %0" : : "m"(IDTR) );
 }
 
@@ -64,31 +64,38 @@ static inline void lidt(void* base, uint16_t size) {
  * For more details on the 8259 PIC, see:  http://wiki.osdev.org/8259_PIC
  */
 
-#define PIC1         0x20           /* IO base address for master PIC */
-#define PIC2         0xA0           /* IO base address for slave PIC */
+
+#define PIC1         0x20           /* IO base address for master PIC. */
+#define PIC2         0xA0           /* IO base address for slave PIC. */
 #define PIC1_COMMAND PIC1
 #define PIC1_DATA    (PIC1+1)
 #define PIC2_COMMAND PIC2
 #define PIC2_DATA    (PIC2+1)
+
 
 /* These definitions are used to reinitialize the PIC controllers, giving
  * them the specified vector offsets rather than 8h and 70h, as configured
  * by default.  (The master PIC interrupt IRQs fall within the first 32
  * protected-mode interrupts, which are reserved by the processor.)
  */
-#define ICW1_ICW4       0x01        /* ICW4 (not) needed */
-#define ICW1_SINGLE     0x02        /* Single (cascade) mode */
-#define ICW1_INTERVAL4  0x04        /* Call address interval 4 (8) */
-#define ICW1_LEVEL      0x08        /* Level triggered (edge) mode */
-#define ICW1_INIT       0x10        /* Initialization - required! */
+
+
+#define ICW1_ICW4       0x01        /* ICW4 (not) needed. */
+#define ICW1_SINGLE     0x02        /* Single (cascade) mode. */
+#define ICW1_INTERVAL4  0x04        /* Call address interval 4 (8). */
+#define ICW1_LEVEL      0x08        /* Level triggered (edge) mode. */
+#define ICW1_INIT       0x10        /* Initialization - required!. */
+
  
-#define ICW4_8086       0x01        /* 8086/88 (MCS-80/85) mode */
-#define ICW4_AUTO       0x02        /* Auto (normal) EOI */
-#define ICW4_BUF_SLAVE  0x08        /* Buffered mode/slave */
-#define ICW4_BUF_MASTER 0x0C        /* Buffered mode/master */
-#define ICW4_SFNM       0x10        /* Special fully nested (not) */
- 
-/* Remap the interrupts that the PIC generates.  The default interrupt
+#define ICW4_8086       0x01        /* 8086/88 (MCS-80/85) mode. */
+#define ICW4_AUTO       0x02        /* Auto (normal) EOI. */
+#define ICW4_BUF_SLAVE  0x08        /* Buffered mode/slave. */
+#define ICW4_BUF_MASTER 0x0C        /* Buffered mode/master. */
+#define ICW4_SFNM       0x10        /* Special fully nested (not). */
+
+
+/*=============================================================================
+ * Remap the interrupts that the PIC generates.  The default interrupt
  * mapping conflicts with the IA32 protected-mode interrupts for indicating
  * hardware/software exceptions, so we need to map them elsewhere.
  *
@@ -100,29 +107,29 @@ static inline void lidt(void* base, uint16_t size) {
 void PIC_remap(int offset1, int offset2) {
     unsigned char a1, a2;
  
-    a1 = inb(PIC1_DATA);                        // save masks
+    a1 = inb(PIC1_DATA);                        /* Save masks. */
     a2 = inb(PIC2_DATA);
  
-    // starts the initialization sequence (in cascade mode)
+    /* Starts the initialization sequence (in cascade mode). */
     outb(PIC1_COMMAND, ICW1_INIT+ICW1_ICW4);
     io_wait();
     outb(PIC2_COMMAND, ICW1_INIT+ICW1_ICW4);
     io_wait();
-    outb(PIC1_DATA, offset1);       // ICW2: Master PIC vector offset
+    outb(PIC1_DATA, offset1);       /* ICW2: Master PIC vector offset. */
     io_wait();
-    outb(PIC2_DATA, offset2);       // ICW2: Slave PIC vector offset
+    outb(PIC2_DATA, offset2);       /* ICW2: Slave PIC vector offset. */
     io_wait();
-    outb(PIC1_DATA, 4);             // ICW3: tell Master PIC that there is a
-    io_wait();                      //       slave PIC at IRQ2 (0000 0100)
-    outb(PIC2_DATA, 2);             // ICW3: tell Slave PIC its cascade
-    io_wait();                      // identity (0000 0010)
+    outb(PIC1_DATA, 4);             /* ICW3: tell Master PIC that there is a */
+    io_wait();                      /*       slave PIC at IRQ2 (0000 0100). */
+    outb(PIC2_DATA, 2);             /* ICW3: tell Slave PIC its cascade */
+    io_wait();                      /* identity (0000 0010). */
 
     outb(PIC1_DATA, ICW4_8086);
     io_wait();
     outb(PIC2_DATA, ICW4_8086);
     io_wait();
 
-    outb(PIC1_DATA, a1);   // restore saved masks.
+    outb(PIC1_DATA, a1);   /* Restore saved masks. */
     outb(PIC2_DATA, a2);
 }
 
@@ -168,7 +175,7 @@ void IRQ_clear_mask(unsigned char IRQline) {
 
 /* Initialize interrupts */
 void init_interrupts(void) {
-    // Zero out the Interrupt Descriptor Table. 
+    /* Zero out the Interrupt Descriptor Table. */
     for (int i = 0; i < NUM_INTERRUPTS; i++) {
         int elt_offset = i * sizeof(IDT_Descriptor);
         for (int k = 0; k < sizeof(IDT_Descriptor); k++) {
@@ -177,7 +184,7 @@ void init_interrupts(void) {
         }
     }
 
-    // Install the Interrupt Descriptor Table.
+    /* Install the Interrupt Descriptor Table. */
     lidt(interrupt_descriptor_table, NUM_INTERRUPTS * sizeof(IDT_Descriptor));
 
     /* Remap the Programmable Interrupt Controller to deliver its interrupts
@@ -191,34 +198,30 @@ void init_interrupts(void) {
 }
 
 
-/* Installs an interrupt handler into the Interrupt Descriptor Table.
- * The handler is expected to be an assembly language handler function,
- * not a C function, although the handler might call a C function.
- */
 void install_interrupt_handler(int num, void *handler) {
     /* See IA32 Manual, Volume 3A, Section 5.11 for an overview of the contents 
      * of IDT Descriptors.  These are Interrupt Gates.
      */
     
     uint8_t type_attr = 0;
-    type_attr |= 1;         // set present flag
-    type_attr <<= 2;        // move to descriptor privilege level
-    // Anything is allowed to invoke interrupt. Not really relevant here.
-    type_attr |= 0;         // set privilege level to 0
-    type_attr <<= 1;        // move to fixed value
-    type_attr |= 0;         // needed value
-    type_attr <<= 1;        // move to size of date
-    type_attr |= 1;         // size of gate is 32 bits
-    type_attr <<= 3;        // move to fixed value
-    type_attr |= 0b110;     // needed value
+    type_attr |= 1;         /* Set present flag. */
+    type_attr <<= 2;        /* Move to descriptor privilege level. */
+    
+    /* Anything is allowed to invoke interrupt. Not really relevant here. */
+    type_attr |= 0;         /* Set privilege level to 0. */
+    type_attr <<= 1;        /* Move to fixed value. */
+    type_attr |= 0;         /* Needed value. */
+    type_attr <<= 1;        /* Move to size of date. */
+    type_attr |= 1;         /* Size of gate is 32 bits. */
+    type_attr <<= 3;        /* Move to fixed value. */
+    type_attr |= 0b110;     /* Needed value. */
 
     IDT_Descriptor desc = interrupt_descriptor_table[num];
     desc.offset_15_0 = (uint32_t)handler & LOWER_16_MASK;
-    desc.selector = SEL_CODESEG;    // use code segment set up in bootloader
-    desc.zero = 0;      // should already be 0
+    desc.selector = SEL_CODESEG;    /* Use code segment set up in bootloader. */
+    desc.zero = 0;      /* Should already be 0. */
     desc.type_attr = type_attr;
     desc.offset_31_16 = (uint32_t)handler >> 16;
 
 }
-
 

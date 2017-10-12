@@ -11,10 +11,18 @@
 #define TIMER_INTERRUPT 0x20
 #define KEYBOARD_INTERRUPT 0x21
 
+
 #define LOWER_16_MASK 0x0000FFFF
 
 
+/* Initialize interrupts. */
 void init_interrupts(void);
+
+
+/* Installs an interrupt handler into the Interrupt Descriptor Table.
+ * The handler is expected to be an assembly language handler function,
+ * not a C function, although the handler might call a C function.
+ */
 void install_interrupt_handler(int num, void *handler);
 
 
