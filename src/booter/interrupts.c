@@ -168,15 +168,17 @@ void IRQ_clear_mask(unsigned char IRQline) {
 
 /* Initialize interrupts */
 void init_interrupts(void) {
-    /* TODO:  INITIALIZE AND LOAD THE INTERRUPT DESCRIPTOR TABLE.
-     *
-     *        The entire Interrupt Descriptor Table should be zeroed out.
-     *        (Unfortunately you have to do this yourself since you don't
-     *        have the C Standard Library to use...)
-     *
-     *        Once the entire IDT has been cleared, use the lidt() function
-     *        defined above to install our IDT.
-     */
+    // Zero out the Interrupt Descriptor Table. 
+    for (int i = 0; i < NUM_INTERRUPTS; i++) {
+        int elt_offset = i * sizeof(IDT_Descriptor);
+        for (int k = 0; k < sizeof(IDT_Descriptor); k++) {
+            int offset = elt_offset + k;
+            *(((char*)interrupt_descriptor_table)+offset) = 0;
+        }
+    }
+
+    // Install the Interrupt Descriptor Table.
+    lidt(interrupt_descriptor_table, NUM_INTERRUPTS * sizeof(IDT_Descriptor));
 
     /* Remap the Programmable Interrupt Controller to deliver its interrupts
      * to 0x20-0x33 (32-45), so that they don't conflict with the IA32 built-
@@ -194,25 +196,29 @@ void init_interrupts(void) {
  * not a C function, although the handler might call a C function.
  */
 void install_interrupt_handler(int num, void *handler) {
-    /* TODO:  IMPLEMENT.  See IA32 Manual, Volume 3A, Section 5.11 for an
-     *        overview of the contents of IDT Descriptors.  These are
-     *        Interrupt Gates.
-     *
-     *        The handler address must be split into two halves, so that it
-     *        can be stored into the IDT descriptor.
-     *
-     *        The segment selector should be the code-segment selector
-     *        that was set up in the bootloader.  (See boot.h for the
-     *        appropriate definition.)
-     *
-     *        The DPL component of the "type_attr" field specifies the
-     *        required privilege level to invoke the interrupt.  You can
-     *        set this to 0 (which allows anything to invoke the interrupt),
-     *        but its value isn't really relevant to us.
-     *
-     *        REMOVE THIS COMMENT WHEN YOU WRITE THE CODE.  (FEEL FREE TO
-     *        INCORPORATE THE ABOVE COMMENTS IF YOU WISH.)
+    /* See IA32 Manual, Volume 3A, Section 5.11 for an overview of the contents 
+     * of IDT Descriptors.  These are Interrupt Gates.
      */
+    
+    uint8_t type_attr = 0;
+    type_attr |= 1;         // set present flag
+    type_attr <<= 2;        // move to descriptor privilege level
+    // Anything is allowed to invoke interrupt. Not really relevant here.
+    type_attr |= 0;         // set privilege level to 0
+    type_attr <<= 1;        // move to fixed value
+    type_attr |= 0;         // needed value
+    type_attr <<= 1;        // move to size of date
+    type_attr |= 1;         // size of gate is 32 bits
+    type_attr <<= 3;        // move to fixed value
+    type_attr |= 0b110;     // needed value
+
+    IDT_Descriptor desc = interrupt_descriptor_table[num];
+    desc.offset_15_0 = (uint32_t)handler & LOWER_16_MASK;
+    desc.selector = SEL_CODESEG;    // use code segment set up in bootloader
+    desc.zero = 0;      // should already be 0
+    desc.type_attr = type_attr;
+    desc.offset_31_16 = (uint32_t)handler >> 16;
+
 }
 
 

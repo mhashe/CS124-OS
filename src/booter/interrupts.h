@@ -11,6 +11,8 @@
 #define TIMER_INTERRUPT 0x20
 #define KEYBOARD_INTERRUPT 0x21
 
+#define LOWER_16_MASK 0x0000FFFF
+
 
 void init_interrupts(void);
 void install_interrupt_handler(int num, void *handler);
