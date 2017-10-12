@@ -3,3 +3,5 @@
  *
  * You will need lines like these:  void *(irqN_handler)(void)
  */
+
+void *(irq0_handler)(void); // Timer Handler

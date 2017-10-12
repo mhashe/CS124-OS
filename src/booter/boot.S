@@ -52,19 +52,14 @@ boot_start:
     #---------------------------------------------------------------------
 
     # Start first read at sector 1
-    push $0x0
-    push $0x0
-    push $0x0
-    push $0x1
+    pushl $0x00000000
+    pushl $0x00000001
 
     push $PROGRAM_SEGMENT # segment:offset of buffer to receive data
     push $PROGRAM_OFFSET
      
-    push $10 # number of 512-byte sectors to read
-
-    xor %ah, %ah        # unused
-    mov $0x10, %al      # size of packet
-    push %ax
+    push $10            # number of 512-byte sectors to read
+    push $0x0010        # first byte unused, second size of packet
 
     xor %esi, %esi      # make sure upper bytes of si don't influece int
     mov %ss, %ax        # set up segment pointer to DAP
@@ -75,6 +70,12 @@ boot_start:
     int $0x13
 
     # TODO: Pop from stack, check for errors
+    popl %edx
+    popl %edx
+    popl %edx
+    popl %edx
+
+    jc boot_fail
 
     mov $STR_LOADED, %si
     call    print_str
@@ -192,8 +193,8 @@ call_c_entry:
     #---------------------------------------------------------------------
  
     mov $PROGRAM_BASE_ADDR, %eax
-    add $0x94, %eax
-    call *%eax
+    add $0x18, %eax
+    call *(%eax)
 
     #=====================================================================
     # The rest of this file contains helper functions for the 16-bit

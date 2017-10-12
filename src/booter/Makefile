@@ -17,7 +17,7 @@ PROGRAM_BIN = program.bin
 FLOPPY_IMG = floppy.img
 
 
-all : $(FLOPPY_IMG)
+all : clean $(FLOPPY_IMG)
 
 
 # Use gcc to build our assembly code so that we can use the C preprocessor
