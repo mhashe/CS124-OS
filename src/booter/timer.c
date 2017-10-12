@@ -50,7 +50,7 @@ static volatile int time;
 
 
 void timer_handler(void) {
-    /* Advanced time ("clock tick"). */
+    /* Advance time ("clock tick"). */
     time++;
 }
 
@@ -80,7 +80,7 @@ void sleep(float sec) {
     float low = (float) time;
     
     while (((float)time - low) / 100.0 < sec) {
-        /* Loop until ms milliseconds elapsed. */
+        /* Loop until sec seconds elapsed. */
     }
 }
 

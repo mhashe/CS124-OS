@@ -60,11 +60,7 @@ void init_keyboard(void) {
     queue_read_index = 0;
     queue_write_index = 0;
 
-    /* TODO:  You might want to install your keyboard interrupt handler
-     *        here as well.
-     */
     install_interrupt_handler(KEYBOARD_INTERRUPT, irq1_handler);
-    while(1) {  }
 }
 
 void key_handler(void) {
