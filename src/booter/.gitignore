@@ -2,4 +2,5 @@ boot.bin
 program.bin
 prog.lds.s
 *.o
+*.img
 
