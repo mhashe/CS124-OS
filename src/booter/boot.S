@@ -32,13 +32,13 @@ boot_start:
     sub %ax, %ax
     mov %ax, %ds
     mov %ax, %ss
-    mov $0xf000, %esp   # Use %esp since we'll be in 32-bit mode later.
+    mov $STACK_BASE, %esp # Use %esp since we'll be in 32-bit mode later.
 
     # Hide the cursor, just to be "prettier."  This will carry over into
     # protected mode execution too.
     mov $1, %ah
-    mov $0x2607, %cx    # Set cursor end-row to come before start-row.
-    int $0x10
+    mov $CURSOR_END, %cx  # Set cursor end-row to come before start-row.
+    int $DISPLAY_INT      # Display interrupt
 
     # "Loading program."
     mov $STR_LOADING, %si
@@ -51,18 +51,18 @@ boot_start:
     push $PROGRAM_SEGMENT # segment:offset of buffer to receive data.
     push $PROGRAM_OFFSET
      
-    push $10            # Number of 512-byte sectors to read.
-    push $0x0010        # First byte is unused, second is size of packet.
+    push $10              # Number of 512-byte sectors to read.
+    push $0x0010          # First byte is unused, second is size of packet.
 
-    xor %esi, %esi      # Make sure upper bytes of si don't influece int.
-    mov %ss, %ax        # Set up segment pointer to DAP.
+    xor %esi, %esi        # Make sure upper bytes of si don't influece int.
+    mov %ss, %ax          # Set up segment pointer to DAP.
     mov %ax, %ds
-    mov %sp, %si        # Set up offset pointer to DAP.
-    mov $0x42, %ah      # Use extended read sectors.
+    mov %sp, %si          # Set up offset pointer to DAP.
+    mov $EXT_READ, %ah    # Use Extended Read Sectors.
 
-    int $0x13           # Load the remainder of the program into memory 
-                        # using int 10h "Extended Read Operation."  If it 
-                        # fails, jump to boot_fail.
+    int $DISK_INT         # Load the remainder of the program into memory 
+                          # using int 10h "Extended Read Operation."  If it 
+                          # fails, jump to boot_fail.
 
     # Pop from stack.
     popl %edx
@@ -135,10 +135,7 @@ call_c_entry:
 
     cld                 # C code expects this...
     movl $0, %ebp       # Null-terminate the program's backtrace.
- 
-    mov $PROGRAM_BASE_ADDR, %eax    # Store base address.
-    add $0x18, %eax                 # Add e_entry offset
-    call *(%eax)                    # Call
+    call *(PROGRAM_BASE_ADDR + E_OFFSET)   # Call c_entry
 
     #=====================================================================
     # The rest of this file contains helper functions for the 16-bit
@@ -146,7 +143,7 @@ call_c_entry:
     .code16
 
 halt:
-    cli         # Disable interrupts so we can't be waken up.
+    cli             # Disable interrupts so we can't be waken up.
 halt_loop:
     hlt             # Halt the CPU.
     jmp halt_loop   # Just in case we wake up, go back to sleep.
@@ -171,7 +168,7 @@ print_str:
     test    %al, %al        # skip over the entire loop.
     jz  write_str_done
 write_str_loop:
-    int $0x10
+    int $DISPLAY_INT
     inc %si                 # Go on to the next character.
     movb    (%si), %al      # If it's 0, exit loop.  Otherwise,
     test    %al, %al        # go back and output the character.
