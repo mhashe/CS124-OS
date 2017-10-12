@@ -14,8 +14,10 @@ void c_start(void) {
     init_interrupts();
 
     init_timer();
-
-    // Current loops forever (to test keyboard press):
     init_keyboard();
+
+    enable_interrupts();
+
+    while(1) {}
 }
 

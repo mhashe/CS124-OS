@@ -64,8 +64,6 @@ void init_keyboard(void) {
     // install your keyboard interrupt handler
     install_interrupt_handler(KEYBOARD_INTERRUPT, irq1_handler);
 
-    // TODO: remove
-    while(1) {  }
 }
 
 void key_handler(void) {

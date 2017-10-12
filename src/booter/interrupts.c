@@ -216,12 +216,12 @@ void install_interrupt_handler(int num, void *handler) {
     type_attr <<= 3;        /* Move to fixed value. */
     type_attr |= 0b110;     /* Needed value. */
 
-    IDT_Descriptor desc = interrupt_descriptor_table[num];
-    desc.offset_15_0 = (uint32_t)handler & LOWER_16_MASK;
-    desc.selector = SEL_CODESEG;    /* Use code segment set up in bootloader. */
-    desc.zero = 0;      /* Should already be 0. */
-    desc.type_attr = type_attr;
-    desc.offset_31_16 = (uint32_t)handler >> 16;
+    IDT_Descriptor* desc = interrupt_descriptor_table + num;
+    desc->offset_15_0 = (uint32_t)handler & LOWER_16_MASK;
+    desc->selector = SEL_CODESEG;   /* Use code segment set up in bootloader. */
+    desc->zero = 0;      /* Should already be 0. */
+    desc->type_attr = type_attr;
+    desc->offset_31_16 = (uint32_t)handler >> 16;
 
 }
 

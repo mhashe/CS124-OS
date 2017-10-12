@@ -71,7 +71,7 @@ void init_timer(void) {
     time = 0;
 
     /* Install timer interrupt handler. */
-    install_interrupt_handler(TIMER_INTERRUPT, timer_handler);
+    install_interrupt_handler(TIMER_INTERRUPT, irq0_handler);
 }
 
 /*=============================================================================
