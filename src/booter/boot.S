@@ -1,4 +1,3 @@
-/* Helpful constants for use in the bootloader. */
 #include "boot.h"
 
     #=====================================================================
@@ -33,62 +32,50 @@ boot_start:
     sub %ax, %ax
     mov %ax, %ds
     mov %ax, %ss
-    mov $0xf000, %esp   # Use %esp since we'll be in 32-bit mode later
+    mov $0xf000, %esp   # Use %esp since we'll be in 32-bit mode later.
 
     # Hide the cursor, just to be "prettier."  This will carry over into
     # protected mode execution too.
     mov $1, %ah
-    mov $0x2607, %cx    # Set cursor end-row to come before start-row
+    mov $0x2607, %cx    # Set cursor end-row to come before start-row.
     int $0x10
 
+    # "Loading program."
     mov $STR_LOADING, %si
     call    print_str
 
-    #---------------------------------------------------------------------
-    # TODO:  Load the remainder of the program into memory using int 10h
-    #        "Extended Read Operation."  If it fails, jump to boot_fail.
-    #
-    #        REMOVE THIS COMMENT BLOCK WHEN YOU WRITE THIS CODE.
-    #---------------------------------------------------------------------
-
-    # Start first read at sector 1
+    # Start first read at sector 1.
     pushl $0x00000000
     pushl $0x00000001
 
-    push $PROGRAM_SEGMENT # segment:offset of buffer to receive data
+    push $PROGRAM_SEGMENT # segment:offset of buffer to receive data.
     push $PROGRAM_OFFSET
      
-    push $10            # number of 512-byte sectors to read
-    push $0x0010        # first byte unused, second size of packet
+    push $10            # Number of 512-byte sectors to read.
+    push $0x0010        # First byte is unused, second is size of packet.
 
-    xor %esi, %esi      # make sure upper bytes of si don't influece int
-    mov %ss, %ax        # set up segment pointer to DAP
+    xor %esi, %esi      # Make sure upper bytes of si don't influece int.
+    mov %ss, %ax        # Set up segment pointer to DAP.
     mov %ax, %ds
-    mov %sp, %si        # set up offset pointer to DAP
-    mov $0x42, %ah      # use extended read sectors
+    mov %sp, %si        # Set up offset pointer to DAP.
+    mov $0x42, %ah      # Use extended read sectors.
 
-    int $0x13
+    int $0x13           # Load the remainder of the program into memory 
+                        # using int 10h "Extended Read Operation."  If it 
+                        # fails, jump to boot_fail.
 
-    # TODO: Pop from stack, check for errors
+    # Pop from stack.
     popl %edx
     popl %edx
     popl %edx
     popl %edx
 
+    # If loading fails, carry flag is set. Move to failure code.
     jc boot_fail
 
+    # "Loaded."
     mov $STR_LOADED, %si
     call    print_str
-
-    #---------------------------------------------------------------------
-    # TODO:  If you want to do anything else with the computer hardware
-    #        using the BIOS, here is the place to do it.  After this we
-    #        will transition into 32-bit protected mode, and the BIOS will
-    #        no longer be available to use.
-    #
-    #        REMOVE THIS COMMENT BLOCK WHEN YOU WRITE THIS CODE.
-    #        (OR IF YOU DECIDE YOU DON'T WANT TO PUT ANYTHING HERE.)
-    #---------------------------------------------------------------------
 
     #=====================================================================
     # Next, set up for transition from 16-bit real mode to 32-bit
@@ -99,48 +86,25 @@ boot_start:
 start_protected:
 
     #---------------------------------------------------------------------
-    # TODO:  Switch from real mode into protected mode.  The process is
-    #        straightforward:
-    #
-    #        1)  Disable interrupts, since any interrupt during this
-    #            process would demolish us.  (We don't turn interrupts
-    #            back on until we are safely in our C program, and have
-    #            set up an Interrupt Descriptor Table.)
-    #
-    #        2)  Set the Global Descriptor Table Register (GDTR) to our
-    #            simple Global Descriptor Table specified at the end of
-    #            the boot-loader.  You will need to write it like this,
-    #            since we are still in 16-bit real mode:
-    #
-    #            data32 addr32 lgdt gdtdesc
-    #
-    #            (We need a data32 prefix to ensure that all 32 bits of
-    #            the GDT descriptor are loaded; default is to load only
-    #            24 bits.  The CPU doesn't need an addr32 prefix but ELF
-    #            doesn't do 16-bit relocations.)
-    #
-    #        3)  Turn on protected mode by modifying Control Register cr0.
-    #            See IA32 Manual Volume 3A, Section 2.5 for details of
-    #            which bit(s) to set.  Don't turn on paging - we don't
-    #            need it!  Also, you should not modify any other bits in
-    #            cr0:  read it, OR in the appropriate bit(s), then write
-    #            it back.
-    #
-    #            You should use the constants in the boot.h header file
-    #            for this step, to make your code more readable.
-    #
-    #        See also IA32 Manual Volume 3A, Section 8.9.1 for the general
-    #        overview.  (We only do the parts that are relevant to our
-    #        needs in this project!)
-    #
-    #        REMOVE THIS COMMENT BLOCK WHEN YOU WRITE THIS CODE.  (FEEL
-    #        FREE TO INCORPORATE ANY OF THE ABOVE COMMENTS INTO YOUR CODE!)
+    # Switch from real mode into protected mode.  
     #---------------------------------------------------------------------
-    cli         # Disable interrupts
-    data32 addr32 lgdt gdtdesc # Load GDT into GDTR
-    mov %cr0, %eax  # Copy CR0 
-    or $CR0_PE, %eax # Set flag
-    mov %eax, %cr0  # Move back to CR0
+    
+    # Disable interrupts, since any interrupt during this
+    # process would demolish us.  (We don't turn interrupts
+    # back on until we are safely in our C program, and have
+    # set up an Interrupt Descriptor Table.)
+    cli
+
+    # Set the Global Descriptor Table Register (GDTR) to our
+    # simple Global Descriptor Table specified at the end of
+    # the boot-loader.  You will need to write it like this,
+    # since we are still in 16-bit real mode:
+    data32 addr32 lgdt gdtdesc
+
+    # Turn on protected mode by modifying Control Register cr0.
+    mov %cr0, %eax      # Copy CR0.
+    or $CR0_PE, %eax    # Set flag.
+    mov %eax, %cr0      # Move back to CR0.
 
     # We're now in protected mode, but still in a 16-bit segment.  The
     # CPU still has the real-mode code segment cached in %cs's segment
@@ -169,32 +133,12 @@ start_protected:
 
 call_c_entry:
 
-    cld         # C code expects this...
-    movl $0, %ebp       # Null-terminate the program's backtrace
-
-    #---------------------------------------------------------------------
-    # TODO:  Call the entry-point of the C program!  The program is
-    #        compiled and linked into an ELF file, so the file's ELF
-    #        header will specify the entry-point into the program.  See
-    #        the e_entry field; it is a 32-bit value.
-    #
-    #        The ELF-header is the very first data-structure in the data
-    #        that was loaded by the boot-loader, so the e_entry field
-    #        will be at a fixed offset from the start of the file data.
-    #
-    #        You will need to use an indirect call, where the address to
-    #        call is in a register.  The format is:  call *%somereg
-    #
-    #        Don't forget that you are calling a C function, so follow
-    #        cdecl!
-    #
-    #        REMOVE THIS COMMENT BLOCK WHEN YOU WRITE THIS CODE.  (FEEL
-    #        FREE TO INCORPORATE ANY OF THE ABOVE COMMENTS INTO YOUR CODE!)
-    #---------------------------------------------------------------------
+    cld                 # C code expects this...
+    movl $0, %ebp       # Null-terminate the program's backtrace.
  
-    mov $PROGRAM_BASE_ADDR, %eax
-    add $0x18, %eax
-    call *(%eax)
+    mov $PROGRAM_BASE_ADDR, %eax    # Store base address.
+    add $0x18, %eax                 # Add e_entry offset
+    call *(%eax)                    # Call
 
     #=====================================================================
     # The rest of this file contains helper functions for the 16-bit
@@ -202,12 +146,13 @@ call_c_entry:
     .code16
 
 halt:
-    cli         # Disable interrupts so we can't be waken up
+    cli         # Disable interrupts so we can't be waken up.
 halt_loop:
-    hlt         # Halt the CPU
-    jmp halt_loop   # Just in case we wake up, go back to sleep
+    hlt             # Halt the CPU.
+    jmp halt_loop   # Just in case we wake up, go back to sleep.
 
 boot_fail:
+    # "Failed to load program."
     mov $STR_FAILED, %si
     call    print_str
 
@@ -219,7 +164,7 @@ boot_fail:
 # it to the screen using BIOS interrupt 10.
 print_str:
     pusha
-    sub %bh, %bh        # Page to write to
+    sub %bh, %bh            # Page to write to.
     mov $0x0e, %ah
 
     movb    (%si), %al      # Check first character - if it is 0,
@@ -227,7 +172,7 @@ print_str:
     jz  write_str_done
 write_str_loop:
     int $0x10
-    inc %si         # Go on to the next character
+    inc %si                 # Go on to the next character.
     movb    (%si), %al      # If it's 0, exit loop.  Otherwise,
     test    %al, %al        # go back and output the character.
     jnz write_str_loop
@@ -238,9 +183,9 @@ write_str_done:
     #=====================================================================
     # String literals used by our boot loader.
 
-STR_LOADING:    .string "Loading program.\r\n"
-STR_LOADED: .string "Loaded.\r\n"
-STR_FAILED: .string "Failed to load program.\r\n"
+STR_LOADING: .string "Loading program.\r\n"
+STR_LOADED:  .string "Loaded.\r\n"
+STR_FAILED:  .string "Failed to load program.\r\n"
 
     #=====================================================================
     # Global Descriptor Table for protected-mode operation
@@ -250,11 +195,11 @@ STR_FAILED: .string "Failed to load program.\r\n"
 gdt:
     .quad 0x0000000000000000    # Null segment.  Not used by CPU.
     .quad 0x00cf9a000000ffff    # Code segment, base 0, limit 4 GB.
-    .quad 0x00cf92000000ffff        # Data segment, base 0, limit 4 GB.
+    .quad 0x00cf92000000ffff    # Data segment, base 0, limit 4 GB.
 
 gdtdesc:
     .word   gdtdesc - gdt - 1   # Size of the GDT, minus 1 byte.
-    .long   gdt         # Address of the GDT.
+    .long   gdt                 # Address of the GDT.
 
     #=====================================================================
     # This is the signature at the end of the sector that tells the BIOS
