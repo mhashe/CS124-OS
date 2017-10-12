@@ -1,6 +1,7 @@
 #include "interrupts.h"
 #include "timer.h"
 #include "keyboard.h"
+#include "video.h"
 
 /* This is the entry-point for the game! */
 void c_start(void) {
@@ -15,6 +16,7 @@ void c_start(void) {
 
     init_timer();
     init_keyboard();
+    init_video();
 
     enable_interrupts();
 

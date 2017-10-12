@@ -1,6 +1,10 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
+#define VID_WIDTH     80
+#define VID_HEIGHT    25
+#define VID_BUFF_SIZE  VID_WIDTH*VID_HEIGHT
+#define BYTES_PER_ELT  2
 
 /* Available colors from the 16-color palette used for EGA and VGA, and
  * also for text-mode VGA output.
@@ -24,6 +28,23 @@
 
 
 void init_video(void);
+
+/*
+ * Clears the screen by writing the null character everywhere.
+ */
+void clear_screen(void);
+
+/*
+ * Writes a character to the screen.
+ *
+ * Input:
+ *     ch: character to be output
+ *     fg: foreground color, must be defined in video.h
+ *     bg: background color, must be defined in video.h
+ *     x : x location to be placed
+ *     y : y location to be placed
+ */
+void write_char(char ch, int fg, int bg, int x, int y);
 
 
 #endif /* VIDEO_H */

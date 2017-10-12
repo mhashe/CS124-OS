@@ -28,8 +28,22 @@
 
 
 void init_video(void) {
-    /* TODO:  Do any video display initialization you might want to do, such
-     *        as clearing the screen, initializing static variable state, etc.
-     */
+    clear_screen();
+    write_char('H', BLUE, GREEN, 0, 0);
 }
 
+
+void clear_screen(void) {
+    for (int i = 0; i < VID_HEIGHT; i++) {
+        for (int j = 0; j < VID_WIDTH; j++) {
+            write_char('\0', BLACK, BLACK, i, j);
+        }
+    }
+}
+
+
+void write_char(char ch, int fg, int bg, int x, int y) {
+    int loc = BYTES_PER_ELT*(VID_WIDTH*x+y);
+    *((char*)VIDEO_BUFFER+loc)   = ch;
+    *((char*)VIDEO_BUFFER+loc+1) = fg << 4 | bg;    
+}
