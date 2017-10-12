@@ -19,6 +19,8 @@ FLOPPY_IMG = floppy.img
 
 all : clean $(FLOPPY_IMG)
 
+debug: clean $(FLOPPY_IMG) debug-qemu
+
 
 # Use gcc to build our assembly code so that we can use the C preprocessor
 # to #define constants for our bootloader.  The "-Wa,--gstabs" argument tells
