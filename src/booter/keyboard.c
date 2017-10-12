@@ -61,15 +61,11 @@ void init_keyboard(void) {
     queue_read_index = 0;
     queue_write_index = 0;
 
-<<<<<<< HEAD
     // install your keyboard interrupt handler
     install_interrupt_handler(KEYBOARD_INTERRUPT, irq1_handler);
 
     // TODO: remove
     while(1) {  }
-=======
-    install_interrupt_handler(KEYBOARD_INTERRUPT, irq1_handler);
->>>>>>> c128adbe68e183d63c5c81b2c8dd2ee43136ee45
 }
 
 void key_handler(void) {

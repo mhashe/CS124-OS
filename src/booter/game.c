@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-=======
 #include "interrupts.h"
 #include "timer.h"
->>>>>>> c128adbe68e183d63c5c81b2c8dd2ee43136ee45
 #include "keyboard.h"
 
 /* This is the entry-point for the game! */
