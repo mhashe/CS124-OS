@@ -32,13 +32,13 @@ boot_start:
     sub %ax, %ax
     mov %ax, %ds
     mov %ax, %ss
-    mov $0xf000, %esp   # Use %esp since we'll be in 32-bit mode later.
+    mov $STACK_BASE, %esp   # Use %esp since we'll be in 32-bit mode later.
 
     # Hide the cursor, just to be "prettier."  This will carry over into
     # protected mode execution too.
     mov $1, %ah
-    mov $0x2607, %cx    # Set cursor end-row to come before start-row.
-    int $0x10
+    mov $CURSOR_END, %cx    # Set cursor end-row to come before start-row.
+    int $0x10               # Display interrupt
 
     # "Loading program."
     mov $STR_LOADING, %si
@@ -58,7 +58,7 @@ boot_start:
     mov %ss, %ax        # Set up segment pointer to DAP.
     mov %ax, %ds
     mov %sp, %si        # Set up offset pointer to DAP.
-    mov $0x42, %ah      # Use extended read sectors.
+    mov $0x42, %ah      # Use Extended Read Sectors.
 
     int $0x13           # Load the remainder of the program into memory 
                         # using int 10h "Extended Read Operation."  If it 
@@ -135,10 +135,7 @@ call_c_entry:
 
     cld                 # C code expects this...
     movl $0, %ebp       # Null-terminate the program's backtrace.
- 
-    mov $PROGRAM_BASE_ADDR, %eax    # Store base address.
-    add $0x18, %eax                 # Add e_entry offset
-    call *(%eax)                    # Call
+    call *(PROGRAM_BASE_ADDR + E_ENTRY)   # Call c_entry
 
     #=====================================================================
     # The rest of this file contains helper functions for the 16-bit
