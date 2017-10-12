@@ -46,5 +46,17 @@ void clear_screen(void);
  */
 void write_char(char ch, int fg, int bg, int x, int y);
 
+/*
+ * Writes a string to the screen. Note string will wrap around the right side of
+ * screen to the next line.
+ *
+ * Input:
+ *     str    : string to be output
+ *     fg     : foreground color, must be defined in video.h
+ *     bg     : background color, must be defined in video.h
+ *     start_x: x location for start of string to be placed
+ *     start_y: y location for start of string to be placed
+ */
+void write_str(const char* str, int fg, int bg, int start_x, int start_y);
 
 #endif /* VIDEO_H */

@@ -29,7 +29,9 @@
 
 void init_video(void) {
     clear_screen();
-    write_char('H', BLUE, GREEN, 0, 0);
+    // write_char('H', BLUE, GREEN, 0, 0);
+    write_str("Hello World", BLUE, GREEN, 0, 0);
+
 }
 
 
@@ -46,4 +48,17 @@ void write_char(char ch, int fg, int bg, int x, int y) {
     int loc = BYTES_PER_ELT*(VID_WIDTH*x+y);
     *((char*)VIDEO_BUFFER+loc)   = ch;
     *((char*)VIDEO_BUFFER+loc+1) = fg << 4 | bg;    
+}
+
+void write_str(const char* str, int fg, int bg, int start_x, int start_y) {
+    int i = 0;
+    while (1) {
+        char ch = str[i];
+        if (ch == '\0') {
+            break;
+        }
+
+        write_char(ch, fg, bg, start_x, start_y+i);
+        i++;
+    }
 }
