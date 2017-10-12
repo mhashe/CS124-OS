@@ -5,3 +5,4 @@
  */
 
 void *(irq0_handler)(void); // Timer Handler
+void *(irq1_handler)(void); // Keyboard Handler

@@ -1,5 +1,8 @@
 #include "ports.h"
 
+#include "keyboard.h"
+#include "interrupts.h"
+
 /* This is the IO port of the PS/2 controller, where the keyboard's scan
  * codes are made available.  Scan codes can be read as follows:
  *
@@ -22,7 +25,19 @@
  * See http://wiki.osdev.org/PS/2_Keyboard for details.
  */
 #define KEYBOARD_PORT 0x60
+#define KEYBOARD_CMD_PORT 0x64 // use for LED functions
 
+#define KEYCODE_QUEUE_SIZE 128
+
+#include "keyboard.h"
+#include "handlers.h"
+
+// temp:
+// target remote localhost:1234
+// set architecture i8086
+// display/10i $pc 
+
+// this works for a ps/2 US querty keyboard only!
 
 /* TODO:  You can create static variables here to hold keyboard state.
  *        Note that if you create some kind of circular queue (a very good
@@ -36,12 +51,23 @@
  *        so that nothing gets mangled...
  */
 
+static volatile int keycode_queue[KEYCODE_QUEUE_SIZE];
+static int queue_read_index;
+static int queue_write_index;
 
 void init_keyboard(void) {
     /* TODO:  Initialize any state required by the keyboard handler. */
+    queue_read_index = 0;
+    queue_write_index = 0;
 
     /* TODO:  You might want to install your keyboard interrupt handler
      *        here as well.
      */
+    install_interrupt_handler(KEYBOARD_INTERRUPT, irq1_handler);
+    while(1) {  }
 }
 
+void key_handler(void) {
+    char keycode = inb(KEYBOARD_PORT);
+    int test = 79;
+}
