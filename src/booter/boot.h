@@ -38,5 +38,11 @@
 
 
 /* E_entry offset. */
-#define E_ENTRY             0x18
+#define E_OFFSET            0x18
+
+
+/* Interrupts, interrupt conditions. */
+#define DISPLAY_INT         0x10
+#define DISK_INT            0x13
+#define EXT_READ            0x42
 

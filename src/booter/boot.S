@@ -38,7 +38,7 @@ boot_start:
     # protected mode execution too.
     mov $1, %ah
     mov $CURSOR_END, %cx    # Set cursor end-row to come before start-row.
-    int $0x10               # Display interrupt
+    int $DISPLAY_INT               # Display interrupt
 
     # "Loading program."
     mov $STR_LOADING, %si
@@ -58,9 +58,9 @@ boot_start:
     mov %ss, %ax        # Set up segment pointer to DAP.
     mov %ax, %ds
     mov %sp, %si        # Set up offset pointer to DAP.
-    mov $0x42, %ah      # Use Extended Read Sectors.
+    mov $EXT_READ, %ah  # Use Extended Read Sectors.
 
-    int $0x13           # Load the remainder of the program into memory 
+    int $DISK_INT       # Load the remainder of the program into memory 
                         # using int 10h "Extended Read Operation."  If it 
                         # fails, jump to boot_fail.
 
@@ -135,7 +135,7 @@ call_c_entry:
 
     cld                 # C code expects this...
     movl $0, %ebp       # Null-terminate the program's backtrace.
-    call *(PROGRAM_BASE_ADDR + E_ENTRY)   # Call c_entry
+    call *(PROGRAM_BASE_ADDR + E_OFFSET)   # Call c_entry
 
     #=====================================================================
     # The rest of this file contains helper functions for the 16-bit
@@ -168,7 +168,7 @@ print_str:
     test    %al, %al        # skip over the entire loop.
     jz  write_str_done
 write_str_loop:
-    int $0x10
+    int $DISPLAY_INT
     inc %si                 # Go on to the next character.
     movb    (%si), %al      # If it's 0, exit loop.  Otherwise,
     test    %al, %al        # go back and output the character.
