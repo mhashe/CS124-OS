@@ -1,5 +1,7 @@
 #include "timer.h"
 #include "ports.h"
+#include "interrupts.h"
+#include "handlers.h"
 
 /*============================================================================
  * PROGRAMMABLE INTERVAL TIMER
@@ -40,12 +42,12 @@
 #define PIT_MODE_CMD   0x43
 
 
+static volatile int time;
 
-/* TODO:  You can create static variables here to hold timer state.
- *
- *        You should probably declare variables "volatile" so that the
- *        compiler knows they can be changed by exceptional control flow.
- */
+
+void timer_handler(void) {
+	time++;
+}
 
 
 void init_timer(void) {
@@ -62,9 +64,20 @@ void init_timer(void) {
     outb(PIT_CHAN0_DATA, 0x9c);
     outb(PIT_CHAN0_DATA, 0x2e);
 
-    /* TODO:  Initialize other timer state here. */
+    time = 0;
 
     /* TODO:  You might want to install your timer interrupt handler
      *        here as well.
      */
+    install_interrupt_handler(TIMER_INTERRUPT, timer_handler);
 }
+
+
+void sleep(float sec) {
+	// Sleep for sec seconds
+	float low = (float) time;
+	while (((float)time - low) / 100.0 < sec) {
+		// Loop until ms milliseconds elapsed
+	}
+}
+
