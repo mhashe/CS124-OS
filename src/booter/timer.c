@@ -46,7 +46,7 @@ static volatile int time;
 
 
 void timer_handler(void) {
-	time++;
+    time++;
 }
 
 
@@ -74,10 +74,10 @@ void init_timer(void) {
 
 
 void sleep(float sec) {
-	// Sleep for sec seconds
-	float low = (float) time;
-	while (((float)time - low) / 100.0 < sec) {
-		// Loop until ms milliseconds elapsed
-	}
+    // Sleep for sec seconds
+    float low = (float) time;
+    while (((float)time - low) / 100.0 < sec) {
+        // Loop until ms milliseconds elapsed
+    }
 }
 
