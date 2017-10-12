@@ -3,5 +3,8 @@
 
 void init_keyboard(void);
 
+void key_handler(void);
+
+
 #endif /* KEYBOARD_H */
 
