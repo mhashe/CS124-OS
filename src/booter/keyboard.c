@@ -32,11 +32,6 @@
 #include "keyboard.h"
 #include "handlers.h"
 
-// temp:
-// target remote localhost:1234
-// set architecture i8086
-// display/10i $pc 
-
 // this works for a ps/2 US querty keyboard only!
 
 /* TODO:  You can create static variables here to hold keyboard state.
@@ -61,14 +56,19 @@ void init_keyboard(void) {
     queue_read_index = 0;
     queue_write_index = 0;
 
+    // http://wiki.osdev.org/%228042%22_PS/2_Controller
+    outb(KEYBOARD_CMD_PORT, 0xED);
+    while (inb(KEYBOARD_CMD_PORT) & 0b10) {
+    }
+    outb(KEYBOARD_PORT, 0b111);
+
     // install your keyboard interrupt handler
     install_interrupt_handler(KEYBOARD_INTERRUPT, irq1_handler);
 
 }
 
 void key_handler(void) {
-    char keycode = inb(KEYBOARD_PORT); // puts keycode in rdi register; TODO: remove
-    uint32_t test = 79; // test rsi register is 79 in debugging; TODO: remove
+    char keycode = inb(KEYBOARD_PORT); // puts keycode in rdi register
 
     disable_interrupts();
 
