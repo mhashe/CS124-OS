@@ -6,7 +6,7 @@
 #     we invoke gcc to assemble boot.S, and we use gcc to process the
 #     linker script, and so forth.
 
-CFLAGS=-g
+CFLAGS=-g -fno-stack-protector
 
 BOOT_BIN = boot.bin
 
@@ -18,6 +18,8 @@ FLOPPY_IMG = floppy.img
 
 
 all : clean $(FLOPPY_IMG)
+
+debug: clean $(FLOPPY_IMG) debug-qemu
 
 
 # Use gcc to build our assembly code so that we can use the C preprocessor
