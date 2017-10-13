@@ -156,7 +156,7 @@ void game_loop(void) {
             } else if (keycode == RIGHT_ARROW) {
                 move_user(1);
             } else if (keycode == SPACEBAR) {
-                fire_missle();
+                fire_missile();
             }
         }
         // sleep(.1);

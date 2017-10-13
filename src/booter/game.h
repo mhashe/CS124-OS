@@ -44,6 +44,8 @@ void move_user(int dx);
 
 void game_loop(void);
 
+void fire_missile(void);
+
 #endif /* GAME_H */
 
 
