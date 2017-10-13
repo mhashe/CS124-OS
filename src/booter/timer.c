@@ -82,6 +82,8 @@ void init_timer(void) {
     /* Turn on timer channel 2 for tone generation */
     outb(PIT_MODE_CMD, 0xb6);               /* 10 11 011 0 */
 
+    no_sound();                             /* make sure no sound is playing */
+
     /* Initialize timer to 0. */
     time = 0;
 
