@@ -37,9 +37,10 @@ void init_video(void) {
     draw_pixel(319, 20, BLUE);
     draw_pixel(319, 199, WHITE);
 
-    draw_alien(0, 0, LIGHT_GREEN);
+
+    draw_sprite(&alien[0][0], 0, 0, ALIEN_SIZE, ALIEN_SIZE, LIGHT_GREEN);
     draw_bullet(5, 100, WHITE);
-    draw_ship(0, 150, GREEN);
+    draw_sprite(&ship[0][0], 0, 150, SHIP_SIZE, SHIP_SIZE, GREEN);
 
     // clear_screen();
     // draw_box(10, 10, 100, 200, WHITE);
@@ -57,29 +58,23 @@ void draw_box(int x, int y, int width, int height, uint8_t color) {
     }
 }
 
-void draw_alien(int x, int y, uint8_t color) {
-    for (int i = 0; i < ALIEN_SIZE; i++) {
-        for (int j = 0; j < ALIEN_SIZE; j++) {
-            if (alien[j][i] == 1) {
-                draw_pixel(x+i, y+j, color);
-            }
-        }
-    }
-}
-
-void draw_ship(int x, int y, uint8_t color) {
-    for (int i = 0; i < SHIP_SIZE; i++) {
-        for (int j = 0; j < SHIP_SIZE; j++) {
-            if (ship[j][i] == 1) {
-                draw_pixel(x+i, y+j, color);
-            }
-        }
-    }
-}
-
 void draw_bullet(int x, int y, uint8_t color) {
     draw_box(x, y, BULLET_WIDTH, BULLET_HEIGHT, color);
 }
+
+
+void draw_sprite(const uint8_t* sprite, int x, int y, int width, int height, 
+                 uint8_t color) {
+    for (int i = 0; i < width; i++) {
+        for (int j = 0; j < width; j++) {
+            if (sprite[j*width + i] == 1) {
+                draw_pixel(x+i, y+j, color);
+            }
+        }
+    }
+}
+
+
 
 void clear_screen() {
     uint32_t blank = 0;

@@ -93,6 +93,22 @@ void draw_ship(int x, int y, uint8_t color);
  */
 void draw_bullet(int x, int y, uint8_t color);
 
+
+/*
+ * Draw a generic sprite on the screen at (x,y).
+ *
+ * Inputs:
+ *     sprite: address of the first element in the sprite array
+ *     x:      x location of alien
+ *     y:      y location of alien
+ *     width:  width of sprite
+ *     height: height of sprite
+ *     color:  color to be displayed
+ */
+void draw_sprite(const uint8_t* sprite, int x, int y, int width, int height, 
+                 uint8_t color);
+
+
 /*
  * Clears the screen by writing 0 everywhere in video memory.
  */
