@@ -32,19 +32,7 @@
 
 
 void init_video(void) {
-    draw_pixel(319, 10, WHITE);
-    draw_pixel(319, 15, WHITE);
-    draw_pixel(319, 20, BLUE);
-    draw_pixel(319, 199, WHITE);
-
-
-    // draw_sprite(&alien[0][0], 0, 0, ALIEN_SIZE, ALIEN_SIZE, LIGHT_GREEN);
-    // draw_bullet(5, 100, WHITE);
-    // draw_sprite(&ship[0][0], 0, 150, SHIP_SIZE, SHIP_SIZE, GREEN);
-
-    // clear_screen();
-    // draw_box(10, 10, 100, 200, WHITE);
-
+    clear_screen();
 }
 
 void draw_pixel(int x, int y, uint8_t color) {
