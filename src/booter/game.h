@@ -6,7 +6,7 @@
 
 /* Define constants/preferences for the game */
 
-#define NUM_LIVES 3
+#define RESET_TIME 1.5 // time to hold game between resets, in seconds
 
 /* Game update frequency */
 #define ENEMY_UPDATE_PERIOD 30 // centiseconds movement of enemy matrix
