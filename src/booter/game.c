@@ -115,7 +115,7 @@ void init_game_state(void) {
 }
 
 
-void movie_enemies(void) {
+void update_enemies(void) {
     /* Clear enemies. */
     draw_box(game.enemy_mat_position_x, game.enemy_mat_position_y, 
         game.enemy_mat_width, game.enemy_mat_height, 0);
@@ -152,7 +152,7 @@ void draw_game_start(void) {
         SHIP_SIZE, SHIP_SIZE, 14);
 
     // draw enemies
-    movie_enemies();
+    update_enemies();
 }
 
 
@@ -174,6 +174,10 @@ void update_missiles(void) {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (game.bullet_queue[i].y != -1) {
 
+            /* Erase old bullet. */
+            draw_bullet(game.bullet_queue[i].x,
+                        game.bullet_queue[i].y, 0);
+
             /* Check if bullet is still in game. */
             if (game.bullet_queue[i].y <= game.enemy_mat_position_y) {
                 game.bullet_queue[i].x = -1;
@@ -181,19 +185,19 @@ void update_missiles(void) {
                 continue;
             }
 
-            /* Valid bullet, should write */
+            /* Update bullet location. */
+            game.bullet_queue[i].y -= 1;
+
+            /* Draw bullet. */
             draw_bullet(game.bullet_queue[i].x,
                         game.bullet_queue[i].y, 10);
-
-            /* Update bullet location for next pass. */
-            game.bullet_queue[i].y -= 1;
         }
     }
 }
 
 void fire_missile(void) {
     int x = game.user_position_x + (SHIP_SIZE / 2) - 1;
-    int y = game.user_position_y - 1;
+    int y = game.user_position_y;
 
     game.bullet_queue[game.bullet_counter].x = x;
     game.bullet_queue[game.bullet_counter].y = y;
@@ -206,6 +210,8 @@ void game_loop(void) {
     uint32_t last_enemy_update = get_time();
     
     while (1) {
+        uint32_t current_time = get_time();
+
         keycode = key_queue_pop();
         if (keycode != KEY_QUEUE_EMPTY) {
             if (keycode == LEFT_ARROW) {
@@ -216,6 +222,9 @@ void game_loop(void) {
                 fire_missile();
             }
         }
-        update_missiles();
+        if (0) {
+            update_enemies();
+            update_missiles();
+        }
     }
 }
