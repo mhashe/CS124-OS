@@ -315,7 +315,7 @@ void update_bullets(int dy, int ady) {
              * upon score bar.
              */
             /* MAGIC NUMBER 8 */
-            if (game.en_bullet_queue[i].y >= VID_HEIGHT - 13) {
+            if (game.en_bullet_queue[i].y >= VID_HEIGHT - 20) {
                 game.en_bullet_queue[i].x = -1;
                 game.en_bullet_queue[i].y = -1;
                 continue;
