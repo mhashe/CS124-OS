@@ -46,12 +46,16 @@
 
 
 /* Timer count. */
-static volatile uint32_t time;
+static volatile int time;
 
 
 void timer_handler(void) {
     /* Advance time ("clock tick"). */
     time++;
+}
+
+int get_time(void) {
+    return time;
 }
 
 

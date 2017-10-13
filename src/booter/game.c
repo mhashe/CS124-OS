@@ -26,7 +26,7 @@ void c_start(void) {
     init_game_state();
     draw_game_start();
 
-    while(1) {}
+    game_loop();
 }
 
 
@@ -64,8 +64,8 @@ void init_game_state(void) {
     game.score = 0;
     game.lives_remaining = NUM_LIVES;
 
-    game.info_bar_height = INFO_BAR_HEIGHT * VID_HEIGHT;
-    game.user_bar_height = USER_BAR_HEIGHT * VID_HEIGHT;
+    game.info_bar_height = VID_HEIGHT * INFO_BAR_HEIGHT;
+    game.user_bar_height = USER_SIZE;
     game.user_position_y = VID_HEIGHT - game.user_bar_height;
     // user starts off in middle of screen
     game.user_position_x = (VID_WIDTH - USER_SIZE) / 2;
@@ -97,16 +97,62 @@ void draw_game_start(void) {
     // draw info bar
     draw_box(0, 0, VID_WIDTH, game.info_bar_height, 1); // blue
 
+    // // draw a test figure and movie it around
+    // draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 2);
+    // sleep(1.0);
+    // draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 3);
+    // sleep(1.0);
+    // draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 4);
+
     // draw user in user bar
     draw_box(game.user_position_x, game.user_position_y, USER_SIZE, USER_SIZE, 14); // yellow
 
+    // draw enemies
+    int num_enemies_in_col, ex, ey;
+    ex = game.enemy_mat_position_x;
 
-    // draw a test figure and movie it around
-    draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 2);
-    sleep(1.0);
-    draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 3);
-    sleep(1.0);
-    draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 4);
+    for (int c = 0; c < game.num_enemy_cols; c++) {
+        num_enemies_in_col = game.num_enemies_per_col[c];
+        ey = game.enemy_mat_position_y;
+
+        for (int e = 0; e < num_enemies_in_col; e++) {
+            draw_box(ex, ey, ENEMY_SIZE, ENEMY_SIZE, 2);
+            ey += ENEMY_SIZE + ENEMY_SPACING;
+            // set collision detection with user here
+        }
+        
+        ex += ENEMY_SIZE + ENEMY_SPACING;
+    }
+
+}
 
 
+void move_user(int dx) {
+    // move user
+    game.user_position_x += dx;
+
+    // redraw user
+    draw_box(0, game.user_position_y, VID_WIDTH, game.user_bar_height, 0);
+    draw_box(game.user_position_x, game.user_position_y, USER_SIZE, USER_SIZE, 14); // yellow
+}
+
+
+void game_loop(void) {
+    unsigned char keycode;
+    char empty = KEY_QUEUE_EMPTY;
+    uint8_t color = 0;
+    
+    while (1) {
+        keycode = key_queue_pop();
+        if (keycode != KEY_QUEUE_EMPTY) {
+            if (keycode == LEFT_ARROW) {
+                move_user(-1);
+            } else if (keycode == RIGHT_ARROW) {
+                move_user(1);
+            }
+            // color++;
+            // draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, color);
+        }
+        // sleep(.1);
+    }
 }

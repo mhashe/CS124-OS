@@ -7,6 +7,7 @@
  */
 void init_timer(void);
 
+int get_time(void);
 
 /*=============================================================================
  * Sleeps for a given number of seconds.

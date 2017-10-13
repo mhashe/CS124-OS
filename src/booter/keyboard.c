@@ -57,10 +57,10 @@ void init_keyboard(void) {
     queue_write_index = 0;
 
     // http://wiki.osdev.org/%228042%22_PS/2_Controller
-    outb(KEYBOARD_CMD_PORT, 0xED);
-    while (inb(KEYBOARD_CMD_PORT) & 0b10) {
-    }
-    outb(KEYBOARD_PORT, 0b111);
+    // outb(KEYBOARD_CMD_PORT, 0xED);
+    // while (inb(KEYBOARD_CMD_PORT) & 0b10) {
+    // }
+    // outb(KEYBOARD_PORT, 0b111);
 
     // install your keyboard interrupt handler
     install_interrupt_handler(KEYBOARD_INTERRUPT, irq1_handler);
