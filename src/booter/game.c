@@ -98,13 +98,6 @@ void draw_game_start(void) {
     // draw info bar
     draw_box(0, 0, VID_WIDTH, game.info_bar_height, 1); // blue
 
-    // // draw a test figure and movie it around
-    // draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 2);
-    // sleep(1.0);
-    // draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 3);
-    // sleep(1.0);
-    // draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 4);
-
     /* Draw user in user bar. */
     draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
         SHIP_SIZE, SHIP_SIZE, 14);
@@ -144,7 +137,7 @@ void move_user(int dx) {
         SHIP_SIZE, SHIP_SIZE, 14);
 }
 
-void fire_missle(void) {
+void fire_missile(void) {
     // TODO
 }
 
