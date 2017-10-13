@@ -1,3 +1,7 @@
+/*
+ * This file contains all the sprite definitions to be written to the display.
+ */
+
 #ifndef SPRITES_H
 #define SPRITES_H
 
