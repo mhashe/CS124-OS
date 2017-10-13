@@ -81,10 +81,17 @@ void init_game_state(void) {
     /* Define info_bar shape (at top of screen) */
     game.info_bar_height = VID_HEIGHT * INFO_BAR_HEIGHT;
     
-    /* User starts off in bottom, horizontal center of screen. */
+    /* User starts off towards bottom, horizontal center of screen. */
     game.user_bar_height = SHIP_SIZE;
     game.user_position_x = (VID_WIDTH - SHIP_SIZE) / 2;
-    game.user_position_y = VID_HEIGHT - game.user_bar_height;
+    /* 
+     * This 8 is truly a magic number. It seems in the emulator, after you fire
+     * a bullet, the bottom 7 rows of the memory buffer stop updating, even
+     * though the values are being written to the buffer correctly. This
+     * behavior is not present in running outside of the emulator (actually
+     * booting into it).
+     */
+    game.user_position_y = VID_HEIGHT - game.user_bar_height - 8;
 
     /* Enemies claim all space vertically in-between info and user bars. */
     game.enemy_mat_height = ((VID_HEIGHT - game.info_bar_height 
@@ -243,17 +250,15 @@ void draw_game_start(void) {
 
 void move_user(int dx) {
     /* Clear user. */
-    //draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
-        //SHIP_SIZE, SHIP_SIZE, BLACK);
-    draw_bullet(game.user_position_x, game.user_position_y, BLACK);
+    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
+        SHIP_SIZE, SHIP_SIZE, BLACK);
     
     /* Move user. */
     game.user_position_x += dx;
 
     /* Redraw user. */
-    //draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
-        //SHIP_SIZE, SHIP_SIZE, YELLOW);
-    draw_bullet(game.user_position_x, game.user_position_y, YELLOW);
+    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
+        SHIP_SIZE, SHIP_SIZE, YELLOW);
 }
 
 void update_bullets(int dy) {
@@ -262,7 +267,7 @@ void update_bullets(int dy) {
 
             /* Erase old bullet. */
             draw_bullet(game.bullet_queue[i].x,
-                        game.bullet_queue[i].y, 0);
+                        game.bullet_queue[i].y, BLACK);
 
             /* Check if bullet is still in game.
              * 3 intended as buffer to avoid infringing
@@ -279,7 +284,7 @@ void update_bullets(int dy) {
 
             /* Draw bullet. */
             draw_bullet(game.bullet_queue[i].x,
-                        game.bullet_queue[i].y, 10);
+                        game.bullet_queue[i].y, LIGHT_GREEN);
         }
     }
 }
