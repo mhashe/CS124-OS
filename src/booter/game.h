@@ -10,8 +10,9 @@
 
 /* Game update frequency */
 #define GAME_FPS 60 // user and missile movement udpates at this rate
-#define ENEMY_UPDATE_PERIOD 40 // centiseconds movement of enemy matrix
+#define ENEMY_UPDATE_PERIOD 4 //40 // centiseconds movement of enemy matrix
 #define ENEMY_SPEED 4 // number of pixels to move every ENEMY_UPDATE_PERIOD
+#define ENEMY_DROP_SPEED 4
 #define BULLET_UPDATE_PERIOD 10 // Speed of bullet udates (cs).
 
 /* Floats in [0, 1] of fraction of available canvas's dedicated to for space 

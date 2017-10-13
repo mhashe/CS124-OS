@@ -129,6 +129,7 @@ void update_enemies(void) {
         if ((game.enemy_mat_position_x + game.enemy_mat_width + ENEMY_SPEED) > VID_WIDTH) {
             // game.enemy_mat_position_x = (VID_WIDTH - game.enemy_mat_width);
             game.enemy_direction = LEFT_DIR;
+            game.enemy_mat_position_y += ENEMY_DROP_SPEED;
         }
     } 
     
@@ -138,6 +139,7 @@ void update_enemies(void) {
         // If collision with left wall, then move right
         if (game.enemy_mat_position_x < ENEMY_SPEED) {
             game.enemy_direction = RIGHT_DIR;
+            game.enemy_mat_position_y += ENEMY_DROP_SPEED;
         }
     }
 
