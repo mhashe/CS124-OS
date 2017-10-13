@@ -1,12 +1,16 @@
 #ifndef GAME_H
 #define GAME_H
 
+
 #include "video.h"
 #include "sprites.h"
 
+
 /* Define constants/preferences for the game */
 
+
 #define RESET_TIME 1.5 // time to hold game between resets, in seconds
+
 
 /* Game update frequency */
 // Centiseconds of interval between movement of enemy matrix
@@ -21,6 +25,7 @@
 #define BULLET_SPEED 2
 #define ALIEN_BULLET_SPEED 3
 
+
 /* Floats in [0, 1] of fraction of available canvas's dedicated to for space 
 invading enemies. */
 #define ENEMY_MAT_WIDTH 0.5
@@ -28,27 +33,34 @@ invading enemies. */
 #define ENEMY_MAT_WIDTH_PX 160
 #define NUM_ENEMY_COLS ENEMY_MAT_WIDTH_PX / (15 + ENEMY_SPACING)
 
+
 /* Number of pixels in between space invaders on right and left */
 #define ENEMY_SPACING 5 // pixels between enemies
 
+
 /* Floats in [0, 1] */
-#define INFO_BAR_HEIGHT 0.05
+#define PROGRESS_BAR_HEIGHT 0.05
+
 
 /* Maximum number of your bullets on screen at once. */
 #define MAX_BULLETS     5
 
+
 /* Maximum number of enemy bullets on screen at once. */
 #define ENEMY_BULLETS   50 /* Spamming bullets is a bad strategy. */
+
 
 /* Define directions */
 #define LEFT_DIR -1
 #define RIGHT_DIR 1
 #define NO_DIR 0
 
+
 /* Gameover states */
 #define GO_PLAY 0
 #define GO_LOST 1
 #define GO_WON 2
+
 
 /* A struct used for holding x-y pairs
  * for bullets.
@@ -58,12 +70,13 @@ typedef struct pair {
     int y;
 } Pair;
 
+
 /* Struct holding global game
  * state, parameters.
  */
 typedef struct Space_Invaders {
-    /* Info presented to user */
-    uint8_t info_bar_height;
+    /* Info presented to player */
+    uint8_t progress_bar_height;
     uint8_t game_over;
 
     /* Position and direction of enemies */
@@ -83,10 +96,10 @@ typedef struct Space_Invaders {
     // matrix of enemies (1 if alive/visible, 0 if dead/invisible)
     uint8_t enemy_mat[NUM_ENEMY_COLS][(VID_HEIGHT / (ALIEN_SIZE + ENEMY_SPACING))];
 
-    // user position
-    uint8_t user_bar_height;
-    uint8_t user_position_x;
-    uint8_t user_position_y; // always the lowest row (not dynamic)
+    // player position
+    uint8_t player_bar_height;
+    uint8_t player_position_x;
+    uint8_t player_position_y; // always the lowest row (not dynamic)
 
     // bullet queue, counter
     Pair bullet_queue[MAX_BULLETS];
@@ -98,27 +111,77 @@ typedef struct Space_Invaders {
 
 } Space_Invaders;
 
+
+/* Entry point of function. 
+ * Finishes booting / startup procedures, and
+ * then calls main game loop.
+ */
 void c_start(void);
 
+
+/* Sets parameters of game from constants
+ * defined in this file.
+ */
 void init_game_state(void);
 
+
+/* Draws initial layout of game (i.e.,
+ * progress bar, player, aliens).
+ */
 void draw_game_start(void);
 
+
+/* Main game loop. Accept keyboard input
+ * and update game progress.
+ */
 void game_loop(void);
 
-void move_user(int dx);
 
-void game_loop(void);
-
-void fire_bullet(void);
-
+/* Move enemies forward and check for changes
+ * to state, namely win / loss conditions, 
+ * collisions between bullets and aliens or
+ * aliens and players, etc.
+ */
 void update_enemies(void);
 
-void update_bullets(int dy, int ady);
 
+/* Erase the previous player ship, and draw
+ * a new one at modified coordinates. 
+ */
+void move_player(int dx);
+
+
+/* Fires a bullet from the player's current location.
+ * Since players are limited to a fixed number of bullets,
+ * overwrites the oldest if necessary.
+ */
+void fire_bullet(void);
+
+
+/* Re-initializes game, for instance after a win / loss
+ * condition.
+ */
 void reset_game(uint8_t color);
 
+
+/* Advance all live bullets and perform some 
+ * checks (remove off-screen bullets, check
+ * for collisions with player, etc.).
+ */
+void update_bullets(int dy, int ady);
+
+
+/* Updates progress bar keeping track of fraction
+ * of enemies destroyed.
+ */
+void update_game_progress(void);
+
+
+/* Every time the player shoots, an alien shoots too.
+ * That change to state is handled here.
+ */
+void fire_alien_bullet(void);
+
+
 #endif /* GAME_H */
-
-
 
