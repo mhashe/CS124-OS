@@ -48,7 +48,7 @@ typedef struct Space_Invaders {
     uint16_t enemy_mat_position_y;
     uint16_t enemy_mat_width;
     uint16_t enemy_mat_height;
-    uint8_t enemy_direction;
+    int8_t enemy_direction;
 
     uint16_t num_enemies_left;
 
@@ -122,7 +122,24 @@ void update_enemies(void) {
         game.enemy_mat_width, game.enemy_mat_height, 0);
     
     /* Move enemies. */
-    game.enemy_mat_position_x += (game.enemy_direction * ENEMY_SPEED);
+    if (game.enemy_direction == RIGHT_DIR) {
+        game.enemy_mat_position_x += ENEMY_SPEED;
+
+        // If collision with right wall, then move left
+        if ((game.enemy_mat_position_x + game.enemy_mat_width + ENEMY_SPEED) > VID_WIDTH) {
+            // game.enemy_mat_position_x = (VID_WIDTH - game.enemy_mat_width);
+            game.enemy_direction = LEFT_DIR;
+        }
+    } 
+    
+    else if (game.enemy_direction == LEFT_DIR) {
+        game.enemy_mat_position_x -= ENEMY_SPEED;
+
+        // If collision with left wall, then move right
+        if (game.enemy_mat_position_x < ENEMY_SPEED) {
+            game.enemy_direction = RIGHT_DIR;
+        }
+    }
 
     /* Redraw enemies. */
     int ex, ey;

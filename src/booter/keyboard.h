@@ -4,7 +4,7 @@
 #define KEYBOARD_PORT 0x60
 #define KEYBOARD_CMD_PORT 0x64      // use for LED functions
 
-#define KEYCODE_QUEUE_SIZE 4
+#define KEYCODE_QUEUE_SIZE 4  // TODO: Change to a higher number
 
 #define KEY_QUEUE_EMPTY 0xFB        // an unused key code
 
