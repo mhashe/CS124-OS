@@ -204,7 +204,7 @@ void update_bullets(int dy) {
                         game.bullet_queue[i].y, 0);
 
             /* Check if bullet is still in game. */
-            if (game.bullet_queue[i].y <= game.enemy_mat_position_y) {
+            if (game.bullet_queue[i].y <= game.info_bar_height) {
                 game.bullet_queue[i].x = -1;
                 game.bullet_queue[i].y = -1;
                 continue;
