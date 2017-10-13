@@ -142,6 +142,9 @@ No.
 >> B4: Did you add any BIOS calls to your bootloader to prepare for your
 >> main program?  (i.e. things that aren't available in protected mode)
 
+Yes. We use a BIOS call to change the display mode to 0x13 (VGA, 320x200, 
+256 color). We also use a BIOS call to load the program into memory.
+
 			  VIDEO SUBSYSTEM
 			  ===============
 
@@ -152,14 +155,29 @@ No.
 >> represented in this mode?  (Please be brief; we don't need complete
 >> documentation on the video system.)
 
+We are using VGA, 320x200, 256 color. This is a graphical mode. The video buffer
+starts at 0xA0000. The video memory is linear with 1 byte for each pixel. For
+example, 0xA0002 corresponds to the pixel (2, 0). The byte at a specific memory
+location corresponds to the color. It uses the same first 16 colors as other VGA
+and EGA modes and then after that, it has various colors, different scales, and
+brightnesses.
+
 >> C2: Does your video code maintain any variables or data structures to
 >> facilitate video output?  Briefly describe these values and their
 >> purposes here.
+
+The video code does not maintain any variables or data structures. All that
+information is maintained as part of the game state.
 
 ---- ALGORITHMS ----
 
 >> C3: What abstraction does your video code present to your main program?
 >> Briefly describe the higher-level operations you decided to implement.
+
+The video code is built like an API. It contains methods to draw pixels, boxes,
+bullets, and sprites. The sprites are defined in sprites.h as a constant array
+of values, which can be read in by the draw_sprites function and drawn. This
+gives the video API a lot of portability to draw arbitrary objects.
 
 ---- RATIONALE ----
 
@@ -239,6 +257,9 @@ penalized.  We can't fix things until we know about them.  :-)
 
 >> In your opinion, was this assignment, or any of the parts of it, too
 >> easy or too hard?  Did it take too long or too little time?
+
+It was not too difficult but it took quite a bit of time because there was not
+too much guidance or pointing to relevant documentation.
 
 >> Did you find that working on a particular part of the assignment gave
 >> you greater insight into some aspect of OS design?
