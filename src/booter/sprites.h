@@ -57,4 +57,12 @@ static const uint8_t bullet[BULLET_HEIGHT][BULLET_WIDTH] = {
     {1, 1, 1}
 };
 
+static const uint8_t alien_bullet[BULLET_HEIGHT][BULLET_WIDTH] = {
+    {1, 1, 1}, 
+    {1, 1, 1}, 
+    {1, 1, 1}
+    {0, 1, 0}, 
+    {0, 1, 0}, 
+};
+
 #endif /* SPRITES_H */
