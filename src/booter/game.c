@@ -28,6 +28,8 @@ void c_start(void) {
     init_game_state();
     draw_game_start();
 
+    boot_sound();
+
     game_loop();
 }
 
@@ -313,7 +315,7 @@ void update_bullets(int dy, int ady) {
              * upon score bar.
              */
             /* MAGIC NUMBER 8 */
-            if (game.en_bullet_queue[i].y >= VID_HEIGHT - 13) {
+            if (game.en_bullet_queue[i].y >= VID_HEIGHT - 20) {
                 game.en_bullet_queue[i].x = -1;
                 game.en_bullet_queue[i].y = -1;
                 continue;
@@ -347,6 +349,7 @@ void fire_bullet(void) {
     game.bullet_queue[game.bullet_counter].y = y;
     game.bullet_counter = (game.bullet_counter + 1) % MAX_BULLETS; 
 
+
     /* Fire bullet from alien ship. */
     int x2 = game.enemy_mat_position_x;
     int y2 = game.enemy_mat_position_y;
@@ -363,6 +366,8 @@ void fire_bullet(void) {
     game.en_bullet_queue[game.en_bullet_counter].x = x2;
     game.en_bullet_queue[game.en_bullet_counter].y = y2;
     game.en_bullet_counter = (game.en_bullet_counter + 1) % ENEMY_BULLETS;
+
+    shooting_sound();
 }
 
 void reset_game(uint8_t color) {

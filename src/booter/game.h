@@ -35,10 +35,10 @@ invading enemies. */
 #define INFO_BAR_HEIGHT 0.05
 
 /* Maximum number of your bullets on screen at once. */
-#define MAX_BULLETS     10
+#define MAX_BULLETS     5
 
 /* Maximum number of enemy bullets on screen at once. */
-#define ENEMY_BULLETS   10
+#define ENEMY_BULLETS   50 /* Spamming bullets is a bad strategy. */
 
 
 /* Define key presses */
