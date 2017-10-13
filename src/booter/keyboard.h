@@ -5,10 +5,7 @@
 
 void init_keyboard(void);
 
-void key_handler(void);
-
 char key_queue_pop(void);
-
 
 #endif /* KEYBOARD_H */
 
