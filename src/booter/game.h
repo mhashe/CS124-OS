@@ -9,14 +9,16 @@
 #define RESET_TIME 1.5 // time to hold game between resets, in seconds
 
 /* Game update frequency */
-// Centiseconds movement of enemy matrix
+// Centiseconds of interval between movement of enemy matrix
 #define ENEMY_UPDATE_PERIOD 30 
 // Number of pixels to move every ENEMY_UPDATE_PERIOD
 #define ENEMY_SPEED 5 
 // Number of pixels to move enemies down when they reach wall
 #define ENEMY_DROP_SPEED 4 
-// Speed of bullet updates (cs)
+// Centiseconds of interval between movement of bullets
 #define BULLET_UPDATE_PERIOD 10 
+// Number of pixels to move bullets up every BULLET_UPDATE_PERIOD
+#define BULLET_SPEED 2
 
 /* Floats in [0, 1] of fraction of available canvas's dedicated to for space 
 invading enemies. */
