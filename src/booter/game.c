@@ -115,7 +115,7 @@ void init_game_state(void) {
 }
 
 
-void movie_enemies(void) {
+void update_enemies(void) {
     /* Clear enemies. */
     draw_box(game.enemy_mat_position_x, game.enemy_mat_position_y, 
         game.enemy_mat_width, game.enemy_mat_height, 0);
@@ -152,7 +152,7 @@ void draw_game_start(void) {
         SHIP_SIZE, SHIP_SIZE, 14);
 
     // draw enemies
-    movie_enemies();
+    update_enemies();
 }
 
 
@@ -206,6 +206,8 @@ void game_loop(void) {
     uint32_t last_enemy_update = get_time();
     
     while (1) {
+        uint32_t current_time = get_time();
+
         keycode = key_queue_pop();
         if (keycode != KEY_QUEUE_EMPTY) {
             if (keycode == LEFT_ARROW) {
@@ -217,5 +219,9 @@ void game_loop(void) {
             }
         }
         update_missiles();
+
+        if (0) {
+            update_enemies();
+        }
     }
 }

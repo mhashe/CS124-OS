@@ -53,6 +53,8 @@ void game_loop(void);
 
 void fire_missile(void);
 
+void update_enemies(void);
+
 #endif /* GAME_H */
 
 
