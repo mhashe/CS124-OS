@@ -39,6 +39,7 @@ invading enemies*/
 #define SPACEBAR 0x39
 #define LEFT_ARROW 0x4B
 #define RIGHT_ARROW 0x4D
+#define KEY_R 0x13
 
 /* Define directions */
 #define LEFT_DIR -1
@@ -63,7 +64,9 @@ void update_enemies(void);
 
 void update_bullets(int dy);
 
-void handle_enemy_user_collision(void);
+void handle_enemy_user_collision(int ex, int ey);
+
+void reset_game(void);
 
 #endif /* GAME_H */
 

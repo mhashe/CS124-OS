@@ -71,10 +71,11 @@ typedef struct Space_Invaders {
 } Space_Invaders;
 
 static Space_Invaders game;
+static uint8_t game_over;
 
 void init_game_state(void) {
+    game_over = 0;
     game.score = 0;
-    game.lives_remaining = NUM_LIVES;
 
     game.info_bar_height = VID_HEIGHT * INFO_BAR_HEIGHT;
     game.user_bar_height = SHIP_SIZE;
@@ -115,11 +116,24 @@ void init_game_state(void) {
     game.bullet_counter = 0;
 }
 
-void handle_enemy_user_collision(void) {
-    // check for collision between enemy and user
 
-    // if collision exists, reduce user's lives, and redraw the game
+void handle_enemy_user_collision(int ex, int ey) {
+    /* Check for collision between enemy and user */
+    // If enemy's y is below the user height
+    if ((ey + ALIEN_SIZE) < game.user_position_y) {
+        return;
+    }
+
+    // and if right or left of enemy is in bound of user
+    if (((ex + ALIEN_SIZE) < (game.user_position_x)) &&
+        (ex > (game.user_position_x + SHIP_SIZE))) {
+        return;
+    }
+
+    // If collision exists, reduce user's lives, and redraw the game
+    game_over = 1;
 }
+
 
 void update_enemies(void) {
     /* Clear enemies. */
@@ -138,7 +152,6 @@ void update_enemies(void) {
             // game.enemy_mat_position_x = (VID_WIDTH - game.enemy_mat_width);
             game.enemy_direction = LEFT_DIR;
             game.enemy_mat_position_y += ENEMY_DROP_SPEED;
-            handle_enemy_user_collision();
         }
     } 
     
@@ -149,7 +162,6 @@ void update_enemies(void) {
         if (game.enemy_mat_position_x < ENEMY_SPEED) {
             game.enemy_direction = RIGHT_DIR;
             game.enemy_mat_position_y += ENEMY_DROP_SPEED;
-            handle_enemy_user_collision();
         }
     }
 
@@ -164,6 +176,7 @@ void update_enemies(void) {
             if (game.enemy_mat[c][r]) {
                 /* Draw alien. */
                 draw_sprite(&alien[0][0], ex, ey, ALIEN_SIZE, ALIEN_SIZE, 2);
+                handle_enemy_user_collision(ex, ey);
                 ey += ALIEN_SIZE + ENEMY_SPACING;
                 // set collision detection with user here
             }
@@ -244,6 +257,14 @@ void fire_bullet(void) {
     game.bullet_counter = (game.bullet_counter + 1) % MAX_BULLETS; 
 }
 
+void reset_game(void) {
+    draw_box(0, 0, VID_WIDTH, game.info_bar_height, 4);
+    sleep(1);
+    clear_screen();
+    init_game_state();
+    draw_game_start();
+}
+
 void game_loop(void) {
     unsigned char keycode;
     char empty = KEY_QUEUE_EMPTY;
@@ -262,6 +283,8 @@ void game_loop(void) {
                 move_user(RIGHT_DIR);
             } else if (keycode == SPACEBAR) {
                 fire_bullet();
+            } else if (keycode == KEY_R) {
+                reset_game();
             }
         }
 
@@ -272,6 +295,11 @@ void game_loop(void) {
         if ((current_time - last_bullet_update) > BULLET_UPDATE_PERIOD) {
             update_bullets(-1);
             last_bullet_update = get_time();
+        }
+
+        if (game_over) {
+            reset_game();
+            game_over = 0;
         }
     }
 }
