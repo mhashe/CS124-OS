@@ -154,9 +154,6 @@ void draw_game_start(void) {
     draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
         SHIP_SIZE, SHIP_SIZE, 14);
 
-    // draw user in user bar
-    draw_box(game.user_position_x, game.user_position_y, SHIP_SIZE, SHIP_SIZE, 14); // yellow
-
     // draw enemies
     movie_enemies();
 }
