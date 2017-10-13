@@ -8,8 +8,12 @@
 
 /* Define constants/preferences for the game */
 
+<<<<<<< HEAD
 
 #define RESET_TIME 1.5 // time to hold game between resets, in seconds
+=======
+#define RESET_TIME 2 // time to hold game between resets, in seconds
+>>>>>>> 5210a30fb7fcf032282266781f0977f28ad92795
 
 
 /* Game update frequency */

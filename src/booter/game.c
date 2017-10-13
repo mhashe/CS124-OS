@@ -355,6 +355,11 @@ void reset_game(uint8_t color) {
      */
     draw_box(0, 0, VID_WIDTH, game.progress_bar_height, color);
 
+    /* Mock the player for his poor performance. */
+    if (color == RED) {
+        death_sound();
+    }
+
     /* Break for a fixed amount of time. */
     sleep(RESET_TIME);
 
@@ -416,7 +421,7 @@ void update_bullets(int dy, int ady) {
                 && (game.en_bullet_queue[i].y <= game.player_position_y + SHIP_SIZE)) {
 
                 /* Collision! */
-                reset_game(BLACK);
+                game.game_over = GO_LOST;
                 return;
             }
 
