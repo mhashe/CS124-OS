@@ -14,6 +14,7 @@
 #define PROGRAM_BASE_ADDR   0x00020000
 #define PROGRAM_SEGMENT     0x2000
 #define PROGRAM_OFFSET      0x0
+#define PROGRAM_NUM_SECT    11
 
 
 /* Flags in control register 0. */
@@ -45,6 +46,7 @@
 #define DISPLAY_INT         0x10
 #define DISK_INT            0x13
 #define EXT_READ            0x42
+
 
 /* Different video display modes. */
 #define TEXT_40_25_M_MODE      0x00     /* text 40*25 16 color (mono)*/

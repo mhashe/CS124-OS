@@ -52,7 +52,7 @@ boot_start:
     push $PROGRAM_SEGMENT # segment:offset of buffer to receive data.
     push $PROGRAM_OFFSET
      
-    push $11              # Number of 512-byte sectors to read.
+    push $PROGRAM_NUM_SECT # Number of 512-byte sectors to read.
     push $0x0010          # First byte is unused, second is size of packet.
 
     xor %esi, %esi        # Make sure upper bytes of si don't influece int.
