@@ -19,6 +19,7 @@
 #define BULLET_UPDATE_PERIOD 10 
 // Number of pixels to move bullets up every BULLET_UPDATE_PERIOD
 #define BULLET_SPEED 2
+#define ALIEN_BULLET_SPEED 3
 
 /* Floats in [0, 1] of fraction of available canvas's dedicated to for space 
 invading enemies. */
@@ -72,7 +73,7 @@ void fire_bullet(void);
 
 void update_enemies(void);
 
-void update_bullets(int dy);
+void update_bullets(int dy, int ady);
 
 void reset_game(uint8_t color);
 
