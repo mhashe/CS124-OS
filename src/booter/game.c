@@ -119,6 +119,10 @@ void init_game_state(void) {
     }
 
     /* No bullets drawn as yet. */
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        game.bullet_queue[i].x = -1;
+        game.bullet_queue[i].y = -1;
+    };
     game.bullet_counter = 0;
 
     for (int i = 0; i < ENEMY_BULLETS; i++) {
@@ -313,6 +317,23 @@ void fire_bullet(void) {
     game.bullet_queue[game.bullet_counter].x = x;
     game.bullet_queue[game.bullet_counter].y = y;
     game.bullet_counter = (game.bullet_counter + 1) % MAX_BULLETS; 
+
+    /* Fire bullet from alien ship. */
+    int x2 = game.enemy_mat_position_x;
+    int y2 = game.enemy_mat_position_y;
+
+    /* If we're overwriting a bullet (i.e., hit MAX_BULLETS),
+     * clear it first.
+     */
+    if (game.en_bullet_queue[game.en_bullet_counter].y != -1) {
+        draw_sprite(&alien_bullet[0][0], game.en_bullet_queue[game.en_bullet_counter].x,
+            game.en_bullet_queue[game.en_bullet_counter].y, BULLET_WIDTH,
+            BULLET_HEIGHT, BLACK);
+    }
+
+    game.en_bullet_queue[game.en_bullet_counter].x = x2;
+    game.en_bullet_queue[game.en_bullet_counter].y = y2;
+    game.en_bullet_counter = (game.en_bullet_counter + 1) % ENEMY_BULLETS;
 }
 
 void reset_game(uint8_t color) {
