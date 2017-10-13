@@ -3,6 +3,8 @@
 #include "interrupts.h"
 #include "handlers.h"
 
+#include <stdint.h>
+
 
 /*============================================================================
  * PROGRAMMABLE INTERVAL TIMER
@@ -46,7 +48,7 @@
 
 
 /* Timer count. */
-static volatile int time;
+static volatile uint32_t time;
 
 
 /*=============================================================================
@@ -86,9 +88,9 @@ void init_timer(void) {
 
 void sleep(float sec) {
     /* Sleep for sec seconds. */
-    float low = (float) time;
+    uint32_t low = time;
     
-    while (((float)time - low) / 100.0 < sec) {
+    while ((time - low) * 1. / 100.0 < sec) {
         /* Loop until sec seconds elapsed. */
     }
 }
