@@ -23,28 +23,12 @@
  * handler.
  *
  * See http://wiki.osdev.org/PS/2_Keyboard for details.
+ *
+ * This works for PS/2 US QUERTY keyboard only!
  */
-#define KEYBOARD_PORT 0x60
-#define KEYBOARD_CMD_PORT 0x64 // use for LED functions
-
-#define KEYCODE_QUEUE_SIZE 4
 
 #include "keyboard.h"
 #include "handlers.h"
-
-// this works for a ps/2 US querty keyboard only!
-
-/* TODO:  You can create static variables here to hold keyboard state.
- *        Note that if you create some kind of circular queue (a very good
- *        idea, you should declare it "volatile" so that the compiler knows
- *        that it can be changed by exceptional control flow.
- *
- *        Also, don't forget that interrupts can interrupt *any* code,
- *        including code that fetches key data!  If you are manipulating a
- *        shared data structure that is also manipulated from an interrupt
- *        handler, you might want to disable interrupts while you access it,
- *        so that nothing gets mangled...
- */
 
 static volatile char key_queue[KEYCODE_QUEUE_SIZE];
 static uint32_t queue_read_index;
@@ -52,7 +36,7 @@ static uint32_t queue_write_index;
 
 
 void init_keyboard(void) {
-    // initialize state required by the keyboard handler
+    // Initialize state required by the keyboard handler.
     queue_read_index = 0;
     queue_write_index = 0;
 
@@ -62,17 +46,22 @@ void init_keyboard(void) {
     // }
     // outb(KEYBOARD_PORT, 0b111);
 
-    // install your keyboard interrupt handler
+    // Install keyboard interrupt handler.
     install_interrupt_handler(KEYBOARD_INTERRUPT, irq1_handler);
 
 }
 
+/*=============================================================================
+ * Handles keyboard interrupts by adding scan code to key code queue.
+ *
+ * Deliberately not exposed to remainder of program.
+ */
 void key_handler(void) {
-    char keycode = inb(KEYBOARD_PORT); // puts keycode in rdi register
+    char keycode = inb(KEYBOARD_PORT);          // gets keycode
 
     key_queue[queue_write_index] = keycode;
     queue_write_index++;
-    queue_write_index %= KEYCODE_QUEUE_SIZE;
+    queue_write_index %= KEYCODE_QUEUE_SIZE;    // wrap index around
 
 }
 
@@ -80,7 +69,7 @@ void key_handler(void) {
 char key_queue_pop(void) {
     char keycode;
 
-    disable_interrupts();
+    disable_interrupts();                       // make interrupt safe
 
     if (queue_read_index == queue_write_index) {
         enable_interrupts();
@@ -90,9 +79,9 @@ char key_queue_pop(void) {
     keycode = key_queue[queue_read_index];
 
     queue_read_index++;
-    queue_read_index %= KEYCODE_QUEUE_SIZE;
+    queue_read_index %= KEYCODE_QUEUE_SIZE;     // wrap index around
 
-    enable_interrupts();
+    enable_interrupts();                        // restore system state
 
     return keycode;
 }

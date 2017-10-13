@@ -178,6 +178,10 @@ void update_missiles(void) {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (game.bullet_queue[i].y != -1) {
 
+            /* Erase old bullet. */
+            draw_bullet(game.bullet_queue[i].x,
+                        game.bullet_queue[i].y, 0);
+
             /* Check if bullet is still in game. */
             if (game.bullet_queue[i].y <= game.enemy_mat_position_y) {
                 game.bullet_queue[i].x = -1;
@@ -185,19 +189,19 @@ void update_missiles(void) {
                 continue;
             }
 
-            /* Valid bullet, should write */
+            /* Update bullet location. */
+            game.bullet_queue[i].y -= 1;
+
+            /* Draw bullet. */
             draw_bullet(game.bullet_queue[i].x,
                         game.bullet_queue[i].y, 10);
-
-            /* Update bullet location for next pass. */
-            game.bullet_queue[i].y -= 1;
         }
     }
 }
 
 void fire_missile(void) {
     int x = game.user_position_x + (SHIP_SIZE / 2) - 1;
-    int y = game.user_position_y - 1;
+    int y = game.user_position_y;
 
     game.bullet_queue[game.bullet_counter].x = x;
     game.bullet_queue[game.bullet_counter].y = y;
@@ -222,9 +226,8 @@ void game_loop(void) {
                 fire_missile();
             }
         }
-        update_missiles();
-
         if ((current_time - last_enemy_update) > ENEMY_UPDATE_PERIOD) {
+            update_missiles();
             update_enemies();
             last_enemy_update = get_time();
         }
