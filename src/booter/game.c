@@ -179,8 +179,8 @@ void update_enemies(void) {
                         && (game.bullet_queue[i].y <= ey + ALIEN_SIZE)) {
                         /* Collision! */
                         cont = 1;
-                        game.bullet_queue[i].x--;
-                        game.bullet_queue[i].y--;
+                        game.bullet_queue[i].x = -1;
+                        game.bullet_queue[i].y = -1;
                         break;
                     }
                 }
