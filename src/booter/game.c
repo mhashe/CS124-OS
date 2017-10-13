@@ -105,8 +105,9 @@ void draw_game_start(void) {
     // sleep(1.0);
     // draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 4);
 
-    // draw user in user bar
-    draw_box(game.user_position_x, game.user_position_y, SHIP_SIZE, SHIP_SIZE, 14); // yellow
+    /* Draw user in user bar. */
+    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
+        SHIP_SIZE, SHIP_SIZE, 14);
 
     // draw enemies
     int num_enemies_in_col, ex, ey;
@@ -117,7 +118,9 @@ void draw_game_start(void) {
         ey = game.enemy_mat_position_y;
 
         for (int e = 0; e < num_enemies_in_col; e++) {
-            draw_box(ex, ey, ALIEN_SIZE, ALIEN_SIZE, 2);
+            /* Draw alien. */
+            draw_sprite(&alien[0][0], ex, ey, 
+                ALIEN_SIZE, ALIEN_SIZE, 2);
             ey += ALIEN_SIZE + ENEMY_SPACING;
             // set collision detection with user here
         }
@@ -129,12 +132,16 @@ void draw_game_start(void) {
 
 
 void move_user(int dx) {
-    // move user
+    /* Clear user. */
+    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
+        SHIP_SIZE, SHIP_SIZE, 0);
+    
+    /* Move user. */
     game.user_position_x += dx;
 
-    // redraw user
-    draw_box(0, game.user_position_y, VID_WIDTH, game.user_bar_height, 0);
-    draw_box(game.user_position_x, game.user_position_y, SHIP_SIZE, SHIP_SIZE, 14); // yellow
+    /* Redraw user. */
+    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
+        SHIP_SIZE, SHIP_SIZE, 14);
 }
 
 
