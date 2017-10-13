@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 /*=============================================================================
- * Sets up timer channel 0, and bind timer_handler to timer interrupts.
+ * Sets up timer channel 0, and bind timer_handler to irq0_handler interrupts.
  */
 void init_timer(void);
 
