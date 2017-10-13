@@ -64,26 +64,6 @@ void draw_pixel(int x, int y, uint8_t color);
 void draw_box(int x, int y, int width, int height, uint8_t color);
 
 /*
- * Draw an alien on the screen at (x,y).
- *
- * Inputs:
- *     x:      x location of alien
- *     y:      y location of alien
- *     color:  color to be displayed
- */
-void draw_alien(int x, int y, uint8_t color);
-
-/*
- * Draw an ship on the screen at (x,y).
- *
- * Inputs:
- *     x:      x location of alien
- *     y:      y location of alien
- *     color:  color to be displayed
- */
-void draw_ship(int x, int y, uint8_t color);
-
-/*
  * Draw a bullet on the screen at (x,y).
  *
  * Inputs:
