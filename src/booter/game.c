@@ -30,6 +30,11 @@ void c_start(void) {
     game_loop();
 }
 
+typedef struct pair {
+    int x;
+    int y;
+} Pair;
+
 
 typedef struct Space_Invaders {
     /* Info presented to user */
@@ -59,10 +64,13 @@ typedef struct Space_Invaders {
     uint8_t user_position_x;
     uint8_t user_position_y; // always the lowest row (not dynamic)
 
+    // bullet queue, counter
+    Pair bullet_queue[MAX_BULLETS];
+    int bullet_counter;
+
 } Space_Invaders;
 
 static Space_Invaders game;
-
 
 void init_game_state(void) {
     game.score = 0;
@@ -97,6 +105,13 @@ void init_game_state(void) {
     }
 
     game.num_enemies_left = (game.num_enemy_rows * game.num_enemy_cols);
+
+
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        game.bullet_queue[i].x = -1;
+        game.bullet_queue[i].y = -1;
+    }
+    game.bullet_counter = 0;
 }
 
 
@@ -154,9 +169,35 @@ void move_user(int dx) {
         SHIP_SIZE, SHIP_SIZE, 14);
 }
 
+
+void update_missiles(void) {
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (game.bullet_queue[i].y != -1) {
+
+            /* Check if bullet is still in game. */
+            if (game.bullet_queue[i].y <= game.enemy_mat_position_y) {
+                game.bullet_queue[i].x = -1;
+                game.bullet_queue[i].y = -1;
+                continue;
+            }
+
+            /* Valid bullet, should write */
+            draw_bullet(game.bullet_queue[i].x,
+                        game.bullet_queue[i].y, 10);
+
+            /* Update bullet location for next pass. */
+            game.bullet_queue[i].y -= 1;
+        }
+    }
+}
+
 void fire_missile(void) {
-    draw_bullet(game.user_position_x + (SHIP_SIZE / 2) - 1, 
-        game.user_position_y + 1, 10);
+    int x = game.user_position_x + (SHIP_SIZE / 2) - 1;
+    int y = game.user_position_y - 1;
+
+    game.bullet_queue[game.bullet_counter].x = x;
+    game.bullet_queue[game.bullet_counter].y = y;
+    game.bullet_counter = (game.bullet_counter + 1) % MAX_BULLETS; 
 }
 
 void game_loop(void) {
@@ -175,5 +216,6 @@ void game_loop(void) {
                 fire_missile();
             }
         }
+        update_missiles();
     }
 }
