@@ -174,12 +174,35 @@ void update_enemies(void) {
 
         for (int r = 0; r < game.num_enemy_rows; r++) {
             if (game.enemy_mat[c][r]) {
+
+                int cont = 0;
+                /* Check for collision with bullet. */
+                for (int i = 0; i < MAX_BULLETS; i++) {
+                    /* Check if bullet in hitbox. */
+                    if    ((game.bullet_queue[i].x >= ex)
+                        && (game.bullet_queue[i].x <= ex + ALIEN_SIZE) 
+                        && (game.bullet_queue[i].y >= ey)
+                        && (game.bullet_queue[i].y <= ey + ALIEN_SIZE)) {
+                        /* Collision! */
+                        cont = 1;
+                        game.bullet_queue[i].x = -1;
+                        game.bullet_queue[i].y = -1;
+                        break;
+                    }
+                }
+
+                /* Mark as destroyed; will be removed in next draw cycle. */
+                if (cont) {
+                    game.enemy_mat[c][r] = 0;
+                }
+
                 /* Draw alien. */
                 draw_sprite(&alien[0][0], ex, ey, ALIEN_SIZE, ALIEN_SIZE, 2);
-                handle_enemy_user_collision(ex, ey);
-                ey += ALIEN_SIZE + ENEMY_SPACING;
+                
                 // set collision detection with user here
+                handle_enemy_user_collision(ex, ey);
             }
+            ey += ALIEN_SIZE + ENEMY_SPACING;
         }
 
         ex += ALIEN_SIZE + ENEMY_SPACING;
@@ -223,8 +246,11 @@ void update_bullets(int dy) {
             draw_bullet(game.bullet_queue[i].x,
                         game.bullet_queue[i].y, 0);
 
-            /* Check if bullet is still in game. */
-            if (game.bullet_queue[i].y <= game.info_bar_height) {
+            /* Check if bullet is still in game.
+             * 3 intended as buffer to avoid infringing
+             * upon score bar.
+             */
+            if (game.bullet_queue[i].y <= game.info_bar_height + 3) {
                 game.bullet_queue[i].x = -1;
                 game.bullet_queue[i].y = -1;
                 continue;
@@ -293,7 +319,7 @@ void game_loop(void) {
             last_enemy_update = get_time();
         }
         if ((current_time - last_bullet_update) > BULLET_UPDATE_PERIOD) {
-            update_bullets(-1);
+            update_bullets(-2);
             last_bullet_update = get_time();
         }
 

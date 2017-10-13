@@ -61,6 +61,7 @@ void timer_handler(void) {
     time++;
 }
 
+
 uint32_t get_time(void) {
     return time;
 }
@@ -78,6 +79,9 @@ void init_timer(void) {
     outb(PIT_CHAN0_DATA, 0x9c);
     outb(PIT_CHAN0_DATA, 0x2e);
 
+    /* Turn on timer channel 2 for tone generation */
+    outb(PIT_MODE_CMD, 0xb6);               /* 10 11 011 0 */
+
     /* Initialize timer to 0. */
     time = 0;
 
@@ -93,5 +97,19 @@ void sleep(float sec) {
     while ((time - low) * 1. / 100.0 < sec) {
         /* Loop until sec seconds elapsed. */
     }
+}
+
+
+void sound(uint32_t freq) {
+    uint32_t div = PIT_FREQ / freq;
+    outb(PIT_CHAN2_DATA, (uint8_t) div);
+    outb(PIT_CHAN2_DATA, (uint8_t) (div >> 8));
+
+    outb(0x61, 0b11);
+}
+
+
+void no_sound() {
+    outb(0x61, 0b00);
 }
 
