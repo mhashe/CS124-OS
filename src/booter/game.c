@@ -39,7 +39,6 @@ typedef struct pair {
 typedef struct Space_Invaders {
     /* Info presented to user */
     uint8_t info_bar_height;
-    uint32_t score; // number of enemies killed
     uint8_t game_over;
 
     /* Position and direction of enemies */
@@ -68,16 +67,23 @@ typedef struct Space_Invaders {
     Pair bullet_queue[MAX_BULLETS];
     int bullet_counter;
 
+    // alien bullet queue, counter
+    Pair en_bullet_queue[ENEMY_BULLETS];
+    int en_bullet_counter;
+
 } Space_Invaders;
 
 static Space_Invaders game;
 
 void init_game_state(void) {
     game.game_over = GO_PLAY;
-    game.score = 0;
 
+    /* Define info_bar shape (at top of screen) */
     game.info_bar_height = VID_HEIGHT * INFO_BAR_HEIGHT;
+    
+    /* User starts off towards bottom, horizontal center of screen. */
     game.user_bar_height = SHIP_SIZE;
+    game.user_position_x = (VID_WIDTH - SHIP_SIZE) / 2;
     /* 
      * This 8 is truly a magic number. It seems in the emulator, after you fire
      * a bullet, the bottom 7 rows of the memory buffer stop updating, even
@@ -86,40 +92,39 @@ void init_game_state(void) {
      * booting into it).
      */
     game.user_position_y = VID_HEIGHT - game.user_bar_height - 8;
-    // user starts off in middle of screen
-    game.user_position_x = (VID_WIDTH - SHIP_SIZE) / 2;
 
-    // enemies start of in aligned center, right below the info space
-    // height enemy mat will use
+    /* Enemies claim all space vertically in-between info and user bars. */
     game.enemy_mat_height = ((VID_HEIGHT - game.info_bar_height 
         - game.user_bar_height) * ENEMY_MAT_HEIGHT);
     game.enemy_mat_width = VID_WIDTH * ENEMY_MAT_WIDTH;
-    // enemy starts off at center of screen
+    
+    /* Enemies start off in horizontal center, top of screen (under info_bar). */
     game.enemy_mat_position_x = ((VID_WIDTH - game.enemy_mat_width) / 2);
     game.enemy_mat_position_y = game.info_bar_height; // start at top
     game.enemy_direction = NO_DIR;
 
-    // computer size of enemy matrix from available display space (in pixels)
+    /* Number of enemies in enemy matrix (rows and columns). */
     game.num_enemy_rows = (game.enemy_mat_height / 
         (ALIEN_SIZE + ENEMY_SPACING));
     game.num_enemy_cols = ((VID_WIDTH * ENEMY_MAT_WIDTH) / 
         (ALIEN_SIZE + ENEMY_SPACING));
+    game.num_enemies_left = (game.num_enemy_rows * game.num_enemy_cols);
 
-    // set all enemies as valid (1) 
+    /* Set all enemies as valid/existing (1) in the enemy matrix. */
     for (int c = 0; c < game.num_enemy_cols; c++) {
         for (int r = 0; r < game.num_enemy_rows; r++) {
             game.enemy_mat[c][r] = 1;
         }
     }
 
-    game.num_enemies_left = (game.num_enemy_rows * game.num_enemy_cols);
-
-
-    for (int i = 0; i < MAX_BULLETS; i++) {
-        game.bullet_queue[i].x = -1;
-        game.bullet_queue[i].y = -1;
-    }
+    /* No bullets drawn as yet. */
     game.bullet_counter = 0;
+
+    for (int i = 0; i < ENEMY_BULLETS; i++) {
+        game.en_bullet_queue[i].x = -1;
+        game.en_bullet_queue[i].y = -1;
+    }
+    game.en_bullet_counter = 0;
 }
 
 void update_game_progress() {
@@ -181,8 +186,8 @@ void update_enemies(void) {
                         && (game.bullet_queue[i].y <= ey + ALIEN_SIZE)) {
                         /* Collision! */
                         cont = 1;
-                        game.bullet_queue[i].x = -1;
-                        game.bullet_queue[i].y = -1;
+                        game.bullet_queue[i].x--;
+                        game.bullet_queue[i].y--;
                         break;
                     }
                 }
@@ -337,7 +342,7 @@ void game_loop(void) {
             last_enemy_update = get_time();
         }
         if ((current_time - last_bullet_update) > BULLET_UPDATE_PERIOD) {
-            update_bullets(-2);
+            update_bullets(-BULLET_SPEED);
             last_bullet_update = get_time();
         }
 
