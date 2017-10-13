@@ -51,6 +51,7 @@ void init_video(void);
  */
 void draw_pixel(int x, int y, uint8_t color);
 
+
 /*
  * Draw a box on the screen.
  *
@@ -62,16 +63,6 @@ void draw_pixel(int x, int y, uint8_t color);
  *     color:  color to be displayed
  */
 void draw_box(int x, int y, int width, int height, uint8_t color);
-
-/*
- * Draw a bullet on the screen at (x,y).
- *
- * Inputs:
- *     x:      x location of alien
- *     y:      y location of alien
- *     color:  color to be displayed
- */
-void draw_bullet(int x, int y, uint8_t color);
 
 
 /*

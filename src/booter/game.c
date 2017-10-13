@@ -266,8 +266,8 @@ void update_bullets(int dy) {
         if (game.bullet_queue[i].y != -1) {
 
             /* Erase old bullet. */
-            draw_bullet(game.bullet_queue[i].x,
-                        game.bullet_queue[i].y, BLACK);
+            draw_sprite(&bullet[0][0], game.bullet_queue[i].x,
+                game.bullet_queue[i].y, BULLET_WIDTH, BULLET_HEIGHT, BLACK);
 
             /* Check if bullet is still in game.
              * 3 intended as buffer to avoid infringing
@@ -283,8 +283,9 @@ void update_bullets(int dy) {
             game.bullet_queue[i].y += dy;
 
             /* Draw bullet. */
-            draw_bullet(game.bullet_queue[i].x,
-                        game.bullet_queue[i].y, LIGHT_GREEN);
+            draw_sprite(&bullet[0][0], game.bullet_queue[i].x,
+                game.bullet_queue[i].y, BULLET_WIDTH, BULLET_HEIGHT,
+                LIGHT_GREEN);            
         }
     }
 }
@@ -297,8 +298,9 @@ void fire_bullet(void) {
      * clear it first.
      */
     if (game.bullet_queue[game.bullet_counter].y != -1) {
-        draw_bullet(game.bullet_queue[game.bullet_counter].x,
-                        game.bullet_queue[game.bullet_counter].y, 0);
+        draw_sprite(&bullet[0][0], game.bullet_queue[game.bullet_counter].x,
+            game.bullet_queue[game.bullet_counter].y, BULLET_WIDTH,
+            BULLET_HEIGHT, BLACK);
     }
 
     game.bullet_queue[game.bullet_counter].x = x;

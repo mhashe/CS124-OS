@@ -27,19 +27,17 @@ void init_video(void) {
     clear_screen();
 }
 
+
 void draw_pixel(int x, int y, uint8_t color) {
     *(VGA_BUFFER+LOC(x, y)) = color;
 }
+
 
 void draw_box(int x, int y, int width, int height, uint8_t color) {
     for (int j = x; j < (x + width); j++) {
         for (int i = y; i < (y + height); i++)
             draw_pixel(j, i, color);
     }
-}
-
-void draw_bullet(int x, int y, uint8_t color) {
-    draw_sprite(&bullet[0][0], x, y, BULLET_WIDTH, BULLET_HEIGHT, color);
 }
 
 
@@ -53,7 +51,6 @@ void draw_sprite(const uint8_t* sprite, int x, int y, int width, int height,
         }
     }
 }
-
 
 
 void clear_screen() {
