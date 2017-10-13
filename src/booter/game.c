@@ -48,7 +48,7 @@ void c_start(void) {
 
 void init_game_state(void) {
     /* PLAY as opposed to game over states (WON, LOST). */
-    game.game_over = GO_PLAY;
+    game.game_state = GAME_PLAY;
 
     /* Define progress_bar shape (at top of screen). */
     game.progress_bar_height = VID_HEIGHT * PROGRESS_BAR_HEIGHT;
@@ -89,7 +89,7 @@ void init_game_state(void) {
         }
     }
 
-    /* No bullets drawn as yet. -1 is used to indicate when a bullect pair
+    /* No bullets drawn as yet. -1 is used to indicate when a bullet pair
      * is empty.
      */
     for (int i = 0; i < MAX_BULLETS; i++) {
@@ -156,9 +156,22 @@ void game_loop(void) {
             } else if (keycode == KEY_R) {
                 /* Reset game. */
                 reset_game(WHITE);
+            } else if (keycode == KEY_P) {
+                /* Pause or un-pause game. */
+                if (game.game_state == GAME_PAUSE) {
+                    game.game_state = GAME_PLAY;
+                } else {
+                    game.game_state = GAME_PAUSE;
+                }
             }
         }
 
+        /* If game is paused, don't progress game, just continue. */
+        if (game.game_state == GAME_PAUSE) {
+            continue;
+        }
+
+        /* Update positions and redraw enemies/aliens in game. */
         if ((current_time - last_enemy_update) > ENEMY_UPDATE_PERIOD) {
             /* Time step to advance aliens. */
             update_enemies();
@@ -167,6 +180,7 @@ void game_loop(void) {
             last_enemy_update = get_time();
         }
 
+        /* Update positions and redraw bullets/missiles in game. */
         if ((current_time - last_bullet_update) > BULLET_UPDATE_PERIOD) {
             /* Time step to advance bullets. */
             update_bullets(-BULLET_SPEED, ALIEN_BULLET_SPEED);
@@ -176,18 +190,18 @@ void game_loop(void) {
         }
 
         /* A win / loss condition has been met. */
-        if (game.game_over != GO_PLAY) {
-            if (game.game_over == GO_WON) {
+        if (game.game_state != GAME_PLAY) {
+            if (game.game_state == GAME_WON) {
                 /* Game won! Reset to initial board and play again. */
                 reset_game(GREEN);
             }
-            else if (game.game_over == GO_LOST) {
+            else if (game.game_state == GAME_LOST) {
                 /* Game lost... Reset to initial board and play again. */
                 reset_game(RED);
             }
 
             /* Mark new game as in progress. */
-            game.game_over = GO_PLAY;
+            game.game_state = GAME_PLAY;
         }
     }
 }
@@ -275,7 +289,7 @@ void update_enemies(void) {
                         (ex < (game.player_position_x + SHIP_SIZE))) {
 
                         /* ... then it's game over. */
-                        game.game_over = GO_LOST;
+                        game.game_state = GAME_LOST;
                     }
                 }
 
@@ -298,8 +312,8 @@ void update_enemies(void) {
     update_game_progress();
 
     /* If the game is not lost and all enemies are defeated, player has won. */
-    if ((game.num_enemies_left == 0) && (game.game_over == GO_PLAY)) {
-        game.game_over = GO_WON;
+    if ((game.num_enemies_left == 0) && (game.game_state == GAME_PLAY)) {
+        game.game_state = GAME_WON;
     }
 }
 
@@ -421,7 +435,7 @@ void update_bullets(int dy, int ady) {
                 && (game.en_bullet_queue[i].y <= game.player_position_y + SHIP_SIZE)) {
 
                 /* Collision! */
-                game.game_over = GO_LOST;
+                game.game_state = GAME_LOST;
                 return;
             }
 

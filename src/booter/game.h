@@ -57,9 +57,10 @@ invading enemies. */
 
 
 /* Gameover states */
-#define GO_PLAY 0
-#define GO_LOST 1
-#define GO_WON 2
+#define GAME_PLAY 0
+#define GAME_LOST 1
+#define GAME_WON 2
+#define GAME_PAUSE 3
 
 
 /* A struct used for holding x-y pairs
@@ -77,7 +78,7 @@ typedef struct pair {
 typedef struct Space_Invaders {
     /* Info presented to player */
     uint8_t progress_bar_height;
-    uint8_t game_over;
+    uint8_t game_state;
 
     /* Position and direction of enemies */
     // top, left corner off enemy matrix. all are pixel units

@@ -7,11 +7,12 @@
 #define KEYCODE_QUEUE_SIZE 128
 
 /* Define key presses */
+#define KEY_QUEUE_EMPTY   0xFB  // an unused key code
 #define SPACEBAR          0x39
 #define LEFT_ARROW        0x4B
 #define RIGHT_ARROW       0x4D
 #define KEY_R             0x13
-#define KEY_QUEUE_EMPTY   0xFB  // an unused key code
+#define KEY_P             0x19
 
 
 /*=============================================================================
