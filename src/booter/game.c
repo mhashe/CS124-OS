@@ -1,6 +1,7 @@
 #include "interrupts.h"
 #include "timer.h"
 #include "keyboard.h"
+#include "sprites.h"
 #include "video.h"
 #include "game.h"
 
@@ -65,10 +66,10 @@ void init_game_state(void) {
     game.lives_remaining = NUM_LIVES;
 
     game.info_bar_height = VID_HEIGHT * INFO_BAR_HEIGHT;
-    game.user_bar_height = USER_SIZE;
+    game.user_bar_height = SHIP_SIZE;
     game.user_position_y = VID_HEIGHT - game.user_bar_height;
     // user starts off in middle of screen
-    game.user_position_x = (VID_WIDTH - USER_SIZE) / 2;
+    game.user_position_x = (VID_WIDTH - SHIP_SIZE) / 2;
 
     // enemies start of in aligned center, right below the info space
     // height enemy mat will use
@@ -81,9 +82,9 @@ void init_game_state(void) {
 
     // set maximum # enemies per col to each col's num_enemies_per_col
     uint8_t max_enemies_per_col = (game.enemy_mat_height / 
-        (ENEMY_SIZE + ENEMY_SPACING));
+        (ALIEN_SIZE + ENEMY_SPACING));
     game.num_enemy_cols = ((VID_WIDTH * ENEMY_MAT_WIDTH) / 
-        (ENEMY_SIZE + ENEMY_SPACING));
+        (ALIEN_SIZE + ENEMY_SPACING));
 
     for (int c = 0; c < game.num_enemy_cols; c++) {
         game.num_enemies_per_col[c] = max_enemies_per_col;
@@ -105,7 +106,7 @@ void draw_game_start(void) {
     // draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 4);
 
     // draw user in user bar
-    draw_box(game.user_position_x, game.user_position_y, USER_SIZE, USER_SIZE, 14); // yellow
+    draw_box(game.user_position_x, game.user_position_y, SHIP_SIZE, SHIP_SIZE, 14); // yellow
 
     // draw enemies
     int num_enemies_in_col, ex, ey;
@@ -116,12 +117,12 @@ void draw_game_start(void) {
         ey = game.enemy_mat_position_y;
 
         for (int e = 0; e < num_enemies_in_col; e++) {
-            draw_box(ex, ey, ENEMY_SIZE, ENEMY_SIZE, 2);
-            ey += ENEMY_SIZE + ENEMY_SPACING;
+            draw_box(ex, ey, ALIEN_SIZE, ALIEN_SIZE, 2);
+            ey += ALIEN_SIZE + ENEMY_SPACING;
             // set collision detection with user here
         }
-        
-        ex += ENEMY_SIZE + ENEMY_SPACING;
+
+        ex += ALIEN_SIZE + ENEMY_SPACING;
     }
 
 }
@@ -133,7 +134,7 @@ void move_user(int dx) {
 
     // redraw user
     draw_box(0, game.user_position_y, VID_WIDTH, game.user_bar_height, 0);
-    draw_box(game.user_position_x, game.user_position_y, USER_SIZE, USER_SIZE, 14); // yellow
+    draw_box(game.user_position_x, game.user_position_y, SHIP_SIZE, SHIP_SIZE, 14); // yellow
 }
 
 

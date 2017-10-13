@@ -1,11 +1,12 @@
 #ifndef SPRITES_H
-#define SPTRIES_H
+#define SPRITES_H
+
+#include <stdint.h>
 
 #define ALIEN_SIZE 15
 #define SHIP_SIZE  15
 
-#define BULLET_WIDTH  2
-#define BULLET_HEIGHT 10
+
 
 const uint8_t alien[][ALIEN_SIZE] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 

@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "video.h"
+#include "sprites.h"
 
 /* Define constants/preferences for the game */
 
@@ -16,15 +17,13 @@ invading enemies*/
 #define ENEMY_MAT_WIDTH 0.5
 #define ENEMY_MAT_HEIGHT 0.5
 #define ENEMY_MAT_WIDTH_PX 160
-#define NUM_ENEMY_COLS ENEMY_MAT_WIDTH_PX / (ENEMY_SIZE + ENEMY_SPACING)
+#define NUM_ENEMY_COLS ENEMY_MAT_WIDTH_PX / (15 + ENEMY_SPACING)
 
 /* Number of pixels in between space invaders on right and left */
-#define ENEMY_SIZE 15 // enemies are drawn in squares of this size
 #define ENEMY_SPACING 5 // pixels between enemies
 
 /* Floats in [0, 1] */
 #define INFO_BAR_HEIGHT 0.1
-#define USER_SIZE 20 // pixels of width
 
 
 /* Define arrows */
