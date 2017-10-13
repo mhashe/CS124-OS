@@ -35,8 +35,9 @@ boot_start:
     mov $STACK_BASE, %esp # Use %esp since we'll be in 32-bit mode later.
 
     # Hide the cursor, just to be "prettier."  This will carry over into
-    # protected mode execution too.
-    mov $1, %ah
+    # protected mode execution too. https://en.wikipedia.org/wiki/INT_10H
+    mov $0, %ah
+    mov $VGA_640_480_256_MODE, %al
     mov $CURSOR_END, %cx  # Set cursor end-row to come before start-row.
     int $DISPLAY_INT      # Display interrupt
 

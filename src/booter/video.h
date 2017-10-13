@@ -1,10 +1,22 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
-#define VID_WIDTH     80
-#define VID_HEIGHT    25
-#define VID_BUFF_SIZE  VID_WIDTH*VID_HEIGHT
-#define BYTES_PER_ELT  2
+#include <stdint.h>
+
+#define VID_WIDTH        320
+#define VID_HEIGHT       200
+#define BYTES_PER_PIXEL  1
+#define VID_BUFF_SIZE    VID_WIDTH*VID_HEIGHT*BYTES_PER_PIXEL
+
+#define LOC(x, y)       x*VID_WIDTH + y
+
+
+// Memory locations for the different video buffers.
+#define TEXT_BUFFER ((char *) 0xB8000)
+#define CGA_EVEN_BUFFER ((char *) 0xB8000)
+#define CGA_ODD_BUFFER  ((char *) 0xBA000)
+#define CGA_BUFFER ((char *) 0xB8000)
+#define VGA_BUFFER ((char *) 0xA0000)
 
 /* Available colors from the 16-color palette used for EGA and VGA, and
  * also for text-mode VGA output.
@@ -30,33 +42,18 @@
 void init_video(void);
 
 /*
- * Clears the screen by writing the null character everywhere.
+ * Draw a pixel on the screen.
+ *
+ * Inputs:
+ *     x:     x location of pixel
+ *     y:     y location of pixel
+ *     color: color to be displayed
  */
-void clear_screen(void);
+void draw_pixel(int x, int y, uint8_t color);
 
 /*
- * Writes a character to the screen.
- *
- * Input:
- *     ch: character to be output
- *     fg: foreground color, must be defined in video.h
- *     bg: background color, must be defined in video.h
- *     x : x location to be placed
- *     y : y location to be placed
+ * Clears the screen by writing 0 everywhere in video memory.
  */
-void write_char(char ch, int fg, int bg, int x, int y);
-
-/*
- * Writes a string to the screen. Note string will wrap around the right side of
- * screen to the next line.
- *
- * Input:
- *     str    : string to be output
- *     fg     : foreground color, must be defined in video.h
- *     bg     : background color, must be defined in video.h
- *     start_x: x location for start of string to be placed
- *     start_y: y location for start of string to be placed
- */
-void write_str(const char* str, int fg, int bg, int start_x, int start_y);
+void clear_screen();
 
 #endif /* VIDEO_H */

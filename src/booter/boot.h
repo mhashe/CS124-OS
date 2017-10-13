@@ -46,3 +46,19 @@
 #define DISK_INT            0x13
 #define EXT_READ            0x42
 
+/* Different video display modes. */
+#define TEXT_40_25_M_MODE      0x00     /* text 40*25 16 color (mono)*/
+#define TEXT_40_25_16_MODE     0x01     /* text 40*25 16 color*/
+#define TEXT_80_25_M_MODE      0x02     /* text 80*25 16 color (mono)*/
+#define TEXT_80_25_16_MODE     0x03     /* text 80*25 16 color*/
+#define CGA_320_200_4_MODE     0x04     /* CGA 320*200 4 color*/
+#define CGA_320_200_M_MODE     0x05     /* CGA 320*200 4 color (m)*/
+#define CGA_640_200_2_MODE     0x06     /* CGA 640*200 2 color*/
+#define MDA_80_25_M_MODE       0x07     /* MDA monochrome text 80*25*/
+#define EGA_320_200_16_MODE    0x0D     /* EGA 320*200 16 color*/
+#define EGA_640_200_16_MODE    0x0E     /* EGA 640*200 16 color*/
+#define EGA_640_350_M_MODE     0x0F     /* EGA 640*350 mono*/
+#define EGA_640_350_16_MODE    0x10     /* EGA 640*350 16 color*/
+#define VGA_640_480_M_MODE     0x11     /* VGA 640*480 mono*/
+#define VGA_640_480_16_MODE    0x12     /* VGA 640*480 16 color*/
+#define VGA_640_480_256_MODE   0x13     /* VGA 320*200 256 color*/
