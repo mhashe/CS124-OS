@@ -23,8 +23,6 @@
 
 
 
-// http://webpages.charter.net/danrollins/techhelp/0089.HTM
-
 /* TODO:  You can create static variables here to hold video display state,
  *        such as the current foreground and background color, a cursor
  *        position, or any other details you might want to keep track of!
