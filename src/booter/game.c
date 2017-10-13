@@ -5,6 +5,7 @@
 #include "video.h"
 #include "game.h"
 #include "sound.h"
+#include "keyboard.h"
 
 #include <stdint.h>
 
