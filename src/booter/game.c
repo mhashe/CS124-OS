@@ -365,6 +365,28 @@ void fire_bullet(void) {
     int x2 = game.enemy_mat_position_x;
     int y2 = game.enemy_mat_position_y;
 
+    int col = -1; 
+    int row = 0;
+    while (col == -1) {
+        int c = get_time() % game.num_enemy_cols;
+        int r = -1;
+
+        for (int i = 0; i < game.num_enemy_rows; i++) {
+            if (game.enemy_mat[c][i]) {
+                r = i;
+            }
+        }
+
+        if (r >= 0) {
+            col = c;
+            row = r;
+        }
+    }
+
+    /* Update spacing. */
+    y2 += (row + 1) * ALIEN_SIZE + row * ENEMY_SPACING;
+    x2 += (col + 1) * ALIEN_SIZE + col * ENEMY_SPACING;
+
     /* If we're overwriting a bullet (i.e., hit MAX_BULLETS),
      * clear it first.
      */
