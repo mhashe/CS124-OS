@@ -104,17 +104,14 @@ void init_game_state(void) {
         }
     }
 
-<<<<<<< HEAD
-    game.num_enemies_left = (max_enemies_per_col * game.num_enemy_cols);
+    game.num_enemies_left = (game.num_enemy_rows * game.num_enemy_cols);
+
 
     for (int i = 0; i < MAX_BULLETS; i++) {
         game.bullet_queue[i].x = -1;
         game.bullet_queue[i].y = -1;
     }
     game.bullet_counter = 0;
-=======
-    game.num_enemies_left = (game.num_enemy_rows * game.num_enemy_cols);
->>>>>>> 939936084f846c368d6963af75c93f57fbb213d3
 }
 
 
@@ -206,6 +203,6 @@ void game_loop(void) {
                 fire_missile();
             }
         }
-        sleep(.1);
+        // sleep(.1);
     }
 }
