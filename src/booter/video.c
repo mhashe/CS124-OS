@@ -39,7 +39,7 @@ void draw_box(int x, int y, int width, int height, uint8_t color) {
 }
 
 void draw_bullet(int x, int y, uint8_t color) {
-    draw_box(x, y, BULLET_WIDTH, BULLET_HEIGHT, color);
+    draw_sprite(&bullet[0][0], x, y, BULLET_WIDTH, BULLET_HEIGHT, color);
 }
 
 

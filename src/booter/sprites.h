@@ -49,5 +49,12 @@ static const uint8_t ship[][SHIP_SIZE] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
+static const uint8_t bullet[BULLET_HEIGHT][BULLET_WIDTH] = {
+    {0, 1, 0}, 
+    {0, 1, 0}, 
+    {1, 1, 1}, 
+    {1, 1, 1}, 
+    {1, 1, 1}
+};
 
 #endif /* SPRITES_H */
