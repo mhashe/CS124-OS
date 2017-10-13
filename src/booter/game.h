@@ -25,6 +25,9 @@ invading enemies*/
 /* Floats in [0, 1] */
 #define INFO_BAR_HEIGHT 0.1
 
+/* Maximum number of bullets on screen at once. */
+#define MAX_BULLETS     25
+
 
 /* Define arrows */
 #define SPACEBAR 0x39
