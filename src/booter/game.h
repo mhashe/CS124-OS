@@ -40,13 +40,6 @@ invading enemies. */
 /* Maximum number of enemy bullets on screen at once. */
 #define ENEMY_BULLETS   50 /* Spamming bullets is a bad strategy. */
 
-
-/* Define key presses */
-#define SPACEBAR 0x39
-#define LEFT_ARROW 0x4B
-#define RIGHT_ARROW 0x4D
-#define KEY_R 0x13
-
 /* Define directions */
 #define LEFT_DIR -1
 #define RIGHT_DIR 1
