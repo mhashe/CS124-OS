@@ -203,8 +203,11 @@ void update_bullets(int dy) {
             draw_bullet(game.bullet_queue[i].x,
                         game.bullet_queue[i].y, 0);
 
-            /* Check if bullet is still in game. */
-            if (game.bullet_queue[i].y <= game.info_bar_height) {
+            /* Check if bullet is still in game.
+             * 3 intended as buffer to avoid infringing
+             * upon score bar.
+             */
+            if (game.bullet_queue[i].y <= game.info_bar_height + 3) {
                 game.bullet_queue[i].x = -1;
                 game.bullet_queue[i].y = -1;
                 continue;
@@ -263,7 +266,7 @@ void game_loop(void) {
             last_enemy_update = get_time();
         }
         if ((current_time - last_bullet_update) > BULLET_UPDATE_PERIOD) {
-            update_bullets(-1);
+            update_bullets(-2);
             last_bullet_update = get_time();
         }
     }
