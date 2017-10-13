@@ -70,13 +70,10 @@ void init_keyboard(void) {
 void key_handler(void) {
     char keycode = inb(KEYBOARD_PORT); // puts keycode in rdi register
 
-    disable_interrupts();
-
     key_queue[queue_write_index] = keycode;
     queue_write_index++;
     queue_write_index %= KEYCODE_QUEUE_SIZE;
 
-    enable_interrupts();
 }
 
 // reads char from queue. 
