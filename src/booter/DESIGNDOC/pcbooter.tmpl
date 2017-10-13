@@ -20,12 +20,14 @@ Michael Hashe <mhashe@caltech.edu>
    on Moodle.)
 
    Repository URL:  https://github.com/MichaelHashe/CS124-OS
-   commit ...
+   commit ...                                                                   TODO
 
 ---- PRELIMINARIES ----
 
 >> If you have any preliminary comments on your submission, notes for the
 >> TAs, or extra credit, please give them here.
+
+   Graphics mode 0x13 (VGA, 320x200, 256 color)
 
 >> Please cite any offline or online sources you consulted while
 >> preparing your submission, other than the Pintos documentation, course
@@ -43,11 +45,19 @@ These questions will help us to keep track of the difficulty level of
 assignments, as well as keeping track of which team members worked on
 which parts.
 
->> L1: How many hours did each team member spend on this assignment?
+>> L1: How many hours did each team member spend on this assignment?            TODO
    Make sure that each member's total time is listed.
+
+   Veb:
+   Nikhil:
+   Michael:
 
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
+
+   Veb: Bootloader, keyboard, game.
+   Nikhil: Bootloader, interrupt, video.
+   Michael: Bootloader, timer, game. 
 
 Note that this design document is a bit long.  Most of the questions can be
 answered pretty briefly.  Don't feel a need to write a long answer if it is
@@ -58,11 +68,16 @@ not required by the question.
 
 ---- ALGORITHMS ----
 
->> A1: In a few sentences, describe what kind of game or demo program your
+>> A1: In a few sentences, describe what kind of game or demo program your      TODO
 >> PC booter implements.
 
->> A2: In a few sentences, how does the user interact with the program?
+We implemented a trimmed down space invaders. 
+
+>> A2: In a few sentences, how does the user interact with the program?         TODO
 >> What are the controls?  What should the user try to do?
+
+The user can use the left and right arrow keys to move and the space button to
+shoot.
 
 ---- DATA STRUCTURES ----
 
@@ -107,12 +122,17 @@ not required by the question.
 >> memory occupied by the DAP get reclaimed after it is used?  If not,
 >> why not?
 
->> B2: How many sectors does your bootloader load?  How did you arrive
+We stored the Disk Address Packet on the stack. We reclaim the memory by popping
+it off the stack, thereby restoring the location of the stack pointer.
+
+>> B2: How many sectors does your bootloader load?  How did you arrive          TODO
 >> at this number?  Briefly explain your rationale.
 
 >> B3: Does your bootloader pass any information to the main program?
 >> (If not, just say no.)  If so, what information is passed, and how
 >> is it passed?
+
+No.
 
 ---- ALGORITHMS ----
 
