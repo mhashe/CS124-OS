@@ -6,9 +6,10 @@
 #define ALIEN_SIZE 15
 #define SHIP_SIZE  15
 
+#define BULLET_WIDTH  2
+#define BULLET_HEIGHT 10
 
-
-const uint8_t alien[][ALIEN_SIZE] = {
+static const uint8_t alien[][ALIEN_SIZE] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
@@ -26,7 +27,7 @@ const uint8_t alien[][ALIEN_SIZE] = {
     {0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0}
 };
 
-const uint8_t ship[][SHIP_SIZE] = {
+static const uint8_t ship[][SHIP_SIZE] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 

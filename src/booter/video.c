@@ -1,10 +1,7 @@
 #include "video.h"
-// #include "sprites.h"
+#include "sprites.h"
 
 #include <stdint.h>
-
-#define BULLET_WIDTH  2
-#define BULLET_HEIGHT 10
 
 /* This is the address of the VGA text-mode video buffer.  Note that this
  * buffer actually holds 8 pages of text, but only the first page (page 0)
