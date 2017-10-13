@@ -1,7 +1,5 @@
-#include "timer.h"
 #include "ports.h"
-#include "interrupts.h"
-#include "handlers.h"
+#include "timer.h"
 #include "sound.h"
 
 #include <stdint.h>
@@ -48,57 +46,26 @@
 #define PIT_MODE_CMD   0x43
 
 
-/* Timer count. */
-static volatile uint32_t time;
+void sound(uint32_t freq) {
+    uint32_t div = PIT_FREQ / freq;
+    outb(PIT_CHAN2_DATA, (uint8_t) div);
+    outb(PIT_CHAN2_DATA, (uint8_t) (div >> 8));
 
-
-/*=============================================================================
- * Handles timer interrupts by incrementing the clock (in terms of ms).
- *
- * Deliberately not exposed to remainder of program.
- */
-void timer_handler(void) {
-    /* Advance time ("clock tick"). */
-    time++;
+    outb(0x61, 0b11);
 }
 
 
-uint32_t get_time(void) {
-    return time;
+void no_sound() {
+    outb(0x61, 0b00);
 }
 
 
-void init_timer(void) {
-
-    /* Turn on timer channel 0 for generating interrupts. */
-    outb(PIT_MODE_CMD, 0x36);               /* 00 11 011 0 */
-
-    /* Tell channel 0 to trigger 100 times per second.  The value we load
-     * here is a divider for the 1193182 Hz timer.  1193182 / 100 ~= 11932.
-     * 11932 = 0x2e9c.
-     */
-    outb(PIT_CHAN0_DATA, 0x9c);
-    outb(PIT_CHAN0_DATA, 0x2e);
-
-    /* Turn on timer channel 2 for tone generation */
-    outb(PIT_MODE_CMD, 0xb6);               /* 10 11 011 0 */
-
-    no_sound();                             /* make sure no sound is playing */
-
-    /* Initialize timer to 0. */
-    time = 0;
-
-    /* Install timer interrupt handler. */
-    install_interrupt_handler(TIMER_INTERRUPT, irq0_handler);
+void shooting_sound() {
+    sound(900);
+    sleep(.05);
+    no_sound();
 }
 
+void boot_sound() {
 
-void sleep(float sec) {
-    /* Sleep for sec seconds. */
-    uint32_t low = time;
-    
-    while ((time - low) * 1. / 100.0 < sec) {
-        /* Loop until sec seconds elapsed. */
-    }
 }
-
