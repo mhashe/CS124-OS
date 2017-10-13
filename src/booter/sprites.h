@@ -6,7 +6,7 @@
 #define ALIEN_SIZE 15
 #define SHIP_SIZE  15
 
-#define BULLET_WIDTH  2
+#define BULLET_WIDTH  3
 #define BULLET_HEIGHT 5
 
 static const uint8_t alien[][ALIEN_SIZE] = {
