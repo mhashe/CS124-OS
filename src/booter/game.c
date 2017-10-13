@@ -162,11 +162,33 @@ void update_enemies(void) {
 
         for (int r = 0; r < game.num_enemy_rows; r++) {
             if (game.enemy_mat[c][r]) {
+
+                int cont = 0;
+                /* Check for collision with bullet. */
+                for (int i = 0; i < MAX_BULLETS; i++) {
+                    /* Check if bullet in hitbox. */
+                    if    ((game.bullet_queue[i].x >= ex)
+                        && (game.bullet_queue[i].x <= ex + ALIEN_SIZE) 
+                        && (game.bullet_queue[i].y >= ey)
+                        && (game.bullet_queue[i].y <= ey + ALIEN_SIZE)) {
+                        /* Collision! */
+                        cont = 1;
+                        game.bullet_queue[i].x = -1;
+                        game.bullet_queue[i].y = -1;
+                        break;
+                    }
+                }
+
+                /* Mark as destroyed; will be removed in next draw cycle. */
+                if (cont) {
+                    game.enemy_mat[c][r] = 0;
+                }
+
                 /* Draw alien. */
                 draw_sprite(&alien[0][0], ex, ey, ALIEN_SIZE, ALIEN_SIZE, 2);
-                ey += ALIEN_SIZE + ENEMY_SPACING;
                 // set collision detection with user here
             }
+            ey += ALIEN_SIZE + ENEMY_SPACING;
         }
 
         ex += ALIEN_SIZE + ENEMY_SPACING;
