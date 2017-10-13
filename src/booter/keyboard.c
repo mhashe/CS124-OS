@@ -74,6 +74,7 @@ void key_handler(void) {
 
     key_queue[queue_write_index] = keycode;
     queue_write_index++;
+    queue_write_index %= KEYCODE_QUEUE_SIZE;
 
     enable_interrupts();
 }
@@ -92,6 +93,7 @@ char key_queue_pop(void) {
     keycode = key_queue[queue_read_index];
 
     queue_read_index++;
+    queue_read_index %= KEYCODE_QUEUE_SIZE;
 
     enable_interrupts();
 
