@@ -68,6 +68,10 @@ typedef struct Space_Invaders {
     Pair bullet_queue[MAX_BULLETS];
     int bullet_counter;
 
+    // alien bullet queue, counter
+    Pair en_bullet_queue[ENEMY_BULLETS];
+    int en_bullet_counter;
+
 } Space_Invaders;
 
 static Space_Invaders game;
@@ -113,6 +117,12 @@ void init_game_state(void) {
         game.bullet_queue[i].y = -1;
     }
     game.bullet_counter = 0;
+
+    for (int i = 0; i < ENEMY_BULLETS; i++) {
+        game.en_bullet_queue[i].x = -1;
+        game.en_bullet_queue[i].y = -1;
+    }
+    game.en_bullet_counter = 0;
 }
 
 void update_game_progress() {

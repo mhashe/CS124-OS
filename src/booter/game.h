@@ -31,8 +31,11 @@ invading enemies. */
 /* Floats in [0, 1] */
 #define INFO_BAR_HEIGHT 0.05
 
-/* Maximum number of bullets on screen at once. */
-#define MAX_BULLETS     25
+/* Maximum number of your bullets on screen at once. */
+#define MAX_BULLETS     10
+
+/* Maximum number of enemy bullets on screen at once. */
+#define ENEMY_BULLETS   10
 
 
 /* Define key presses */
