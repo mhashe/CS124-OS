@@ -63,6 +63,8 @@ void update_enemies(void);
 
 void update_bullets(int dy);
 
+void handle_enemy_user_collision(void);
+
 #endif /* GAME_H */
 
 

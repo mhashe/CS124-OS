@@ -115,6 +115,11 @@ void init_game_state(void) {
     game.bullet_counter = 0;
 }
 
+void handle_enemy_user_collision(void) {
+    // check for collision between enemy and user
+
+    // if collision exists, reduce user's lives, and redraw the game
+}
 
 void update_enemies(void) {
     /* Clear enemies. */
@@ -133,6 +138,7 @@ void update_enemies(void) {
             // game.enemy_mat_position_x = (VID_WIDTH - game.enemy_mat_width);
             game.enemy_direction = LEFT_DIR;
             game.enemy_mat_position_y += ENEMY_DROP_SPEED;
+            handle_enemy_user_collision();
         }
     } 
     
@@ -143,6 +149,7 @@ void update_enemies(void) {
         if (game.enemy_mat_position_x < ENEMY_SPEED) {
             game.enemy_direction = RIGHT_DIR;
             game.enemy_mat_position_y += ENEMY_DROP_SPEED;
+            handle_enemy_user_collision();
         }
     }
 
