@@ -102,16 +102,30 @@ shoot.
 
 >> A6: Why did you choose the project you did?                                  TODO
 
->> A7: Did your choice of project affect any of the specific implementation     TODO
+Space invaders is a classic game that most people have played at some point. It
+is also simple enough that it is feasible to implement with the limited
+functionality available in this system.
+
+>> A7: Did your choice of project affect any of the specific implementation
 >> details of the various subsystems that you needed to use?  (For example,
 >> if you implemented a scrolling game, did you implement specialized high-
 >> performance video code to scroll the screen?)
+
+The choice of space invaders affected the video subsystem some. In particular,
+it pushed us towards using a modular system that can take in sprite definitions
+because we needed to be able to draw ships, aliens, and bullets.
 
 >> A8: Did you run into any technical or resource limitations in the            TODO
 >> implementation of your program?  (For example, bootloader didn't fit,
 >> or a really useful standard library wasn't available, or you couldn't
 >> achieve the desired performance level, etc.)  If so, what steps did you
 >> take to try to overcome those limitations?
+
+While it would have been useful to use some of the standard library functions,
+we were able to manage pretty well without them. One of the more difficult
+aspects of not having the standard library was being unable to do sanity checks
+via printf. In the end, we used gdb instead. While this took longer, it was just
+as effective.
 
 			     BOOT SECTOR
 			     ===========
@@ -199,25 +213,31 @@ arbitrary objects.
 
 ---- DATA STRUCTURES ----
 
->> D1: What state does your timer subsystem manage?  Describe the variables     TODO
+>> D1: What state does your timer subsystem manage?  Describe the variables
 >> or data structures that it maintains, and how they are used.
 
 The timer subsystem does not manage any game state. It just manages the time
 which is the number of timer ticks (interrupts) that have occurred so far. This
 timer is used to manage game speed via a sleep function that busy waits for the
-correct time to elapse and then returns.
+correct time to elapse and then returns. There is also a function to return the
+time elapsed since the start of the timer, in milliseconds.
 
 ---- ALGORITHMS ----
 
 >> D2: What abstraction does your timer code present to your main program?
 >> Briefly describe the higher-level operations you decided to implement.
 
+The only abstraction the timer code presents is a sleep function to wait some
+number of seconds (can be a fraction)
+
 >> D3: Did you change the timer frequency from 100Hz?  If so, what did you
 >> change it to, and why?
 
+No.
+
 ---- SYNCHRONIZATION ----
 
->> D4: Given how your program handles timer events, is there any potential
+>> D4: Given how your program handles timer events, is there any potential      TODO
 >> for timer interrupts to generate race conditions in updating your
 >> program's global state?  If so, what steps did you take to ensure that
 >> such situations cannot occur?
@@ -230,26 +250,41 @@ correct time to elapse and then returns.
 >> E1: What state does your keyboard subsystem manage?  Describe the variables
 >> or data structures that it maintains, and how they are used.
 
->> E2: How do your data structures handle keys with multi-byte scan-codes?
+The keyboard maintains a circular key queue that all the key presses go into.
+The main loop then accesses the key presses by reading from the queue. Since it
+is a circular queue, the subsystem also maintains a read index (where the main
+loop reads from) and a write index (where the interrupts writes the key codes
+to).
+
+>> E2: How do your data structures handle keys with multi-byte scan-codes?      TODO
+
+It does not handle them. 
 
 ---- ALGORITHMS ----
 
->> E3: What abstraction does your keyboard code present to your main program?
+>> E3: What abstraction does your keyboard code present to your main program?   TODO
 >> Briefly describe the higher-level operations you decided to implement.
+
+The keyboard code only presents a method key_queue_pop to pop key codes from the
+key queue. This method takes a code from the queue and increments the read
+index.
 
 >> E4: Does your keyboard subsystem expose scan-codes directly to your main
 >> program, or does it preprocess them and expose other information to your
 >> main program?  If scan-code data is preprocessed, briefly describe what
 >> information is actually exposed, and how it is derived from scan-codes.
 
+It exposes scan codes. We did this because it made more sense to process the
+scan codes in the context of the game.
+
 ---- SYNCHRONIZATION ----
 
->> E5: Given how your keyboard interrupt handler operates, is there any
+>> E5: Given how your keyboard interrupt handler operates, is there any         TODO
 >> potential for race conditions in updating the keyboard subsystem's
 >> internal state?  If so, what steps did you take to ensure that such
 >> situations cannot occur?
 
->> E6: Given how your program handles keyboard events, is there any
+>> E6: Given how your program handles keyboard events, is there any             TODO
 >> potential for keyboard interrupts to generate race conditions in updating
 >> your program's global state?  If so, what steps did you take to ensure
 >> that such situations cannot occur?
@@ -259,6 +294,10 @@ correct time to elapse and then returns.
 >> E7: Why did you choose the design and data representation that your
 >> keyboard subsystem uses?  How is it suited to your program's overall
 >> operation?
+
+A circular queue is easy to implement given how little framework we have at this
+level, and it fully serves the purpose of the keyboard. It allows us to buffer
+key presses.
 
 			  SURVEY QUESTIONS
 			  ================
