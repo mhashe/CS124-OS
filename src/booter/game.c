@@ -164,7 +164,7 @@ void update_enemies(void) {
         game.enemy_mat_width, game.enemy_mat_height, BLACK);
 
     /* Redraw bullets, which were just erased. */
-    update_bullets(0);
+    update_bullets(0, 0);
     
     /* Move enemies. */
     if (game.enemy_direction == RIGHT_DIR) {
@@ -273,7 +273,7 @@ void move_user(int dx) {
         SHIP_SIZE, SHIP_SIZE, YELLOW);
 }
 
-void update_bullets(int dy) {
+void update_bullets(int dy, int ady) {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (game.bullet_queue[i].y != -1) {
 
@@ -298,6 +298,34 @@ void update_bullets(int dy) {
             draw_sprite(&bullet[0][0], game.bullet_queue[i].x,
                 game.bullet_queue[i].y, BULLET_WIDTH, BULLET_HEIGHT,
                 LIGHT_GREEN);            
+        }
+    }
+
+    for (int i = 0; i < ENEMY_BULLETS; i++) {
+        if (game.en_bullet_queue[i].y != -1) {
+
+            /* Erase old bullet. */
+            draw_sprite(&alien_bullet[0][0], game.en_bullet_queue[i].x,
+                game.en_bullet_queue[i].y, BULLET_WIDTH, BULLET_HEIGHT, BLACK);
+
+            /* Check if bullet is still in game.
+             * 3 intended as buffer to avoid infringing
+             * upon score bar.
+             */
+            /* MAGIC NUMBER 8 */
+            if (game.en_bullet_queue[i].y >= VID_HEIGHT - 13) {
+                game.en_bullet_queue[i].x = -1;
+                game.en_bullet_queue[i].y = -1;
+                continue;
+            }
+
+            /* Update bullet location. */
+            game.en_bullet_queue[i].y += ady;
+
+            /* Draw bullet. */
+            draw_sprite(&alien_bullet[0][0], game.en_bullet_queue[i].x,
+                game.en_bullet_queue[i].y, BULLET_WIDTH, BULLET_HEIGHT,
+                RED);            
         }
     }
 }
@@ -373,7 +401,7 @@ void game_loop(void) {
             last_enemy_update = get_time();
         }
         if ((current_time - last_bullet_update) > BULLET_UPDATE_PERIOD) {
-            update_bullets(-BULLET_SPEED);
+            update_bullets(-BULLET_SPEED, ALIEN_BULLET_SPEED);
             last_bullet_update = get_time();
         }
 
