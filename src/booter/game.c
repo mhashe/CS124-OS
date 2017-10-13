@@ -78,7 +78,7 @@ void init_game_state(void) {
     game.enemy_mat_width = VID_WIDTH * ENEMY_MAT_WIDTH;
     // enemy starts off at center of screen
     game.enemy_mat_position_x = ((VID_WIDTH - game.enemy_mat_width) / 2);
-    game.enemy_mat_position_y = game.user_bar_height; // start at top
+    game.enemy_mat_position_y = game.user_bar_height + 10; // start at top
 
     // set maximum # enemies per col to each col's num_enemies_per_col
     uint8_t max_enemies_per_col = (game.enemy_mat_height / 
@@ -93,6 +93,19 @@ void init_game_state(void) {
     game.num_enemies_left = (max_enemies_per_col * game.num_enemy_cols);
 }
 
+
+void movie_enemies(void) {
+    /* Clear enemies. */
+    draw_box(game.enemy_mat_position_x, game.enemy_mat_position_y, 
+        game.enemy_mat_width, game.enemy_mat_height, 0);
+    
+    /* Move enemies. */
+    game.enemy_mat_position_x += 1;
+
+    /* Redraw enemies. */
+    // draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
+    //     SHIP_SIZE, SHIP_SIZE, 14);
+}
 
 void draw_game_start(void) {
     // draw info bar
@@ -142,7 +155,6 @@ void fire_missile(void) {
         game.user_position_y + 1, 10);
 }
 
-
 void game_loop(void) {
     unsigned char keycode;
     char empty = KEY_QUEUE_EMPTY;
@@ -159,6 +171,7 @@ void game_loop(void) {
                 fire_missile();
             }
         }
-        // sleep(.1);
+        sleep(.1);
+        movie_enemies();
     }
 }
