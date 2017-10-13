@@ -173,7 +173,6 @@ void move_user(int dx) {
         SHIP_SIZE, SHIP_SIZE, 14);
 }
 
-
 void update_bullets(void) {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (game.bullet_queue[i].y != -1) {
@@ -238,7 +237,6 @@ void game_loop(void) {
         }
 
         if ((current_time - last_enemy_update) > ENEMY_UPDATE_PERIOD) {
-            update_bullets();
             update_enemies();
             last_enemy_update = get_time();
         }
