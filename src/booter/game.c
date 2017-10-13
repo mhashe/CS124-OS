@@ -28,6 +28,8 @@ void c_start(void) {
     init_game_state();
     draw_game_start();
 
+    boot_sound();
+
     game_loop();
 }
 
@@ -314,6 +316,8 @@ void fire_bullet(void) {
     game.bullet_queue[game.bullet_counter].x = x;
     game.bullet_queue[game.bullet_counter].y = y;
     game.bullet_counter = (game.bullet_counter + 1) % MAX_BULLETS; 
+
+    shooting_sound();
 }
 
 void reset_game(uint8_t color) {
