@@ -48,13 +48,16 @@ typedef struct Space_Invaders {
     uint16_t enemy_mat_position_y;
     uint16_t enemy_mat_width;
     uint16_t enemy_mat_height;
+    uint8_t enemy_direction;
 
     uint16_t num_enemies_left;
 
-    /* array of ints contraining num enemies per column (assume no 
+    /* array of ints containing num enemies per column (assume no 
     gaps between enemies in a column, so it represents a matrix) */
     uint8_t num_enemy_cols;
-    uint8_t num_enemies_per_col[NUM_ENEMY_COLS];
+    uint8_t num_enemy_rows;
+    // matrix of enemies (1 if alive/visible, 0 if dead/invisible)
+    uint8_t enemy_mat[NUM_ENEMY_COLS][(VID_HEIGHT / (ALIEN_SIZE + ENEMY_SPACING))];
 
     // user position
     uint8_t user_bar_height;
@@ -86,18 +89,22 @@ void init_game_state(void) {
     game.enemy_mat_width = VID_WIDTH * ENEMY_MAT_WIDTH;
     // enemy starts off at center of screen
     game.enemy_mat_position_x = ((VID_WIDTH - game.enemy_mat_width) / 2);
-    game.enemy_mat_position_y = game.user_bar_height; // start at top
+    game.enemy_mat_position_y = game.info_bar_height; // start at top
 
     // set maximum # enemies per col to each col's num_enemies_per_col
-    uint8_t max_enemies_per_col = (game.enemy_mat_height / 
+    game.num_enemy_rows = (game.enemy_mat_height / 
         (ALIEN_SIZE + ENEMY_SPACING));
     game.num_enemy_cols = ((VID_WIDTH * ENEMY_MAT_WIDTH) / 
         (ALIEN_SIZE + ENEMY_SPACING));
 
+    // set all enemies as valid (1) 
     for (int c = 0; c < game.num_enemy_cols; c++) {
-        game.num_enemies_per_col[c] = max_enemies_per_col;
+        for (int r = 0; r < game.num_enemy_rows; r++) {
+            game.enemy_mat[c][r] = 1;
+        }
     }
 
+<<<<<<< HEAD
     game.num_enemies_left = (max_enemies_per_col * game.num_enemy_cols);
 
     for (int i = 0; i < MAX_BULLETS; i++) {
@@ -105,8 +112,39 @@ void init_game_state(void) {
         game.bullet_queue[i].y = -1;
     }
     game.bullet_counter = 0;
+=======
+    game.num_enemies_left = (game.num_enemy_rows * game.num_enemy_cols);
+>>>>>>> 939936084f846c368d6963af75c93f57fbb213d3
 }
 
+
+void movie_enemies(void) {
+    /* Clear enemies. */
+    draw_box(game.enemy_mat_position_x, game.enemy_mat_position_y, 
+        game.enemy_mat_width, game.enemy_mat_height, 0);
+    
+    /* Move enemies. */
+    game.enemy_mat_position_x += NO_DIR;
+
+    /* Redraw enemies. */
+    int num_enemies_in_col, ex, ey;
+    ex = game.enemy_mat_position_x;
+
+    for (int c = 0; c < game.num_enemy_cols; c++) {
+        ey = game.enemy_mat_position_y;
+
+        for (int r = 0; r < game.num_enemy_rows; r++) {
+            if (game.enemy_mat[c][r]) {
+                /* Draw alien. */
+                draw_sprite(&alien[0][0], ex, ey, ALIEN_SIZE, ALIEN_SIZE, 2);
+                ey += ALIEN_SIZE + ENEMY_SPACING;
+                // set collision detection with user here
+            }
+        }
+
+        ex += ALIEN_SIZE + ENEMY_SPACING;
+    }
+}
 
 void draw_game_start(void) {
     // draw info bar
@@ -116,25 +154,11 @@ void draw_game_start(void) {
     draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
         SHIP_SIZE, SHIP_SIZE, 14);
 
+    // draw user in user bar
+    draw_box(game.user_position_x, game.user_position_y, SHIP_SIZE, SHIP_SIZE, 14); // yellow
+
     // draw enemies
-    int num_enemies_in_col, ex, ey;
-    ex = game.enemy_mat_position_x;
-
-    for (int c = 0; c < game.num_enemy_cols; c++) {
-        num_enemies_in_col = game.num_enemies_per_col[c];
-        ey = game.enemy_mat_position_y;
-
-        for (int e = 0; e < num_enemies_in_col; e++) {
-            /* Draw alien. */
-            draw_sprite(&alien[0][0], ex, ey, 
-                ALIEN_SIZE, ALIEN_SIZE, 2);
-            ey += ALIEN_SIZE + ENEMY_SPACING;
-            // set collision detection with user here
-        }
-
-        ex += ALIEN_SIZE + ENEMY_SPACING;
-    }
-
+    movie_enemies();
 }
 
 
@@ -169,7 +193,6 @@ void fire_missile(void) {
     // draw_bullet(x, y, 10);
 }
 
-
 void game_loop(void) {
     unsigned char keycode;
     char empty = KEY_QUEUE_EMPTY;
@@ -179,13 +202,13 @@ void game_loop(void) {
         keycode = key_queue_pop();
         if (keycode != KEY_QUEUE_EMPTY) {
             if (keycode == LEFT_ARROW) {
-                move_user(-1);
+                move_user(LEFT_DIR);
             } else if (keycode == RIGHT_ARROW) {
-                move_user(1);
+                move_user(RIGHT_DIR);
             } else if (keycode == SPACEBAR) {
                 fire_missile();
             }
         }
-        // sleep(.1);
+        sleep(.1);
     }
 }
