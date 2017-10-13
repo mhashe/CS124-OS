@@ -51,7 +51,17 @@ void init_video(void);
  */
 void draw_pixel(int x, int y, uint8_t color);
 
-void draw_box(int xi, int yi, int width, int height, uint8_t color);
+/*
+ * Draw a box on the screen.
+ *
+ * Inputs:
+ *     x:      x location of pixel
+ *     y:      y location of pixel
+ *     width:  width of box
+ *     height: height of box
+ *     color:  color to be displayed
+ */
+void draw_box(int x, int y, int width, int height, uint8_t color);
 
 /*
  * Clears the screen by writing 0 everywhere in video memory.

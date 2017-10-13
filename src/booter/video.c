@@ -36,17 +36,19 @@ void init_video(void) {
     draw_pixel(20, 319, BLUE);
     draw_pixel(199, 319, WHITE);
 
-    clear_screen();
+    draw_box(10, 10, 100, 200, WHITE);
+
+    // clear_screen();
 }
 
 void draw_pixel(int x, int y, uint8_t color) {
     *(VGA_BUFFER+LOC(x, y)) = color;
 }
 
-void draw_box(int xi, int yi, int width, int height, uint8_t color) {
-    for (int x = xi; x < (xi + width); x++) {
-        for (int y = yi; y < (yi + height); y++)
-            *(VGA_BUFFER+LOC(x, y)) = color;
+void draw_box(int x, int y, int width, int height, uint8_t color) {
+    for (int i = x; i < (x + width); i++) {
+        for (int j = y; j < (y + height); j++)
+            draw_pixel(i, j, color);
     }
 }
 
