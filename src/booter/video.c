@@ -1,4 +1,5 @@
 #include "video.h"
+#include "sprites.h"
 
 #include <stdint.h>
 
@@ -23,8 +24,6 @@
 
 
 
-// http://webpages.charter.net/danrollins/techhelp/0089.HTM
-
 /* TODO:  You can create static variables here to hold video display state,
  *        such as the current foreground and background color, a cursor
  *        position, or any other details you might want to keep track of!
@@ -33,24 +32,49 @@
 
 
 void init_video(void) {
-    draw_pixel(10, 319, WHITE);
-    draw_pixel(15, 319, WHITE);
-    draw_pixel(20, 319, BLUE);
-    draw_pixel(199, 319, WHITE);
+    draw_pixel(319, 10, WHITE);
+    draw_pixel(319, 15, WHITE);
+    draw_pixel(319, 20, BLUE);
+    draw_pixel(319, 199, WHITE);
 
-    clear_screen();
+
+    draw_sprite(&alien[0][0], 0, 0, ALIEN_SIZE, ALIEN_SIZE, LIGHT_GREEN);
+    draw_bullet(5, 100, WHITE);
+    draw_sprite(&ship[0][0], 0, 150, SHIP_SIZE, SHIP_SIZE, GREEN);
+
+    // clear_screen();
+    // draw_box(10, 10, 100, 200, WHITE);
+
 }
 
 void draw_pixel(int x, int y, uint8_t color) {
     *(VGA_BUFFER+LOC(x, y)) = color;
 }
 
-void draw_box(int xi, int yi, int width, int height, uint8_t color) {
-    for (int x = xi; x < (xi + width); x++) {
-        for (int y = yi; y < (yi + height); y++)
-            *(VGA_BUFFER+LOC(x, y)) = color;
+void draw_box(int x, int y, int width, int height, uint8_t color) {
+    for (int i = x; i < (x + width); i++) {
+        for (int j = y; j < (y + height); j++)
+            draw_pixel(i, j, color);
     }
 }
+
+void draw_bullet(int x, int y, uint8_t color) {
+    draw_box(x, y, BULLET_WIDTH, BULLET_HEIGHT, color);
+}
+
+
+void draw_sprite(const uint8_t* sprite, int x, int y, int width, int height, 
+                 uint8_t color) {
+    for (int i = 0; i < width; i++) {
+        for (int j = 0; j < width; j++) {
+            if (sprite[j*width + i] == 1) {
+                draw_pixel(x+i, y+j, color);
+            }
+        }
+    }
+}
+
+
 
 void clear_screen() {
     uint32_t blank = 0;
