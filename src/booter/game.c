@@ -317,7 +317,7 @@ void update_bullets(int dy, int ady) {
                 && (game.en_bullet_queue[i].y >= game.user_position_y)
                 && (game.en_bullet_queue[i].y <= game.user_position_y + SHIP_SIZE)) {
                 /* Collision! */
-                reset_game(BLACK);
+                game.game_over = GO_LOST;
                 return;
             }
 
@@ -383,6 +383,10 @@ void fire_bullet(void) {
 
 void reset_game(uint8_t color) {
     draw_box(0, 0, VID_WIDTH, game.info_bar_height, color);
+    if (color == RED) {
+        // Presume user is dead
+        death_sound();
+    }
     sleep(RESET_TIME);
     clear_screen();
     init_game_state();
