@@ -4,6 +4,7 @@
 #include "sprites.h"
 #include "video.h"
 #include "game.h"
+#include "sound.h"
 
 #include <stdint.h>
 

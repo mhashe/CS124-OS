@@ -10,7 +10,7 @@ CFLAGS=-g -fno-stack-protector
 
 BOOT_BIN = boot.bin
 
-OBJS = game.o video.o interrupts.o handlers.o timer.o keyboard.o
+OBJS = game.o video.o interrupts.o handlers.o timer.o keyboard.o sound.o
 PROGRAM_OBJ = program.o
 PROGRAM_BIN = program.bin
 
