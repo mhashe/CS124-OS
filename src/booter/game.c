@@ -48,7 +48,7 @@ typedef struct Space_Invaders {
     uint16_t enemy_mat_position_y;
     uint16_t enemy_mat_width;
     uint16_t enemy_mat_height;
-    uint8_t enemy_direction;
+    int8_t enemy_direction;
 
     uint16_t num_enemies_left;
 
@@ -115,14 +115,43 @@ void init_game_state(void) {
     game.bullet_counter = 0;
 }
 
+void handle_enemy_user_collision(void) {
+    // check for collision between enemy and user
+
+    // if collision exists, reduce user's lives, and redraw the game
+}
 
 void update_enemies(void) {
     /* Clear enemies. */
     draw_box(game.enemy_mat_position_x, game.enemy_mat_position_y, 
         game.enemy_mat_width, game.enemy_mat_height, 0);
+
+    /* Redraw bullets, which were just erased. */
+    update_bullets(0);
     
     /* Move enemies. */
-    game.enemy_mat_position_x += (game.enemy_direction * ENEMY_SPEED);
+    if (game.enemy_direction == RIGHT_DIR) {
+        game.enemy_mat_position_x += ENEMY_SPEED;
+
+        // If collision with right wall, then move left
+        if ((game.enemy_mat_position_x + game.enemy_mat_width + ENEMY_SPEED) > VID_WIDTH) {
+            // game.enemy_mat_position_x = (VID_WIDTH - game.enemy_mat_width);
+            game.enemy_direction = LEFT_DIR;
+            game.enemy_mat_position_y += ENEMY_DROP_SPEED;
+            handle_enemy_user_collision();
+        }
+    } 
+    
+    else if (game.enemy_direction == LEFT_DIR) {
+        game.enemy_mat_position_x -= ENEMY_SPEED;
+
+        // If collision with left wall, then move right
+        if (game.enemy_mat_position_x < ENEMY_SPEED) {
+            game.enemy_direction = RIGHT_DIR;
+            game.enemy_mat_position_y += ENEMY_DROP_SPEED;
+            handle_enemy_user_collision();
+        }
+    }
 
     /* Redraw enemies. */
     int ex, ey;
@@ -173,7 +202,7 @@ void move_user(int dx) {
         SHIP_SIZE, SHIP_SIZE, 14);
 }
 
-void update_bullets(void) {
+void update_bullets(int dy) {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (game.bullet_queue[i].y != -1) {
 
@@ -181,15 +210,18 @@ void update_bullets(void) {
             draw_bullet(game.bullet_queue[i].x,
                         game.bullet_queue[i].y, 0);
 
-            /* Check if bullet is still in game. */
-            if (game.bullet_queue[i].y <= game.enemy_mat_position_y) {
+            /* Check if bullet is still in game.
+             * 3 intended as buffer to avoid infringing
+             * upon score bar.
+             */
+            if (game.bullet_queue[i].y <= game.info_bar_height + 3) {
                 game.bullet_queue[i].x = -1;
                 game.bullet_queue[i].y = -1;
                 continue;
             }
 
             /* Update bullet location. */
-            game.bullet_queue[i].y -= 1;
+            game.bullet_queue[i].y += dy;
 
             /* Draw bullet. */
             draw_bullet(game.bullet_queue[i].x,
@@ -241,7 +273,7 @@ void game_loop(void) {
             last_enemy_update = get_time();
         }
         if ((current_time - last_bullet_update) > BULLET_UPDATE_PERIOD) {
-            update_bullets();
+            update_bullets(-2);
             last_bullet_update = get_time();
         }
     }
