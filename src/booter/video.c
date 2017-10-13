@@ -1,4 +1,5 @@
 #include "video.h"
+#include "sprites.h"
 
 #include <stdint.h>
 
@@ -31,14 +32,16 @@
 
 
 void init_video(void) {
-    draw_pixel(10, 319, WHITE);
-    draw_pixel(15, 319, WHITE);
-    draw_pixel(20, 319, BLUE);
-    draw_pixel(199, 319, WHITE);
+    draw_pixel(319, 10, WHITE);
+    draw_pixel(319, 15, WHITE);
+    draw_pixel(319, 20, BLUE);
+    draw_pixel(319, 199, WHITE);
 
-    draw_box(10, 10, 100, 200, WHITE);
+    draw_alien(0, 0, BLUE);
 
     // clear_screen();
+    // draw_box(10, 10, 100, 200, WHITE);
+
 }
 
 void draw_pixel(int x, int y, uint8_t color) {
@@ -49,6 +52,16 @@ void draw_box(int x, int y, int width, int height, uint8_t color) {
     for (int i = x; i < (x + width); i++) {
         for (int j = y; j < (y + height); j++)
             draw_pixel(i, j, color);
+    }
+}
+
+void draw_alien(int x, int y, uint8_t color) {
+    for (int i = 0; i < ALIEN_SIZE; i++) {
+        for (int j = 0; j < ALIEN_SIZE; j++) {
+            if (alien[j][i] == 1) {
+                draw_pixel(x+i, y+j, color);
+            }
+        }
     }
 }
 
