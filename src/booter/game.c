@@ -43,6 +43,7 @@ typedef struct Space_Invaders {
     uint16_t enemy_mat_position_y;
     uint16_t enemy_mat_width;
     uint16_t enemy_mat_height;
+    uint8_t enemy_direction;
 
     uint16_t num_enemies_left;
 
@@ -78,7 +79,7 @@ void init_game_state(void) {
     game.enemy_mat_width = VID_WIDTH * ENEMY_MAT_WIDTH;
     // enemy starts off at center of screen
     game.enemy_mat_position_x = ((VID_WIDTH - game.enemy_mat_width) / 2);
-    game.enemy_mat_position_y = game.user_bar_height + 10; // start at top
+    game.enemy_mat_position_y = game.info_bar_height; // start at top
 
     // set maximum # enemies per col to each col's num_enemies_per_col
     uint8_t max_enemies_per_col = (game.enemy_mat_height / 
@@ -100,22 +101,9 @@ void movie_enemies(void) {
         game.enemy_mat_width, game.enemy_mat_height, 0);
     
     /* Move enemies. */
-    game.enemy_mat_position_x += 1;
+    game.enemy_mat_position_x += NO_DIR;
 
     /* Redraw enemies. */
-    // draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
-    //     SHIP_SIZE, SHIP_SIZE, 14);
-}
-
-void draw_game_start(void) {
-    // draw info bar
-    draw_box(0, 0, VID_WIDTH, game.info_bar_height, 1); // blue
-
-    /* Draw user in user bar. */
-    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
-        SHIP_SIZE, SHIP_SIZE, 14);
-
-    // draw enemies
     int num_enemies_in_col, ex, ey;
     ex = game.enemy_mat_position_x;
 
@@ -133,7 +121,21 @@ void draw_game_start(void) {
 
         ex += ALIEN_SIZE + ENEMY_SPACING;
     }
+}
 
+void draw_game_start(void) {
+    // draw info bar
+    draw_box(0, 0, VID_WIDTH, game.info_bar_height, 1); // blue
+
+    /* Draw user in user bar. */
+    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
+        SHIP_SIZE, SHIP_SIZE, 14);
+
+    // draw user in user bar
+    draw_box(game.user_position_x, game.user_position_y, SHIP_SIZE, SHIP_SIZE, 14); // yellow
+
+    // draw enemies
+    movie_enemies();
 }
 
 
@@ -164,14 +166,14 @@ void game_loop(void) {
         keycode = key_queue_pop();
         if (keycode != KEY_QUEUE_EMPTY) {
             if (keycode == LEFT_ARROW) {
-                move_user(-1);
+                move_user(LEFT_DIR);
             } else if (keycode == RIGHT_ARROW) {
-                move_user(1);
+                move_user(RIGHT_DIR);
             } else if (keycode == SPACEBAR) {
                 fire_missile();
             }
         }
-        sleep(.1);
+        sleep(1.);
         movie_enemies();
     }
 }

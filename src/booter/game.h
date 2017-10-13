@@ -26,11 +26,15 @@ invading enemies*/
 #define INFO_BAR_HEIGHT 0.1
 
 
-/* Define arrows */
+/* Define key presses */
 #define SPACEBAR 0x39
 #define LEFT_ARROW 0x4B
 #define RIGHT_ARROW 0x4D
 
+/* Define directions */
+#define LEFT_DIR -1
+#define RIGHT_DIR 1
+#define NO_DIR 0
 
 void c_start(void);
 
