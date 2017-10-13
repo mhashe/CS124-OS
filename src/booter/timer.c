@@ -59,7 +59,7 @@ void timer_handler(void) {
     time++;
 }
 
-int get_time(void) {
+uint32_t get_time(void) {
     return time;
 }
 

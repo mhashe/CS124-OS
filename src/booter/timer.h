@@ -1,16 +1,18 @@
 #ifndef TIMER_H
 #define TIMER_H
 
+#include <stdint.h>
 
 /*=============================================================================
  * Sets up timer channel 0, and bind timer_handler to timer interrupts.
  */
 void init_timer(void);
 
+
 /*=============================================================================
  * Returns time.
  */
-int get_time(void);
+uint32_t get_time(void);
 
 /*=============================================================================
  * Sleeps for a given number of seconds.
