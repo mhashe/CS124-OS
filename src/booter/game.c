@@ -310,12 +310,22 @@ void update_bullets(int dy, int ady) {
             draw_sprite(&alien_bullet[0][0], game.en_bullet_queue[i].x,
                 game.en_bullet_queue[i].y, BULLET_WIDTH, BULLET_HEIGHT, BLACK);
 
+            /* Check for collision with bullet. */
+            if    ((game.en_bullet_queue[i].x >= game.user_position_x)
+                && (game.en_bullet_queue[i].x <= game.user_position_x + SHIP_SIZE) 
+                && (game.en_bullet_queue[i].y >= game.user_position_y)
+                && (game.en_bullet_queue[i].y <= game.user_position_y + SHIP_SIZE)) {
+                /* Collision! */
+                reset_game(BLACK);
+                return;
+            }
+
             /* Check if bullet is still in game.
              * 3 intended as buffer to avoid infringing
              * upon score bar.
              */
             /* MAGIC NUMBER 8 */
-            if (game.en_bullet_queue[i].y >= VID_HEIGHT - 20) {
+            if (game.en_bullet_queue[i].y >= VID_HEIGHT - 13) {
                 game.en_bullet_queue[i].x = -1;
                 game.en_bullet_queue[i].y = -1;
                 continue;
