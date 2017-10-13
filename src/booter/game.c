@@ -162,7 +162,7 @@ void fire_missile(void) {
 void game_loop(void) {
     unsigned char keycode;
     char empty = KEY_QUEUE_EMPTY;
-    uint8_t color = 0;
+    uint32_t last_enemy_update = get_time();
     
     while (1) {
         keycode = key_queue_pop();
@@ -175,6 +175,5 @@ void game_loop(void) {
                 fire_missile();
             }
         }
-        sleep(.1);
     }
 }

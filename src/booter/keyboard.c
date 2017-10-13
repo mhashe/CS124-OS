@@ -27,7 +27,7 @@
 #define KEYBOARD_PORT 0x60
 #define KEYBOARD_CMD_PORT 0x64 // use for LED functions
 
-#define KEYCODE_QUEUE_SIZE 128
+#define KEYCODE_QUEUE_SIZE 4
 
 #include "keyboard.h"
 #include "handlers.h"
