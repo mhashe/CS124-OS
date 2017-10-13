@@ -84,6 +84,7 @@ void init_game_state(void) {
     /* User starts off towards bottom, horizontal center of screen. */
     game.user_bar_height = SHIP_SIZE;
     game.user_position_x = (VID_WIDTH - SHIP_SIZE) / 2;
+
     /* 
      * This 8 is truly a magic number. It seems in the emulator, after you fire
      * a bullet, the bottom 7 rows of the memory buffer stop updating, even
@@ -127,6 +128,24 @@ void init_game_state(void) {
     game.en_bullet_counter = 0;
 }
 
+
+
+void draw_game_start(void) {
+    // draw info bar
+    draw_box(0, 0, VID_WIDTH, game.info_bar_height, BLUE);
+
+    /* Draw user in user bar. */
+    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
+        SHIP_SIZE, SHIP_SIZE, YELLOW);
+
+    // draw enemies
+    update_enemies();
+
+    // enemies will start moving in right direction
+    game.enemy_direction = RIGHT_DIR;
+}
+
+
 void update_game_progress() {
     uint16_t num_enemies = game.num_enemy_rows * game.num_enemy_cols;
     int progress_width = ((VID_WIDTH * (num_enemies - game.num_enemies_left)) / num_enemies);
@@ -169,6 +188,7 @@ void update_enemies(void) {
     int ex, ey;
     ex = game.enemy_mat_position_x;
 
+    /* For every enemy/alien in the enemy matrix, do the following. */
     for (int c = 0; c < game.num_enemy_cols; c++) {
         ey = game.enemy_mat_position_y;
 
@@ -213,12 +233,13 @@ void update_enemies(void) {
                     }
                 }
 
+                /* If enemy has moved off screen, remove it from the game. */
                 if ((ey + ALIEN_SIZE) >= VID_WIDTH) {
                     game.enemy_mat[c][r] = 0;
                     game.num_enemies_left--;
                 }
-                
             }
+
             ey += ALIEN_SIZE + ENEMY_SPACING;
         }
 
@@ -227,24 +248,10 @@ void update_enemies(void) {
 
     update_game_progress();
 
+    /* If the game is not lost and all enemies are defeated, user has won. */
     if ((game.num_enemies_left == 0) && (game.game_over == GO_PLAY)) {
         game.game_over = GO_WON;
     }
-}
-
-void draw_game_start(void) {
-    // draw info bar
-    draw_box(0, 0, VID_WIDTH, game.info_bar_height, BLUE);
-
-    /* Draw user in user bar. */
-    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
-        SHIP_SIZE, SHIP_SIZE, YELLOW);
-
-    // draw enemies
-    update_enemies();
-
-    // enemies will start moving in right direction
-    game.enemy_direction = RIGHT_DIR;
 }
 
 
