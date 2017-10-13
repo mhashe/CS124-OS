@@ -27,7 +27,7 @@ invading enemies*/
 
 
 /* Define arrows */
-#define UP_ARROW 0x48
+#define SPACEBAR 0x39
 #define LEFT_ARROW 0x4B
 #define RIGHT_ARROW 0x4D
 
@@ -39,6 +39,12 @@ void init_game_state(void);
 void draw_game_start(void);
 
 void game_loop(void);
+
+void move_user(int dx);
+
+void game_loop(void);
+
+void fire_missile(void);
 
 #endif /* GAME_H */
 
