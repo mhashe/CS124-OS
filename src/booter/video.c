@@ -37,7 +37,9 @@ void init_video(void) {
     draw_pixel(319, 20, BLUE);
     draw_pixel(319, 199, WHITE);
 
-    draw_alien(0, 0, BLUE);
+    draw_alien(0, 0, LIGHT_GREEN);
+    draw_bullet(5, 100, WHITE);
+    draw_ship(0, 150, GREEN);
 
     // clear_screen();
     // draw_box(10, 10, 100, 200, WHITE);
@@ -63,6 +65,20 @@ void draw_alien(int x, int y, uint8_t color) {
             }
         }
     }
+}
+
+void draw_ship(int x, int y, uint8_t color) {
+    for (int i = 0; i < SHIP_SIZE; i++) {
+        for (int j = 0; j < SHIP_SIZE; j++) {
+            if (ship[j][i] == 1) {
+                draw_pixel(x+i, y+j, color);
+            }
+        }
+    }
+}
+
+void draw_bullet(int x, int y, uint8_t color) {
+    draw_box(x, y, BULLET_WIDTH, BULLET_HEIGHT, color);
 }
 
 void clear_screen() {
