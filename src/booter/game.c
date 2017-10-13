@@ -150,7 +150,6 @@ void game_loop(void) {
     while (1) {
         keycode = key_queue_pop();
         if (keycode != KEY_QUEUE_EMPTY) {
-            move_user(1);
             if (keycode == LEFT_ARROW) {
                 move_user(-1);
             } else if (keycode == RIGHT_ARROW) {
