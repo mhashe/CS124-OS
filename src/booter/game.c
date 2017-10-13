@@ -203,6 +203,14 @@ void fire_missile(void) {
     int x = game.user_position_x + (SHIP_SIZE / 2) - 1;
     int y = game.user_position_y;
 
+    /* If we're overwriting a bullet (i.e., hit MAX_BULLETS),
+     * clear it first.
+     */
+    if (game.bullet_queue[game.bullet_counter].y != -1) {
+        draw_bullet(game.bullet_queue[game.bullet_counter].x,
+                        game.bullet_queue[game.bullet_counter].y, 0);
+    }
+
     game.bullet_queue[game.bullet_counter].x = x;
     game.bullet_queue[game.bullet_counter].y = y;
     game.bullet_counter = (game.bullet_counter + 1) % MAX_BULLETS; 
