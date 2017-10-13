@@ -139,6 +139,7 @@ void move_user(int dx) {
 
 void fire_missile(void) {
     // TODO
+    draw_bullet(game.user_position_x, game.user_position_y + 1, 10);
 }
 
 
