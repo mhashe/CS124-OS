@@ -174,7 +174,7 @@ void move_user(int dx) {
 }
 
 
-void update_missiles(void) {
+void update_bullets(void) {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (game.bullet_queue[i].y != -1) {
 
@@ -199,7 +199,7 @@ void update_missiles(void) {
     }
 }
 
-void fire_missile(void) {
+void fire_bullet(void) {
     int x = game.user_position_x + (SHIP_SIZE / 2) - 1;
     int y = game.user_position_y;
 
@@ -219,7 +219,9 @@ void fire_missile(void) {
 void game_loop(void) {
     unsigned char keycode;
     char empty = KEY_QUEUE_EMPTY;
+
     uint32_t last_enemy_update = get_time();
+    uint32_t last_bullet_update = get_time();
     
     while (1) {
         uint32_t current_time = get_time();
@@ -231,13 +233,18 @@ void game_loop(void) {
             } else if (keycode == RIGHT_ARROW) {
                 move_user(RIGHT_DIR);
             } else if (keycode == SPACEBAR) {
-                fire_missile();
+                fire_bullet();
             }
         }
+
         if ((current_time - last_enemy_update) > ENEMY_UPDATE_PERIOD) {
-            update_missiles();
+            update_bullets();
             update_enemies();
             last_enemy_update = get_time();
+        }
+        if ((current_time - last_bullet_update) > BULLET_UPDATE_PERIOD) {
+            update_bullets();
+            last_bullet_update = get_time();
         }
     }
 }

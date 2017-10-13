@@ -12,6 +12,7 @@
 #define GAME_FPS 60 // user and missile movement udpates at this rate
 #define ENEMY_UPDATE_PERIOD 40 // centiseconds movement of enemy matrix
 #define ENEMY_SPEED 4 // number of pixels to move every ENEMY_UPDATE_PERIOD
+#define BULLET_UPDATE_PERIOD 10 // Speed of bullet udates (cs).
 
 /* Floats in [0, 1] of fraction of available canvas's dedicated to for space 
 invading enemies*/
@@ -52,7 +53,7 @@ void move_user(int dx);
 
 void game_loop(void);
 
-void fire_missile(void);
+void fire_bullet(void);
 
 void update_enemies(void);
 
