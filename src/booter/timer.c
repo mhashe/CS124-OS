@@ -46,7 +46,7 @@
 
 
 /* Timer count. */
-static volatile int time;
+static volatile uint32_t time;
 
 
 void timer_handler(void) {

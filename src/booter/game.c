@@ -23,6 +23,9 @@ void c_start(void) {
 
     enable_interrupts();
 
+    init_game_state();
+    draw_game_start();
+
     while(1) {}
 }
 
@@ -54,39 +57,56 @@ typedef struct Space_Invaders {
 
 } Space_Invaders;
 
-static Space_Invaders game_state;
+static Space_Invaders game;
 
 
-void initialize_game() {
-    game_state.score = 0;
-    game_state.lives_remaining = NUM_LIVES;
+void init_game_state(void) {
+    game.score = 0;
+    game.lives_remaining = NUM_LIVES;
 
-    game_state.info_bar_height = INFO_BAR_HEIGHT * VID_HEIGHT;
-    game_state.user_bar_height = USER_BAR_HEIGHT * VID_HEIGHT;
-    game_state.user_position_y = VID_HEIGHT - game_state.user_bar_height;
+    game.info_bar_height = INFO_BAR_HEIGHT * VID_HEIGHT;
+    game.user_bar_height = USER_BAR_HEIGHT * VID_HEIGHT;
+    game.user_position_y = VID_HEIGHT - game.user_bar_height;
     // user starts off in middle of screen
-    game_state.user_position_x = (VID_WIDTH - USER_SIZE) / 2;
+    game.user_position_x = (VID_WIDTH - USER_SIZE) / 2;
 
     // enemies start of in aligned center, right below the info space
     // height enemy mat will use
-    game_state.enemy_mat_height = ((VID_HEIGHT - game_state.info_bar_height 
-        - game_state.user_bar_height) * ENEMY_MAT_HEIGHT);
-    game_state.enemy_mat_width = VID_WIDTH * ENEMY_MAT_WIDTH;
+    game.enemy_mat_height = ((VID_HEIGHT - game.info_bar_height 
+        - game.user_bar_height) * ENEMY_MAT_HEIGHT);
+    game.enemy_mat_width = VID_WIDTH * ENEMY_MAT_WIDTH;
     // enemy starts off at center of screen
-    game_state.enemy_mat_position_x = ((VID_WIDTH - 
-        game_state.enemy_mat_width) / 2);
-    game_state.enemy_mat_position_y = game_state.user_bar_height; // start at top
+    game.enemy_mat_position_x = ((VID_WIDTH - game.enemy_mat_width) / 2);
+    game.enemy_mat_position_y = game.user_bar_height; // start at top
 
     // set maximum # enemies per col to each col's num_enemies_per_col
-    uint8_t max_enemies_per_col = (game_state.enemy_mat_height / 
+    uint8_t max_enemies_per_col = (game.enemy_mat_height / 
         (ENEMY_SIZE + ENEMY_SPACING));
-    game_state.num_enemy_cols = ((VID_WIDTH * ENEMY_MAT_WIDTH) / 
+    game.num_enemy_cols = ((VID_WIDTH * ENEMY_MAT_WIDTH) / 
         (ENEMY_SIZE + ENEMY_SPACING));
 
-    for (int c = 0; c < game_state.num_enemy_cols; c++) {
-        game_state.num_enemies_per_col[c] = max_enemies_per_col;
+    for (int c = 0; c < game.num_enemy_cols; c++) {
+        game.num_enemies_per_col[c] = max_enemies_per_col;
     }
 
-    game_state.num_enemies_left = (max_enemies_per_col * 
-        game_state.num_enemy_cols);
+    game.num_enemies_left = (max_enemies_per_col * game.num_enemy_cols);
+}
+
+
+void draw_game_start(void) {
+    // draw info bar
+    draw_box(0, 0, VID_WIDTH, game.info_bar_height, 1); // blue
+
+    // draw user in user bar
+    draw_box(game.user_position_x, game.user_position_y, USER_SIZE, USER_SIZE, 14); // yellow
+
+
+    // draw a test figure and movie it around
+    draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 2);
+    sleep(1.0);
+    draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 3);
+    sleep(1.0);
+    draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, 4);
+
+
 }

@@ -8,7 +8,7 @@
 #define BYTES_PER_PIXEL  1
 #define VID_BUFF_SIZE    VID_WIDTH*VID_HEIGHT*BYTES_PER_PIXEL
 
-#define LOC(x, y)       x*VID_WIDTH + y
+#define LOC(x, y)       y*VID_WIDTH + x
 
 
 // Memory locations for the different video buffers.
@@ -50,6 +50,8 @@ void init_video(void);
  *     color: color to be displayed
  */
 void draw_pixel(int x, int y, uint8_t color);
+
+void draw_box(int xi, int yi, int width, int height, uint8_t color);
 
 /*
  * Clears the screen by writing 0 everywhere in video memory.

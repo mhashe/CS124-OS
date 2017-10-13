@@ -27,7 +27,11 @@ invading enemies*/
 #define USER_BAR_HEIGHT 0.1
 #define USER_SIZE 20 // pixels of width
 
+void c_start(void);
 
+void init_game_state(void);
+
+void draw_game_start(void);
 
 #endif /* GAME_H */
 

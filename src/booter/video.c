@@ -45,6 +45,13 @@ void draw_pixel(int x, int y, uint8_t color) {
     *(VGA_BUFFER+LOC(x, y)) = color;
 }
 
+void draw_box(int xi, int yi, int width, int height, uint8_t color) {
+    for (int x = xi; x < (xi + width); x++) {
+        for (int y = yi; y < (yi + height); y++)
+            *(VGA_BUFFER+LOC(x, y)) = color;
+    }
+}
+
 void clear_screen() {
     uint32_t blank = 0;
 
