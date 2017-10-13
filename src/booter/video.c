@@ -32,9 +32,9 @@ void draw_pixel(int x, int y, uint8_t color) {
 }
 
 void draw_box(int x, int y, int width, int height, uint8_t color) {
-    for (int i = x; i < (x + width); i++) {
-        for (int j = y; j < (y + height); j++)
-            draw_pixel(i, j, color);
+    for (int j = x; j < (x + width); j++) {
+        for (int i = y; i < (y + height); i++)
+            draw_pixel(j, i, color);
     }
 }
 
@@ -45,10 +45,10 @@ void draw_bullet(int x, int y, uint8_t color) {
 
 void draw_sprite(const uint8_t* sprite, int x, int y, int width, int height, 
                  uint8_t color) {
-    for (int i = 0; i < width; i++) {
+    for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            if (sprite[j*width + i] == 1) {
-                draw_pixel(x+i, y+j, color);
+            if (sprite[i*width + j] == 1) {
+                draw_pixel(x+j, y+i, color);
             }
         }
     }
