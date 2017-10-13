@@ -116,8 +116,8 @@ void init_game_state(void) {
 }
 
 void update_game_progress() {
-    uint16_t progress_width = ((VID_WIDTH * game.num_enemy_rows * 
-        game.num_enemy_cols) / game.num_enemies_left);
+    uint16_t num_enemies = game.num_enemy_rows * game.num_enemy_cols;
+    int progress_width = ((VID_WIDTH * (num_enemies - game.num_enemies_left)) / num_enemies);
     draw_box(0, 0, progress_width, game.info_bar_height, GREEN);
 }
 
@@ -183,6 +183,7 @@ void update_enemies(void) {
                 /* Mark as destroyed; will be removed in next draw cycle. */
                 if (cont) {
                     game.enemy_mat[c][r] = 0;
+                    game.num_enemies_left--;
                 }
 
                 /* Draw alien. */
@@ -297,7 +298,7 @@ void fire_bullet(void) {
 
 void reset_game(uint8_t color) {
     draw_box(0, 0, VID_WIDTH, game.info_bar_height, color);
-    sleep(1);
+    sleep(RESET_TIME);
     clear_screen();
     init_game_state();
     draw_game_start();
