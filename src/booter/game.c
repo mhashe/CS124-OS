@@ -90,6 +90,7 @@ void init_game_state(void) {
     // enemy starts off at center of screen
     game.enemy_mat_position_x = ((VID_WIDTH - game.enemy_mat_width) / 2);
     game.enemy_mat_position_y = game.info_bar_height; // start at top
+    game.enemy_direction = NO_DIR;
 
     // set maximum # enemies per col to each col's num_enemies_per_col
     game.num_enemy_rows = (game.enemy_mat_height / 
@@ -121,10 +122,10 @@ void update_enemies(void) {
         game.enemy_mat_width, game.enemy_mat_height, 0);
     
     /* Move enemies. */
-    game.enemy_mat_position_x += NO_DIR;
+    game.enemy_mat_position_x += (game.enemy_direction * ENEMY_SPEED);
 
     /* Redraw enemies. */
-    int num_enemies_in_col, ex, ey;
+    int ex, ey;
     ex = game.enemy_mat_position_x;
 
     for (int c = 0; c < game.num_enemy_cols; c++) {
@@ -153,6 +154,9 @@ void draw_game_start(void) {
 
     // draw enemies
     update_enemies();
+
+    // enemies will start moving in right direction
+    game.enemy_direction = RIGHT_DIR;
 }
 
 
@@ -220,8 +224,9 @@ void game_loop(void) {
         }
         update_missiles();
 
-        if (0) {
+        if ((current_time - last_enemy_update) > ENEMY_UPDATE_PERIOD) {
             update_enemies();
+            last_enemy_update = get_time();
         }
     }
 }
