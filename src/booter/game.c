@@ -47,10 +47,12 @@ typedef struct Space_Invaders {
 
     uint16_t num_enemies_left;
 
-    /* array of ints contraining num enemies per column (assume no 
+    /* array of ints containing num enemies per column (assume no 
     gaps between enemies in a column, so it represents a matrix) */
     uint8_t num_enemy_cols;
-    uint8_t num_enemies_per_col[NUM_ENEMY_COLS];
+    uint8_t num_enemy_rows;
+    // matrix of enemies (1 if alive/visible, 0 if dead/invisible)
+    uint8_t enemy_mat[NUM_ENEMY_COLS][(VID_HEIGHT / (ALIEN_SIZE + ENEMY_SPACING))];
 
     // user position
     uint8_t user_bar_height;
@@ -82,16 +84,19 @@ void init_game_state(void) {
     game.enemy_mat_position_y = game.info_bar_height; // start at top
 
     // set maximum # enemies per col to each col's num_enemies_per_col
-    uint8_t max_enemies_per_col = (game.enemy_mat_height / 
+    game.num_enemy_rows = (game.enemy_mat_height / 
         (ALIEN_SIZE + ENEMY_SPACING));
     game.num_enemy_cols = ((VID_WIDTH * ENEMY_MAT_WIDTH) / 
         (ALIEN_SIZE + ENEMY_SPACING));
 
+    // set all enemies as valid (1) 
     for (int c = 0; c < game.num_enemy_cols; c++) {
-        game.num_enemies_per_col[c] = max_enemies_per_col;
+        for (int r = 0; r < game.num_enemy_rows; r++) {
+            game.enemy_mat[c][r] = 1;
+        }
     }
 
-    game.num_enemies_left = (max_enemies_per_col * game.num_enemy_cols);
+    game.num_enemies_left = (game.num_enemy_rows * game.num_enemy_cols);
 }
 
 
@@ -108,15 +113,15 @@ void movie_enemies(void) {
     ex = game.enemy_mat_position_x;
 
     for (int c = 0; c < game.num_enemy_cols; c++) {
-        num_enemies_in_col = game.num_enemies_per_col[c];
         ey = game.enemy_mat_position_y;
 
-        for (int e = 0; e < num_enemies_in_col; e++) {
-            /* Draw alien. */
-            draw_sprite(&alien[0][0], ex, ey, 
-                ALIEN_SIZE, ALIEN_SIZE, 2);
-            ey += ALIEN_SIZE + ENEMY_SPACING;
-            // set collision detection with user here
+        for (int r = 0; r < game.num_enemy_rows; r++) {
+            if (game.enemy_mat[c][r]) {
+                /* Draw alien. */
+                draw_sprite(&alien[0][0], ex, ey, ALIEN_SIZE, ALIEN_SIZE, 2);
+                ey += ALIEN_SIZE + ENEMY_SPACING;
+                // set collision detection with user here
+            }
         }
 
         ex += ALIEN_SIZE + ENEMY_SPACING;
@@ -173,7 +178,6 @@ void game_loop(void) {
                 fire_missile();
             }
         }
-        sleep(1.);
-        movie_enemies();
+        sleep(.1);
     }
 }
