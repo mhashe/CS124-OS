@@ -24,7 +24,7 @@ Michael Hashe <mhashe@caltech.edu>
 
 ---- PRELIMINARIES ----
 
->> If you have any preliminary comments on your submission, notes for the
+>> If you have any preliminary comments on your submission, notes for the       TODO
 >> TAs, or extra credit, please give them here.
 
    Graphics mode 0x13 (VGA, 320x200, 256 color)
@@ -49,7 +49,7 @@ which parts.
    Make sure that each member's total time is listed.
 
    Veb:
-   Nikhil:
+   Nikhil: 15
    Michael:
 
 >> L2: What did each team member focus on for this assignment?  Keep
@@ -81,33 +81,33 @@ shoot.
 
 ---- DATA STRUCTURES ----
 
->> A3: Describe any global state that your program manages in order to
+>> A3: Describe any global state that your program manages in order to          TODO
 >> perform its operations.  Don't focus on state managed within interrupt
 >> handlers; we will look at that later.  Rather, focus on state that is
 >> part of the game implementation itself.
 
 ---- SYNCHRONIZATION ----
 
->> A4: From the perspective of the entire program, briefly describe how
+>> A4: From the perspective of the entire program, briefly describe how         TODO
 >> the various interrupts are handled and processed within your program.
 >> For example, when a timer interrupt occurs, what is the general sequence
 >> of operations or updates that is performed within your program?
 >> Similarly, when a keyboard interrupt occurs, what does your program do
 >> in response?
 
->> A5: Would you say your program relies on polling or busy-waiting anywhere
+>> A5: Would you say your program relies on polling or busy-waiting anywhere    TODO
 >> to accomplish its tasks?  If so, what tasks?
 
 ---- RATIONALE ----
 
->> A6: Why did you choose the project you did?
+>> A6: Why did you choose the project you did?                                  TODO
 
->> A7: Did your choice of project affect any of the specific implementation
+>> A7: Did your choice of project affect any of the specific implementation     TODO
 >> details of the various subsystems that you needed to use?  (For example,
 >> if you implemented a scrolling game, did you implement specialized high-
 >> performance video code to scroll the screen?)
 
->> A8: Did you run into any technical or resource limitations in the
+>> A8: Did you run into any technical or resource limitations in the            TODO
 >> implementation of your program?  (For example, bootloader didn't fit,
 >> or a really useful standard library wasn't available, or you couldn't
 >> achieve the desired performance level, etc.)  If so, what steps did you
@@ -136,8 +136,11 @@ No.
 
 ---- ALGORITHMS ----
 
->> B3: Briefly describe how your bootloader brings your program into
+>> B3: Briefly describe how your bootloader brings your program into            TODO
 >> memory.  Does it perform one large load, or multiple smaller loads?
+
+The bootloader performs one large load, so it only makes one disk interrupt.
+
 
 >> B4: Did you add any BIOS calls to your bootloader to prepare for your
 >> main program?  (i.e. things that aren't available in protected mode)
@@ -185,13 +188,24 @@ gives the video API a lot of portability to draw arbitrary objects.
 >> program's display output?  For example, using Extended ASCII Codes, or
 >> choosing specific colors to represent different things?
 
+Since we are using a full graphical mode, we did not need to take many steps to
+improve the program's display output. However, since it was a full graphical
+mode, we only had the ability to draw pixel by pixel so we implemented a system
+that can draw from a static array to give the subsystem portability to draw
+arbitrary objects.
+
 			  TIMER SUBSYSTEM
 			  ===============
 
 ---- DATA STRUCTURES ----
 
->> D1: What state does your timer subsystem manage?  Describe the variables
+>> D1: What state does your timer subsystem manage?  Describe the variables     TODO
 >> or data structures that it maintains, and how they are used.
+
+The timer subsystem does not manage any game state. It just manages the time
+which is the number of timer ticks (interrupts) that have occurred so far. This
+timer is used to manage game speed via a sleep function that busy waits for the
+correct time to elapse and then returns.
 
 ---- ALGORITHMS ----
 
