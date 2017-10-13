@@ -14,7 +14,7 @@
 #define PROGRAM_BASE_ADDR   0x00020000
 #define PROGRAM_SEGMENT     0x2000
 #define PROGRAM_OFFSET      0x0
-#define PROGRAM_NUM_SECT    11
+#define PROGRAM_NUM_SECT    20
 
 
 /* Flags in control register 0. */
