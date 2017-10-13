@@ -233,15 +233,17 @@ void draw_game_start(void) {
 
 void move_user(int dx) {
     /* Clear user. */
-    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
-        SHIP_SIZE, SHIP_SIZE, BLUE);
+    //draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
+        //SHIP_SIZE, SHIP_SIZE, BLACK);
+    draw_bullet(game.user_position_x, game.user_position_y, BLACK);
     
     /* Move user. */
     game.user_position_x += dx;
 
     /* Redraw user. */
-    draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
-        SHIP_SIZE, SHIP_SIZE, YELLOW);
+    //draw_sprite(&ship[0][0], game.user_position_x, game.user_position_y, 
+        //SHIP_SIZE, SHIP_SIZE, YELLOW);
+    draw_bullet(game.user_position_x, game.user_position_y, YELLOW);
 }
 
 void update_bullets(int dy) {
