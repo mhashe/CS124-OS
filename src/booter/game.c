@@ -120,6 +120,9 @@ void update_enemies(void) {
     /* Clear enemies. */
     draw_box(game.enemy_mat_position_x, game.enemy_mat_position_y, 
         game.enemy_mat_width, game.enemy_mat_height, 0);
+
+    /* Redraw bullets, which were just erased. */
+    update_bullets(0);
     
     /* Move enemies. */
     game.enemy_mat_position_x += (game.enemy_direction * ENEMY_SPEED);
@@ -173,7 +176,7 @@ void move_user(int dx) {
         SHIP_SIZE, SHIP_SIZE, 14);
 }
 
-void update_bullets(void) {
+void update_bullets(int dy) {
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (game.bullet_queue[i].y != -1) {
 
@@ -189,7 +192,7 @@ void update_bullets(void) {
             }
 
             /* Update bullet location. */
-            game.bullet_queue[i].y -= 1;
+            game.bullet_queue[i].y += dy;
 
             /* Draw bullet. */
             draw_bullet(game.bullet_queue[i].x,
@@ -241,7 +244,7 @@ void game_loop(void) {
             last_enemy_update = get_time();
         }
         if ((current_time - last_bullet_update) > BULLET_UPDATE_PERIOD) {
-            update_bullets();
+            update_bullets(-1);
             last_bullet_update = get_time();
         }
     }

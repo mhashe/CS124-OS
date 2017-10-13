@@ -57,6 +57,8 @@ void fire_bullet(void);
 
 void update_enemies(void);
 
+void update_bullets(int dy);
+
 #endif /* GAME_H */
 
 
