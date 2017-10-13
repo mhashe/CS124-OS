@@ -137,6 +137,10 @@ void move_user(int dx) {
     draw_box(game.user_position_x, game.user_position_y, SHIP_SIZE, SHIP_SIZE, 14); // yellow
 }
 
+void fire_missle(void) {
+    // TODO
+}
+
 
 void game_loop(void) {
     unsigned char keycode;
@@ -146,13 +150,14 @@ void game_loop(void) {
     while (1) {
         keycode = key_queue_pop();
         if (keycode != KEY_QUEUE_EMPTY) {
+            move_user(1);
             if (keycode == LEFT_ARROW) {
                 move_user(-1);
             } else if (keycode == RIGHT_ARROW) {
                 move_user(1);
+            } else if (keycode == SPACEBAR) {
+                fire_missle();
             }
-            // color++;
-            // draw_box(VID_WIDTH / 2, VID_HEIGHT / 2, 10, 10, color);
         }
         // sleep(.1);
     }
