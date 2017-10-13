@@ -23,14 +23,6 @@
  */
 
 
-
-/* TODO:  You can create static variables here to hold video display state,
- *        such as the current foreground and background color, a cursor
- *        position, or any other details you might want to keep track of!
- */
-
-
-
 void init_video(void) {
     clear_screen();
 }
