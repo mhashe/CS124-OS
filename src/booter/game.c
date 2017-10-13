@@ -117,24 +117,6 @@ void init_game_state(void) {
 }
 
 
-void handle_enemy_user_collision(int ex, int ey) {
-    /* Check for collision between enemy and user */
-    // If enemy's y is below the user height
-    if ((ey + ALIEN_SIZE) < game.user_position_y) {
-        return;
-    }
-
-    // and if right or left of enemy is in bound of user
-    if (((ex + ALIEN_SIZE) < (game.user_position_x)) &&
-        (ex > (game.user_position_x + SHIP_SIZE))) {
-        return;
-    }
-
-    // If collision exists, reduce user's lives, and redraw the game
-    game_over = 1;
-}
-
-
 void update_enemies(void) {
     /* Clear enemies. */
     draw_box(game.enemy_mat_position_x, game.enemy_mat_position_y, 
@@ -148,7 +130,8 @@ void update_enemies(void) {
         game.enemy_mat_position_x += ENEMY_SPEED;
 
         // If collision with right wall, then move left
-        if ((game.enemy_mat_position_x + game.enemy_mat_width + ENEMY_SPEED) > VID_WIDTH) {
+        if ((game.enemy_mat_position_x + game.enemy_mat_width + ENEMY_SPEED) 
+            > VID_WIDTH) {
             // game.enemy_mat_position_x = (VID_WIDTH - game.enemy_mat_width);
             game.enemy_direction = LEFT_DIR;
             game.enemy_mat_position_y += ENEMY_DROP_SPEED;
@@ -175,6 +158,7 @@ void update_enemies(void) {
         for (int r = 0; r < game.num_enemy_rows; r++) {
             if (game.enemy_mat[c][r]) {
 
+                // Handle enemy-missle collision
                 int cont = 0;
                 /* Check for collision with bullet. */
                 for (int i = 0; i < MAX_BULLETS; i++) {
@@ -199,8 +183,22 @@ void update_enemies(void) {
                 /* Draw alien. */
                 draw_sprite(&alien[0][0], ex, ey, ALIEN_SIZE, ALIEN_SIZE, 2);
                 
-                // set collision detection with user here
-                handle_enemy_user_collision(ex, ey);
+
+                /* Handle collision detection with user. */
+                // If enemy's y is below the user height
+                if ((ey + ALIEN_SIZE) > (game.user_position_y + 8)) {
+                    // and if right or left of enemy is in bound of user
+                    if (((ex + ALIEN_SIZE) > (game.user_position_x)) ||
+                        (ex < (game.user_position_x + SHIP_SIZE))) {
+                        //then set game over so it can be reset
+                        game_over = 1;
+                    }
+                }
+
+                if ((ey + ALIEN_SIZE) >= VID_WIDTH) {
+                    game.enemy_mat[c][r] = 0;
+                }
+                
             }
             ey += ALIEN_SIZE + ENEMY_SPACING;
         }
