@@ -27,6 +27,7 @@ Michael Hashe <mhashe@caltech.edu>
 >> If you have any preliminary comments on your submission, notes for the       TODO
 >> TAs, or extra credit, please give them here.
 
+   Coolness Factor 
    Graphics mode 0x13 (VGA, 320x200, 256 color)
    Bootable flash drive
    Tone generation
@@ -55,14 +56,14 @@ which parts.
    Make sure that each member's total time is listed.
 
    Veb: 30
-   Nikhil: 15
-   Michael: 15
+   Nikhil: 20
+   Michael: 20
 
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
 
    Veb: Bootloader, keyboard, game.
-   Nikhil: Bootloader, interrupt, video.
+   Nikhil: Bootloader, interrupt, video, sound.
    Michael: Bootloader, timer, game. 
 
 Note that this design document is a bit long.  Most of the questions can be
@@ -77,8 +78,9 @@ not required by the question.
 >> A1: In a few sentences, describe what kind of game or demo program your
 >> PC booter implements.
 
-We implemented a trimmed down space invaders. The game infinitely repeats
-a single level, but plays very similarly.
+We implemented a trimmed down space invaders. The game infinitely repeats a
+single level, but plays very similarly. You can shoot enemies, enemies can shoot
+you. Enemies speed up as you kill them.
 
 
 >> A2: In a few sentences, how does the user interact with the program?
@@ -103,8 +105,8 @@ hit by the bullets shot by the aliens.
 The keyboard keeps a circular queue (as a fixed size array) and read/write 
 indexes in the queue.
 
-The timer keeps the variable "time" as a 32bit value. It is incremented through
-regular timer interrupts.
+The timer keeps the variable "time" as a 32 bit unsigned value. It is
+incremented through regular timer interrupts.
 
 The space-invaders game-play is held in a single struct Space_Invaders, which 
 includes the size, location, and existence of objects drawn on the screen, 
@@ -190,6 +192,13 @@ aspects of not having the standard library was being unable to do sanity checks
 via printf. In the end, we used gdb instead. While this took longer, it was just
 as effective.
 
+Another issue we ran into were some issues with the emulator. The game behaved a
+little differently in the emulator and when booted from a physical disk. In
+particular, in the emulator, sometimes the video memory would stop updating the
+screen, even though the correct values were being written to memory. In the
+emulator, sound was working correctly, but when booting from a physical disk, we
+couldn't get sound to work.
+
 
 			     BOOT SECTOR
 			     ===========
@@ -258,8 +267,11 @@ brightnesses.
 >> facilitate video output?  Briefly describe these values and their
 >> purposes here.
 
-The video code does not maintain any variables or data structures. All that
-information is maintained as part of the game state.
+The video code does not maintain any variables. All that information is
+maintained as part of the game state. The only data structure the video code
+maintains is an array of digits so that printing numbers to the screen is a
+little easier (you can reference a number by its location in the array instead
+of the bitmaps name).
 
 ---- ALGORITHMS ----
 
@@ -308,7 +320,8 @@ number of seconds (can be a fraction).
 >> D3: Did you change the timer frequency from 100Hz?  If so, what did you
 >> change it to, and why?
 
-No.
+No. That being said, we are also using timer channel 2 for the speaker. We
+changes this channels frequency to correspond with the desired tone's frequency.
 
 ---- SYNCHRONIZATION ----
 
@@ -317,9 +330,10 @@ No.
 >> program's global state?  If so, what steps did you take to ensure that
 >> such situations cannot occur?
 
-The program only responds to interrupts (namely keyboard and timer) using 
-handlers that do not execute other functions and disable interrupts during 
-their execution. The timer and keyboard are both polled.
+The program only responds to interrupts (namely keyboard and timer) using
+handlers that do not execute other functions and disables interrupts during
+their execution. The timer updates a variable which is then used in the main
+loop.
 
 This design removes the potential for race conditions.
 
@@ -382,8 +396,9 @@ modified, this ensures that race conditions do not occur.
 >> your program's global state?  If so, what steps did you take to ensure
 >> that such situations cannot occur?
 
-The program handles keyboard events, outside of the keyboard interrupt handler, 
-through polling only. This ensure that no race conditions occur.
+There is no potential to generate race conditions in updating the global state
+because when we are accessing keyboard scan codes from the queue, we turn off
+interrupts. This ensure that no race conditions occur.
 
 
 ---- RATIONALE ----
