@@ -28,46 +28,42 @@
  */
 
 
+/* Hold keys in circular queue. */
 static volatile char key_queue[KEYCODE_QUEUE_SIZE];
 static uint32_t queue_read_index;
 static uint32_t queue_write_index;
 
 
 void init_keyboard(void) {
-    // Initialize state required by the keyboard handler.
+    /* Initialize state required by the keyboard handler. */
     queue_read_index = 0;
     queue_write_index = 0;
 
-    // http://wiki.osdev.org/%228042%22_PS/2_Controller
-    // outb(KEYBOARD_CMD_PORT, 0xED);
-    // while (inb(KEYBOARD_CMD_PORT) & 0b10) {
-    // }
-    // outb(KEYBOARD_PORT, 0b111);
-
-    // Install keyboard interrupt handler.
+    /* Install keyboard interrupt handler. */
     install_interrupt_handler(KEYBOARD_INTERRUPT, irq1_handler);
 
 }
 
-/*=============================================================================
- * Handles keyboard interrupts by adding scan code to key code queue.
+
+/* Handles keyboard interrupts by adding scan code to key code queue.
  *
  * Deliberately not exposed to remainder of program.
  */
 void key_handler(void) {
-    char keycode = inb(KEYBOARD_PORT);          // gets keycode
+    char keycode = inb(KEYBOARD_PORT);          /* Gets keycode. */
 
     key_queue[queue_write_index] = keycode;
     queue_write_index++;
-    queue_write_index %= KEYCODE_QUEUE_SIZE;    // wrap index around
+    queue_write_index %= KEYCODE_QUEUE_SIZE;    /* Wrap index around. */
 
 }
 
-// reads char from queue. 
+
+/* Reads char from queue. */
 char key_queue_pop(void) {
     char keycode;
 
-    disable_interrupts();                       // make interrupt safe
+    disable_interrupts();                       /* Make interrupt safe. */
 
     if (queue_read_index == queue_write_index) {
         enable_interrupts();
@@ -77,9 +73,10 @@ char key_queue_pop(void) {
     keycode = key_queue[queue_read_index];
 
     queue_read_index++;
-    queue_read_index %= KEYCODE_QUEUE_SIZE;     // wrap index around
+    queue_read_index %= KEYCODE_QUEUE_SIZE;     /* Wrap index around. */
 
-    enable_interrupts();                        // restore system state
+    enable_interrupts();                        /* Restore system state. */
 
     return keycode;
 }
+

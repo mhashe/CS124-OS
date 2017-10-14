@@ -17,10 +17,7 @@ PROGRAM_BIN = program.bin
 FLOPPY_IMG = floppy.img
 
 
-all : clean $(FLOPPY_IMG)
-
-debug: clean $(FLOPPY_IMG) debug-qemu
-
+all : $(FLOPPY_IMG)
 
 # Use gcc to build our assembly code so that we can use the C preprocessor
 # to #define constants for our bootloader.  The "-Wa,--gstabs" argument tells
@@ -53,13 +50,12 @@ $(FLOPPY_IMG): $(BOOT_BIN) $(PROGRAM_BIN)
 	cat $(BOOT_BIN) $(PROGRAM_BIN) > $@
 	truncate -s 1474560 $@
 
-run-qemu: #$(FLOPPY_IMG)
+run-qemu: $(FLOPPY_IMG)
 	qemu-system-i386 -soundhw pcspk -drive file=$(FLOPPY_IMG),format=raw
 
-debug-qemu: #$(FLOPPY_IMG)
+debug-qemu: $(FLOPPY_IMG)
 	qemu-system-i386 -soundhw pcspk -s -S -drive file=$(FLOPPY_IMG),format=raw
 
-# Currently compiling floppy.img on VM, running natively.
 clean:
 	rm -f *.o prog.lds.s $(BOOT_BIN) $(PROGRAM_BIN) $(FLOPPY_IMG)
 
