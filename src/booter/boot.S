@@ -78,10 +78,6 @@ boot_start:
     mov $STR_LOADED, %si
     call    print_str
 
-    # Make LEDs on keyboard light up.
-    # mov $235, %al
-    # outb %al, $0x64
-
     #=====================================================================
     # Next, set up for transition from 16-bit real mode to 32-bit
     # protected mode.  All we strictly need for this is a Global

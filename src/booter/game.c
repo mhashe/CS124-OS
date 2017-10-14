@@ -177,6 +177,9 @@ void game_loop(void) {
 
             /* Keep track of current time so we know when to update again. */
             last_enemy_update = get_time();
+
+            /* If enemies at player level, they erase player ship; redraw. */
+            move_player(NO_DIR);
         }
 
         /* Update positions and redraw bullets/missiles in game. */
@@ -281,7 +284,7 @@ void update_enemies(void) {
                 /* Handle collision detection with player. */
 
                 /* If enemy at player height... */
-                if ((ey + ALIEN_SIZE) > (game.player_position_y + 8)) {
+                if ((ey + ALIEN_SIZE) > (game.player_position_y)) {
 
                     /* ... and on top of player... */
                     if (((ex + ALIEN_SIZE) > (game.player_position_x)) ||
