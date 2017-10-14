@@ -1,17 +1,20 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
+
 #include <stdint.h>
+
 
 #define VID_WIDTH        320
 #define VID_HEIGHT       200
 #define BYTES_PER_PIXEL  1
 #define VID_BUFF_SIZE    VID_WIDTH*VID_HEIGHT*BYTES_PER_PIXEL
 
+
 #define LOC(x, y)       y*VID_WIDTH + x
 
 
-// Memory locations for the different video buffers.
+/* Memory locations for the different video buffers. */
 #define TEXT_BUFFER ((char *) 0xB8000)
 #define CGA_EVEN_BUFFER ((char *) 0xB8000)
 #define CGA_ODD_BUFFER  ((char *) 0xBA000)
@@ -39,77 +42,74 @@
 #define WHITE         15
 
 
+/* Clears screen, loads in numbers for use in displaying score. */
 void init_video(void);
 
 
-/*
- * Clears the screen by writing 0 everywhere in video memory.
+/* Clears the screen by writing 0 everywhere in video memory.
  */
 void clear_screen();
 
 
-/*
- * Draw a pixel on the screen at (x,y).
+/* Draw a pixel on the screen at (x,y).
  *
  * Inputs:
- *     x:     x location of pixel
- *     y:     y location of pixel
- *     color: color to be displayed
+ *     x -    x location of pixel
+ *     y -    y location of pixel
+ *     color - color to be displayed
  */
 void draw_pixel(int x, int y, uint8_t color);
 
 
-/*
- * Draw a box on the screen.
+/* Draw a box on the screen.
  *
  * Inputs:
- *     x:      x location of pixel
- *     y:      y location of pixel
- *     width:  width of box
- *     height: height of box
- *     color:  color to be displayed
+ *     x -      x location of pixel
+ *     y -      y location of pixel
+ *     width -  width of box
+ *     height - height of box
+ *     color -  color to be displayed
  */
 void draw_box(int x, int y, int width, int height, uint8_t color);
 
 
-/*
- * Draw a generic sprite on the screen at (x,y).
+/* Draw a generic sprite on the screen at (x,y).
  *
  * Inputs:
- *     sprite: address of the first element in the sprite array
- *     x:      x location of alien
- *     y:      y location of alien
- *     width:  width of sprite
- *     height: height of sprite
- *     color:  color to be displayed
+ *     sprite - address of the first element in the sprite array
+ *     x -      x location of alien
+ *     y -      y location of alien
+ *     width -  width of sprite
+ *     height - height of sprite
+ *     color -  color to be displayed
  */
 void draw_sprite(const uint8_t* sprite, int x, int y, int width, int height, 
                  uint8_t color);
 
 
-/*
- * Draw a two-digit number on the screen aligned on (x, y) left or right.
+/* Draw a two-digit number on the screen aligned on (x, y) left or right.
  *
  * Inputs:
- *     number: integer to be drawn (expected to be less than 100)
- *     x:      x location of number
- *     y:      y location of number
- *     color:  color to be displayed
- *     align_right:  whether number is aligned right (if 0, align left)
+ *     number - integer to be drawn (expected to be less than 100)
+ *     x -      x location of number
+ *     y -      y location of number
+ *     color -  color to be displayed
+ *     align_right -  whether number is aligned right (if 0, align left)
  */
 void draw_two_digit_number(int number, int x, int y, uint8_t color, 
                 int align_right);
 
 
-/*
- * Draw a digit number on the screen aligned at (x, y).
+/* Draw a digit number on the screen aligned at (x, y).
  *
  * Inputs:
- *     number: integer to be drawn (expected to be less than 10)
- *     x:      x location of number
- *     y:      y location of number
- *     color:  color to be displayed
+ *     number - integer to be drawn (expected to be less than 10)
+ *     x -      x location of number
+ *     y -      y location of number
+ *     color -  color to be displayed
  */
 void draw_number(int number, int x, int y, uint8_t color);
 
+
 #endif /* VIDEO_H */
+

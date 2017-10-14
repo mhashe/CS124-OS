@@ -23,7 +23,7 @@
  */
 
 
-/* An array of sprites representing numbers */
+/* An array of sprites representing numbers. */
 static uint8_t *numbers[10];
 
 
@@ -47,12 +47,11 @@ void init_video(void) {
 void clear_screen() {
     uint32_t blank = 0;
 
-    // Write 32 bits at a time (4 pixels) so we access memory less.
+    /* Write 32 bits at a time (4 pixels) so we access memory less. */
     for (int i = 0; i < VID_BUFF_SIZE/4; i++) {
         *((uint32_t*)VGA_BUFFER+i) = blank;
     }
 }
-
 
 
 void draw_pixel(int x, int y, uint8_t color) {
@@ -79,10 +78,11 @@ void draw_sprite(const uint8_t* sprite, int x, int y, int width, int height,
     }
 }
 
+
 void draw_two_digit_number(int number, int x, int y, uint8_t color, 
                 int align_right) {
-    int tens = (number / 10) % 10;
-    int ones = number % 10;
+    int tens = (number / 10) % 10; /* Tens digits. */
+    int ones = number % 10;        /* Ones digit. */
 
     if (align_right) {
         draw_number(ones, x - FONT_WIDTH, y, color);
@@ -93,6 +93,8 @@ void draw_two_digit_number(int number, int x, int y, uint8_t color,
     }
 }
 
+
 void draw_number(int number, int x, int y, uint8_t color) {
     draw_sprite(numbers[number % 10], x, y, FONT_WIDTH, FONT_HEIGHT, color);
 }
+
