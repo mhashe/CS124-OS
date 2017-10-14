@@ -52,19 +52,13 @@
 static volatile uint32_t time;
 
 
-/*=============================================================================
- * Handles timer interrupts by incrementing the clock (in terms of ms).
+/* Handles timer interrupts by incrementing the clock (in terms of ms).
  *
  * Deliberately not exposed to remainder of program.
  */
 void timer_handler(void) {
     /* Advance time ("clock tick"). */
     time++;
-}
-
-
-uint32_t get_time(void) {
-    return time;
 }
 
 
@@ -80,16 +74,21 @@ void init_timer(void) {
     outb(PIT_CHAN0_DATA, 0x9c);
     outb(PIT_CHAN0_DATA, 0x2e);
 
-    /* Turn on timer channel 2 for tone generation */
+    /* Turn on timer channel 2 for tone generation. */
     outb(PIT_MODE_CMD, 0xb6);               /* 10 11 011 0 */
 
-    no_sound();                             /* make sure no sound is playing */
+    no_sound();                             /* Make sure no sound is playing. */
 
     /* Initialize timer to 0. */
     time = 0;
 
     /* Install timer interrupt handler. */
     install_interrupt_handler(TIMER_INTERRUPT, irq0_handler);
+}
+
+
+uint32_t get_time(void) {
+    return time;
 }
 
 

@@ -39,7 +39,7 @@ boot_start:
     mov $0, %ah
     mov $VGA_640_480_256_MODE, %al
     mov $CURSOR_END, %cx  # Set cursor end-row to come before start-row.
-    int $DISPLAY_INT      # Display interrupt
+    int $DISPLAY_INT      # Display interrupt.
 
     # "Loading program."
     mov $STR_LOADING, %si
@@ -53,17 +53,17 @@ boot_start:
     push $PROGRAM_OFFSET
      
     push $PROGRAM_NUM_SECT # Number of 512-byte sectors to read.
-    push $0x0010          # First byte is unused, second is size of packet.
+    push $0x0010           # First byte is unused, second is size of packet.
 
-    xor %esi, %esi        # Make sure upper bytes of si don't influece int.
-    mov %ss, %ax          # Set up segment pointer to DAP.
+    xor %esi, %esi         # Make sure upper bytes of si don't influece int.
+    mov %ss, %ax           # Set up segment pointer to DAP.
     mov %ax, %ds
-    mov %sp, %si          # Set up offset pointer to DAP.
-    mov $EXT_READ, %ah    # Use Extended Read Sectors.
+    mov %sp, %si           # Set up offset pointer to DAP.
+    mov $EXT_READ, %ah     # Use Extended Read Sectors.
 
-    int $DISK_INT         # Load the remainder of the program into memory 
-                          # using int 10h "Extended Read Operation."  If it 
-                          # fails, jump to boot_fail.
+    int $DISK_INT          # Load the remainder of the program into memory 
+                           # using int 10h "Extended Read Operation."  If it 
+                           # fails, jump to boot_fail.
 
     # Pop from stack.
     popl %edx
@@ -78,7 +78,7 @@ boot_start:
     mov $STR_LOADED, %si
     call    print_str
 
-    # Make LEDs on keyboard light up
+    # Make LEDs on keyboard light up.
     # mov $235, %al
     # outb %al, $0x64
 
@@ -140,7 +140,7 @@ call_c_entry:
 
     cld                 # C code expects this...
     movl $0, %ebp       # Null-terminate the program's backtrace.
-    call *(PROGRAM_BASE_ADDR + E_OFFSET)   # Call c_entry
+    call *(PROGRAM_BASE_ADDR + E_OFFSET)   # Call c_entry.
 
     #=====================================================================
     # The rest of this file contains helper functions for the 16-bit
