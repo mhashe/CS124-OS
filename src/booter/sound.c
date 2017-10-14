@@ -68,7 +68,7 @@ void shooting_sound() {
 
 void boot_sound() {
     sound(100);
-    sleep(1.5);
+    sleep(1);
     no_sound();
 }
 
