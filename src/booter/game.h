@@ -16,9 +16,9 @@
 /* Centiseconds of interval between movement of enemy matrix. */
 #define ENEMY_UPDATE_PERIOD 20 
 /* Number of pixels to move every ENEMY_UPDATE_PERIOD. */
-#define ENEMY_SPEED 7
+#define ENEMY_SPEED 5
 /* Number of pixels to move enemies down when they reach wall. */
-#define ENEMY_DROP_SPEED 10
+#define ENEMY_DROP_SPEED 8
 /* Centiseconds of interval between movement of bullets. */
 #define BULLET_UPDATE_PERIOD 10 
 /* Number of pixels to move bullets up every BULLET_UPDATE_PERIOD. */
@@ -90,6 +90,7 @@ typedef struct Space_Invaders {
     uint16_t enemy_mat_width;
     uint16_t enemy_mat_height;
     int8_t enemy_direction;
+    uint16_t enemy_speed;
 
     uint16_t num_enemies_left;
 

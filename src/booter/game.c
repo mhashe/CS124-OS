@@ -77,7 +77,10 @@ void init_game_state(void) {
     /* Enemies start off in horizontal center, top of screen. */
     game.enemy_mat_position_x = ((VID_WIDTH - game.enemy_mat_width) / 2);
     game.enemy_mat_position_y = game.progress_bar_height; /* Start at top. */
+
+    /* Set enemy direction and speed so they are dynamically changing. */
     game.enemy_direction = NO_DIR; /* Direction of alien movement. */
+    game.enemy_speed = ENEMY_SPEED;
 
     /* Number of enemies in enemy matrix (rows and columns). */
     game.num_enemy_rows = (game.enemy_mat_height / 
@@ -219,10 +222,10 @@ void update_enemies(void) {
     
     /* Move enemies. */
     if (game.enemy_direction == RIGHT_DIR) {
-        game.enemy_mat_position_x += ENEMY_SPEED;
+        game.enemy_mat_position_x += game.enemy_speed;
 
         /* If collision with right wall, then move left. */
-        if ((game.enemy_mat_position_x + game.enemy_mat_width + ENEMY_SPEED) 
+        if ((game.enemy_mat_position_x + game.enemy_mat_width + game.enemy_speed) 
             > VID_WIDTH) {
 
             game.enemy_direction = LEFT_DIR;
@@ -231,10 +234,10 @@ void update_enemies(void) {
     } 
     
     else if (game.enemy_direction == LEFT_DIR) {
-        game.enemy_mat_position_x -= ENEMY_SPEED;
+        game.enemy_mat_position_x -= game.enemy_speed;
 
         /* If collision with left wall, then move right. */
-        if (game.enemy_mat_position_x < ENEMY_SPEED) {
+        if (game.enemy_mat_position_x < game.enemy_speed) {
             game.enemy_direction = RIGHT_DIR;
             game.enemy_mat_position_y += ENEMY_DROP_SPEED;
         }
@@ -538,6 +541,10 @@ void update_game_progress(uint8_t color) {
     /* Total number of enemies at start and total enemies killed. */
     uint16_t num_enemies = game.num_enemy_rows * game.num_enemy_cols;
     uint16_t num_enemies_killed = num_enemies - game.num_enemies_left;
+
+    /* Set speed of enemies to be a function of how many are left */
+    // game.enemy_speed = (uint16_t) (ENEMY_SPEED * num_enemies_killed * 1. / num_enemies);
+    game.enemy_speed = ENEMY_SPEED + (uint16_t) ((3 * ENEMY_SPEED * num_enemies_killed) / (1. * num_enemies));
 
     /* Width, in pixels, of progress bar that is filled. */
     int progress_width = (VID_WIDTH * num_enemies_killed) / num_enemies;

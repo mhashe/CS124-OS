@@ -20,11 +20,11 @@ Michael Hashe <mhashe@caltech.edu>
    on Moodle.)
 
    Repository URL:  https://github.com/MichaelHashe/CS124-OS
-   commit ...                                                                   TODO
+   commit ...
 
 ---- PRELIMINARIES ----
 
->> If you have any preliminary comments on your submission, notes for the       TODO
+>> If you have any preliminary comments on your submission, notes for the
 >> TAs, or extra credit, please give them here.
 
    Coolness Factor 
@@ -145,13 +145,14 @@ The program's eventual response to both interrupts occur through polling.
 After services are initialized (video, timer, keyboard, etc.), the game 
 enters a game loop.
 
-The game loop is a while-loop in which the user's key-presses are polled. Also, 
-the various objects are redrawn in the display when specific intervals of time 
-are reached. So, no busy waiting occurs in standard game play. When the game is 
-not drawing, it is polling key-presses so that it can respond instantaneously.
+The game loop is a while-loop in which the user's key-presses are polled. Also,
+the various objects are redrawn in the display when specific intervals of time
+are reached. So, significant busy waiting occurs in standard game play. When the
+game is not drawing, it is polling key-presses so that it can respond
+instantaneously.
 
-When a game ends/resets, the program sleeps for 1.5 seconds, which is the only 
-instance of busy waiting in the program.
+When a game ends/resets, the program sleeps for 1.5 seconds, which is busy 
+waiting.
 
 ---- RATIONALE ----
 
@@ -221,7 +222,7 @@ boot.bin (which is 512 bytes = 1 sector), we can divide the number of bytes of
 program.bin by 512 and round up to the next integer, which will be the number 
 of sectors we need.
 
-Our program.bin is ### bytes, which meant we needed to load ### sectors.        TODO
+Our program.bin is 10388 bytes, which meant we needed to load 21 sectors.
 
 
 >> B3: Does your bootloader pass any information to the main program?
