@@ -1,7 +1,7 @@
 #include "ports.h"
-
 #include "keyboard.h"
 #include "interrupts.h"
+#include "handlers.h"
 
 /* This is the IO port of the PS/2 controller, where the keyboard's scan
  * codes are made available.  Scan codes can be read as follows:
@@ -27,8 +27,6 @@
  * This works for PS/2 US QUERTY keyboard only!
  */
 
-#include "keyboard.h"
-#include "handlers.h"
 
 static volatile char key_queue[KEYCODE_QUEUE_SIZE];
 static uint32_t queue_read_index;
