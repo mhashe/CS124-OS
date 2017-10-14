@@ -1,5 +1,5 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef HANDLERS_H
+#define HANDLERS_H
 
 
 /* Declare the entry-points to the interrupt handler assembly-code fragments,
@@ -11,5 +11,5 @@ void *(irq0_handler)(void); /* Timer Handler. */
 void *(irq1_handler)(void); /* Keyboard Handler. */
 
 
-#endif /* GAME_H */
+#endif /* HANDLERS_H */
 

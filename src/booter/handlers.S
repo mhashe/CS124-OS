@@ -57,4 +57,3 @@
             popa    # Restore all registers.
             iret    # Go back to interrupted code.
 
-
