@@ -154,7 +154,7 @@ void update_enemies(void);
  * a new one at modified coordinates.
  *
  * Inputs:
- *     dx: horizontal movement of ship 
+ *     dx - horizontal movement of ship 
  */
 void move_player(int dx);
 
@@ -170,7 +170,7 @@ void fire_bullet(void);
  * condition.
  *
  * Inputs:
- *     color:  color of progress in progress bar
+ *     color - color of progress in progress bar
  */
 void reset_game(uint8_t color);
 
@@ -179,7 +179,7 @@ void reset_game(uint8_t color);
  * variable and color of progress bar.
  *
  * Inputs:
- *     color:  color of progress in paused progress bar
+ *     color - color of progress in paused progress bar
  */
 void pause_game(uint8_t color);
 
@@ -189,8 +189,8 @@ void pause_game(uint8_t color);
  * for collisions with player, etc.).
  *
  * Inputs:
- *     dy: vertical movement of ship's bullets
- *     ady: vertical movement of alien's bullets
+ *     dy - vertical movement of ship's bullets
+ *     ady - vertical movement of alien's bullets
  */
 void update_bullets(int dy, int ady);
 
@@ -199,7 +199,7 @@ void update_bullets(int dy, int ady);
  * of enemies destroyed.
  *
  * Inputs:
- *     color:  color of progress in progress bar
+ *     color - color of progress in progress bar
  */
 void update_game_progress(uint8_t color);
 

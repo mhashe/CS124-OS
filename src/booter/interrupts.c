@@ -18,11 +18,11 @@
  * interrupt addresses, the address is split across two 16-bit fields.
  */
 typedef struct IDT_Descriptor {
-    uint16_t offset_15_0;      // offset bits 0..15
-    uint16_t selector;         // a code segment selector in GDT or LDT
-    uint8_t zero;              // unused, set to 0
-    uint8_t type_attr;         // descriptor type and attributes
-    uint16_t offset_31_16;     // offset bits 16..31
+    uint16_t offset_15_0;      /* Offset bits 0..15. */
+    uint16_t selector;         /* A code segment selector in GDT or LDT. */
+    uint8_t zero;              /* Unused, set to 0. */
+    uint8_t type_attr;         /* Descriptor type and attributes. */
+    uint16_t offset_31_16;     /* Offset bits 16..31. */
 } IDT_Descriptor;
 
 
@@ -94,8 +94,7 @@ static inline void lidt(void* base, uint16_t size) {
 #define ICW4_SFNM       0x10        /* Special fully nested (not). */
 
 
-/*=============================================================================
- * Remap the interrupts that the PIC generates.  The default interrupt
+/* Remap the interrupts that the PIC generates.  The default interrupt
  * mapping conflicts with the IA32 protected-mode interrupts for indicating
  * hardware/software exceptions, so we need to map them elsewhere.
  *
@@ -173,7 +172,7 @@ void IRQ_clear_mask(unsigned char IRQline) {
  */
 
 
-/* Initialize interrupts */
+/* Initialize interrupts. */
 void init_interrupts(void) {
     /* Zero out the Interrupt Descriptor Table. */
     for (int i = 0; i < NUM_INTERRUPTS; i++) {
@@ -206,7 +205,6 @@ void install_interrupt_handler(int num, void *handler) {
     uint8_t type_attr = 0;
     type_attr |= 1;         /* Set present flag. */
     type_attr <<= 2;        /* Move to descriptor privilege level. */
-    
     /* Anything is allowed to invoke interrupt. Not really relevant here. */
     type_attr |= 0;         /* Set privilege level to 0. */
     type_attr <<= 1;        /* Move to fixed value. */
