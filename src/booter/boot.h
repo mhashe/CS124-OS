@@ -64,3 +64,4 @@
 #define VGA_640_480_M_MODE     0x11     /* VGA 640*480 mono*/
 #define VGA_640_480_16_MODE    0x12     /* VGA 640*480 16 color*/
 #define VGA_640_480_256_MODE   0x13     /* VGA 320*200 256 color*/
+

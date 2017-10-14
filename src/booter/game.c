@@ -120,7 +120,6 @@ void init_game_state(void) {
 }
 
 
-
 void draw_game_start(void) {
     /* Draw progress bar. */
     update_game_progress(LIGHT_GREEN);
@@ -417,9 +416,11 @@ void update_bullets(int dy, int ady) {
 
             /* Check for collision between player and bullet. */
             if    ((game.en_bullet_queue[i].x >= game.player_position_x)
-                && (game.en_bullet_queue[i].x <= game.player_position_x + SHIP_SIZE) 
+                && (game.en_bullet_queue[i].x <= game.player_position_x 
+                    + SHIP_SIZE) 
                 && (game.en_bullet_queue[i].y >= game.player_position_y)
-                && (game.en_bullet_queue[i].y <= game.player_position_y + SHIP_SIZE)) {
+                && (game.en_bullet_queue[i].y <= game.player_position_y 
+                    + SHIP_SIZE)) {
 
                 /* Collision! */
                 game.game_state = GAME_LOST;
@@ -485,9 +486,10 @@ void fire_alien_bullet(void) {
      */
     if (game.en_bullet_queue[game.en_bullet_counter].y != -1) {
 
-        draw_sprite(&alien_bullet[0][0], game.en_bullet_queue[game.en_bullet_counter].x,
-            game.en_bullet_queue[game.en_bullet_counter].y, BULLET_WIDTH,
-            BULLET_HEIGHT, BLACK);
+        draw_sprite(&alien_bullet[0][0], 
+            game.en_bullet_queue[game.en_bullet_counter].x,
+            game.en_bullet_queue[game.en_bullet_counter].y, 
+            BULLET_WIDTH, BULLET_HEIGHT, BLACK);
     }
 
     /* Read new bullet into queue. */
@@ -528,7 +530,6 @@ void pause_game(uint8_t color) {
         update_game_progress(color);
     }
 }
-
 
 
 void update_game_progress(uint8_t color) {

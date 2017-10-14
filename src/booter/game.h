@@ -149,7 +149,10 @@ void update_enemies(void);
 
 
 /* Erase the previous player ship, and draw
- * a new one at modified coordinates. 
+ * a new one at modified coordinates.
+ *
+ * Inputs:
+ *     dx: horizontal movement of ship 
  */
 void move_player(int dx);
 
@@ -190,8 +193,7 @@ void pause_game(uint8_t color);
 void update_bullets(int dy, int ady);
 
 
-/*
- * Updates progress bar keeping track of fraction
+/* Updates progress bar keeping track of fraction
  * of enemies destroyed.
  *
  * Inputs:
@@ -200,8 +202,7 @@ void update_bullets(int dy, int ady);
 void update_game_progress(uint8_t color);
 
 
-/*
- * Every time the player shoots, an alien shoots too.
+/* Every time the player shoots, an alien shoots too.
  * That change to state is handled here.
  */
 void fire_alien_bullet(void);
