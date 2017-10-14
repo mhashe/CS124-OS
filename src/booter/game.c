@@ -52,6 +52,11 @@ void init_game_state(void) {
 
     /* Define progress_bar shape (at top of screen). */
     game.progress_bar_height = VID_HEIGHT * PROGRESS_BAR_HEIGHT;
+
+    /* Progress bar needs to contain numbers of enemies killed/left. */
+    if (game.progress_bar_height < (FONT_HEIGHT + FONT_SPACING)) {
+        game.progress_bar_height = FONT_HEIGHT + FONT_SPACING;
+    }
     
     /* Player starts off towards bottom, horizontal center of screen. */
     game.player_bar_height = SHIP_SIZE;
@@ -117,8 +122,8 @@ void init_game_state(void) {
 
 
 void draw_game_start(void) {
-    /* Draw info bar. */
-    draw_box(0, 0, VID_WIDTH, game.progress_bar_height, BLUE);
+    /* Draw progress bar. */
+    update_game_progress(LIGHT_GREEN);
 
     /* Draw player in player bar. */
     draw_sprite(&ship[0][0], game.player_position_x, game.player_position_y, 
@@ -158,11 +163,7 @@ void game_loop(void) {
                 reset_game(WHITE);
             } else if (keycode == KEY_P) {
                 /* Pause or un-pause game. */
-                if (game.game_state == GAME_PAUSE) {
-                    game.game_state = GAME_PLAY;
-                } else {
-                    game.game_state = GAME_PAUSE;
-                }
+                pause_game(LIGHT_GRAY);
             }
         }
 
@@ -309,7 +310,7 @@ void update_enemies(void) {
     }
 
     /* Update progress bar, in case any aliens were hit. */
-    update_game_progress();
+    update_game_progress(LIGHT_GREEN);
 
     /* If the game is not lost and all enemies are defeated, player has won. */
     if ((game.num_enemies_left == 0) && (game.game_state == GAME_PLAY)) {
@@ -324,7 +325,7 @@ void move_player(int dx) {
         SHIP_SIZE, SHIP_SIZE, BLACK);
     
     /* Move player. */
-    game.player_position_x += dx;
+    game.player_position_x += (PLAYER_SPEED * dx);
 
     /* Redraw player. */
     draw_sprite(&ship[0][0], game.player_position_x, game.player_position_y, 
@@ -360,27 +361,6 @@ void fire_bullet(void) {
 
     /* Played after a pair of bullets (player + enemy) is shot. */
     shooting_sound();
-}
-
-
-void reset_game(uint8_t color) {
-    /* Overwrite progress with a certain color, i.e.
-     * to celebrate win condition.
-     */
-    draw_box(0, 0, VID_WIDTH, game.progress_bar_height, color);
-
-    /* Mock the player for his poor performance. */
-    if (color == RED) {
-        death_sound();
-    }
-
-    /* Break for a fixed amount of time. */
-    sleep(RESET_TIME);
-
-    /* Clear screen, and then re-initialize. */
-    clear_screen();
-    init_game_state();
-    draw_game_start();
 }
 
 
@@ -461,19 +441,6 @@ void update_bullets(int dy, int ady) {
 }
 
 
-void update_game_progress(void) {
-    /* Total number of enemies at start. */
-    uint16_t num_enemies = game.num_enemy_rows * game.num_enemy_cols;
-
-    /* Enemies killed. */
-    int progress_width = ((VID_WIDTH * (num_enemies - game.num_enemies_left)) 
-        / num_enemies);
-
-    /* Mark as progress bar. */
-    draw_box(0, 0, progress_width, game.progress_bar_height, GREEN);
-}
-
-
 void fire_alien_bullet(void) {
     /* Use relative position from top left of enemy matrix. */
     int x = game.enemy_mat_position_x;
@@ -520,5 +487,62 @@ void fire_alien_bullet(void) {
     game.en_bullet_queue[game.en_bullet_counter].x = x;
     game.en_bullet_queue[game.en_bullet_counter].y = y;
     game.en_bullet_counter = (game.en_bullet_counter + 1) % ENEMY_BULLETS;
+}
+
+
+void reset_game(uint8_t color) {
+    /* Overwrite progress with a certain color, i.e.
+     * to celebrate win condition.
+     */
+    draw_box(0, 0, VID_WIDTH, game.progress_bar_height, color);
+
+    /* Mock the player for his poor performance. */
+    if (color == RED) {
+        death_sound();
+    }
+
+    /* Break for a fixed amount of time. */
+    sleep(RESET_TIME);
+
+    /* Clear screen, and then re-initialize. */
+    clear_screen();
+    init_game_state();
+    draw_game_start();
+}
+
+
+void pause_game(uint8_t color) {
+    /* If game is paused, un-pause it. Else, pause it. */
+    if (game.game_state == GAME_PAUSE) {
+        game.game_state = GAME_PLAY;
+        update_game_progress(BLUE);
+    } else {
+        game.game_state = GAME_PAUSE;
+        update_game_progress(color);
+    }
+}
+
+
+
+void update_game_progress(uint8_t color) {
+    /* Total number of enemies at start and total enemies killed. */
+    uint16_t num_enemies = game.num_enemy_rows * game.num_enemy_cols;
+    uint16_t num_enemies_killed = num_enemies - game.num_enemies_left;
+
+    /* Width, in pixels, of progress bar that is filled. */
+    int progress_width = (VID_WIDTH * num_enemies_killed) / num_enemies;
+
+    /* Mark progress bar. */
+    draw_box(0, 0, progress_width, game.progress_bar_height, color);
+
+    /* Draw background of progress bar, which is blue. */
+    draw_box(progress_width, 0, VID_WIDTH - progress_width, 
+        game.progress_bar_height, BLUE);
+
+    /* Draw number of enemies killed and left here. */
+    draw_two_digit_number(game.num_enemies_left, FONT_SPACING, 
+        FONT_SPACING, RED, 0);
+    draw_two_digit_number(num_enemies_killed, VID_WIDTH - FONT_SPACING, 
+        FONT_SPACING, GREEN, 1);
 }
 

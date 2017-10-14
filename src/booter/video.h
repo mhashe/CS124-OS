@@ -41,6 +41,13 @@
 
 void init_video(void);
 
+
+/*
+ * Clears the screen by writing 0 everywhere in video memory.
+ */
+void clear_screen();
+
+
 /*
  * Draw a pixel on the screen at (x,y).
  *
@@ -80,9 +87,9 @@ void draw_sprite(const uint8_t* sprite, int x, int y, int width, int height,
                  uint8_t color);
 
 
-/*
- * Clears the screen by writing 0 everywhere in video memory.
- */
-void clear_screen();
+void draw_two_digit_number(int number, int x, int y, uint8_t color, 
+                int align_right);
+
+void draw_number(int number, int x, int y, uint8_t color);
 
 #endif /* VIDEO_H */

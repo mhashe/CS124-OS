@@ -23,9 +23,34 @@
  */
 
 
+static uint8_t *numbers[10];
+
+
 void init_video(void) {
     clear_screen();
+
+    numbers[0] = &zero[0][0];
+    numbers[1] = &one[0][0];
+    numbers[2] = &two[0][0];
+    numbers[3] = &three[0][0];
+    numbers[4] = &four[0][0];
+    numbers[5] = &five[0][0];
+    numbers[6] = &six[0][0];
+    numbers[7] = &seven[0][0];
+    numbers[8] = &eight[0][0];
+    numbers[9] = &nine[0][0];
 }
+
+
+void clear_screen() {
+    uint32_t blank = 0;
+
+    // Write 32 bits at a time (4 pixels) so we access memory less.
+    for (int i = 0; i < VID_BUFF_SIZE/4; i++) {
+        *((uint32_t*)VGA_BUFFER+i) = blank;
+    }
+}
+
 
 
 void draw_pixel(int x, int y, uint8_t color) {
@@ -52,13 +77,20 @@ void draw_sprite(const uint8_t* sprite, int x, int y, int width, int height,
     }
 }
 
+void draw_two_digit_number(int number, int x, int y, uint8_t color, 
+                int align_right) {
+    int tens = (number / 10) % 10;
+    int ones = number % 10;
 
-void clear_screen() {
-    uint32_t blank = 0;
-
-    // Write 32 bits at a time (4 pixels) so we access memory less.
-    for (int i = 0; i < VID_BUFF_SIZE/4; i++) {
-        *((uint32_t*)VGA_BUFFER+i) = blank;
+    if (align_right) {
+        draw_number(ones, x - FONT_WIDTH, y, color);
+        draw_number(tens, x - (FONT_WIDTH * 2) - FONT_SPACING, y, color);
+    } else {
+        draw_number(tens, x, y, color);
+        draw_number(ones, x + FONT_WIDTH + FONT_SPACING, y, color);
     }
 }
 
+void draw_number(int number, int x, int y, uint8_t color) {
+    draw_sprite(numbers[number], x, y, FONT_WIDTH, FONT_HEIGHT, color);
+}

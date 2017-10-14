@@ -22,8 +22,10 @@
 // Centiseconds of interval between movement of bullets
 #define BULLET_UPDATE_PERIOD 10 
 // Number of pixels to move bullets up every BULLET_UPDATE_PERIOD
-#define BULLET_SPEED 2
+#define BULLET_SPEED 2  // bullets from user
 #define ALIEN_BULLET_SPEED 3
+// Movement sensitivity of player
+#define PLAYER_SPEED 3
 
 
 /* Floats in [0, 1] of fraction of available canvas's dedicated to for space 
@@ -164,6 +166,7 @@ void fire_bullet(void);
  */
 void reset_game(uint8_t color);
 
+void pause_game(uint8_t color);
 
 /* Advance all live bullets and perform some 
  * checks (remove off-screen bullets, check
@@ -175,7 +178,7 @@ void update_bullets(int dy, int ady);
 /* Updates progress bar keeping track of fraction
  * of enemies destroyed.
  */
-void update_game_progress(void);
+void update_game_progress(uint8_t color);
 
 
 /* Every time the player shoots, an alien shoots too.
