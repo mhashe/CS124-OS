@@ -23,7 +23,7 @@ void no_sound();
 void shooting_sound();
 
 /*=============================================================================
- * Sound for booting the game up. Sleeps for 1.5 seconds.
+ * Sound for booting the game up. Sleeps for 1 second.
  */
 void boot_sound();
 
