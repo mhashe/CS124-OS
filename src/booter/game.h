@@ -79,7 +79,7 @@ typedef struct pair {
  */
 typedef struct Space_Invaders {
     /* Info presented to player */
-    uint8_t progress_bar_height;
+    uint16_t progress_bar_height;
     uint8_t game_state;
 
     /* Position and direction of enemies */
@@ -100,9 +100,9 @@ typedef struct Space_Invaders {
     uint8_t enemy_mat[NUM_ENEMY_COLS][(VID_HEIGHT / (ALIEN_SIZE + ENEMY_SPACING))];
 
     // player position
-    uint8_t player_bar_height;
-    uint8_t player_position_x;
-    uint8_t player_position_y; // always the lowest row (not dynamic)
+    uint16_t player_bar_height;
+    int16_t player_position_x;
+    uint16_t player_position_y; // always the lowest row (not dynamic)
 
     // bullet queue, counter
     Pair bullet_queue[MAX_BULLETS];

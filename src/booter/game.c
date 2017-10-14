@@ -325,7 +325,14 @@ void move_player(int dx) {
         SHIP_SIZE, SHIP_SIZE, BLACK);
     
     /* Move player. */
-    game.player_position_x += (PLAYER_SPEED * dx);
+    game.player_position_x +=  PLAYER_SPEED * dx;
+
+    /* Make sure player is bounded correctly. */
+    if (game.player_position_x < 0) {
+        game.player_position_x = 0;
+    } else if ((VID_WIDTH - SHIP_SIZE) < game.player_position_x) {
+        game.player_position_x = VID_WIDTH - SHIP_SIZE;
+    }
 
     /* Redraw player. */
     draw_sprite(&ship[0][0], game.player_position_x, game.player_position_y, 
