@@ -14,11 +14,11 @@
 
 /* Game update frequency. */
 /* Centiseconds of interval between movement of enemy matrix. */
-#define ENEMY_UPDATE_PERIOD 30 
+#define ENEMY_UPDATE_PERIOD 20 
 /* Number of pixels to move every ENEMY_UPDATE_PERIOD. */
-#define ENEMY_SPEED 5 
+#define ENEMY_SPEED 7
 /* Number of pixels to move enemies down when they reach wall. */
-#define ENEMY_DROP_SPEED 4 
+#define ENEMY_DROP_SPEED 10
 /* Centiseconds of interval between movement of bullets. */
 #define BULLET_UPDATE_PERIOD 10 
 /* Number of pixels to move bullets up every BULLET_UPDATE_PERIOD. */
