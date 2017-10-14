@@ -78,7 +78,7 @@ boot_start:
     mov $STR_LOADED, %si
     call    print_str
 
-    # Make LEDs of keyboard light up
+    # Make LEDs on keyboard light up
     mov $235, %al
     outb %al, $0x64
 
