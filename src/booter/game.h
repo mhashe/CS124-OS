@@ -8,8 +8,8 @@
 
 /* Define constants/preferences for the game */
 
-
-#define RESET_TIME 1.5 // time to hold game between resets, in seconds
+/* Time to sleep during game resets, in seconds. */
+#define RESET_TIME 1.5
 
 
 /* Game update frequency */
@@ -163,25 +163,45 @@ void fire_bullet(void);
 
 /* Re-initializes game, for instance after a win / loss
  * condition.
+ *
+ * Inputs:
+ *     color:  color of progress in progress bar
  */
 void reset_game(uint8_t color);
 
+
+/* Pauses or unpauses game by changing game state 
+ * variable and color of progress bar.
+ *
+ * Inputs:
+ *     color:  color of progress in paused progress bar
+ */
 void pause_game(uint8_t color);
+
 
 /* Advance all live bullets and perform some 
  * checks (remove off-screen bullets, check
  * for collisions with player, etc.).
+ *
+ * Inputs:
+ *     dy: vertical movement of ship's bullets
+ *     ady: vertical movement of alien's bullets
  */
 void update_bullets(int dy, int ady);
 
 
-/* Updates progress bar keeping track of fraction
+/*
+ * Updates progress bar keeping track of fraction
  * of enemies destroyed.
+ *
+ * Inputs:
+ *     color:  color of progress in progress bar
  */
 void update_game_progress(uint8_t color);
 
 
-/* Every time the player shoots, an alien shoots too.
+/*
+ * Every time the player shoots, an alien shoots too.
  * That change to state is handled here.
  */
 void fire_alien_bullet(void);

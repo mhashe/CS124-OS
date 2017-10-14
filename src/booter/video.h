@@ -87,9 +87,29 @@ void draw_sprite(const uint8_t* sprite, int x, int y, int width, int height,
                  uint8_t color);
 
 
+/*
+ * Draw a two-digit number on the screen aligned on (x, y) left or right.
+ *
+ * Inputs:
+ *     number: integer to be drawn (expected to be less than 100)
+ *     x:      x location of number
+ *     y:      y location of number
+ *     color:  color to be displayed
+ *     align_right:  whether number is aligned right (if 0, align left)
+ */
 void draw_two_digit_number(int number, int x, int y, uint8_t color, 
                 int align_right);
 
+
+/*
+ * Draw a digit number on the screen aligned at (x, y).
+ *
+ * Inputs:
+ *     number: integer to be drawn (expected to be less than 10)
+ *     x:      x location of number
+ *     y:      y location of number
+ *     color:  color to be displayed
+ */
 void draw_number(int number, int x, int y, uint8_t color);
 
 #endif /* VIDEO_H */

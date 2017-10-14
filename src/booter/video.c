@@ -23,12 +23,14 @@
  */
 
 
+/* An array of sprites representing numbers */
 static uint8_t *numbers[10];
 
 
 void init_video(void) {
     clear_screen();
 
+    /* Set array of sprite numbers (must be set at runtime). */
     numbers[0] = &zero[0][0];
     numbers[1] = &one[0][0];
     numbers[2] = &two[0][0];
@@ -92,5 +94,5 @@ void draw_two_digit_number(int number, int x, int y, uint8_t color,
 }
 
 void draw_number(int number, int x, int y, uint8_t color) {
-    draw_sprite(numbers[number], x, y, FONT_WIDTH, FONT_HEIGHT, color);
+    draw_sprite(numbers[number % 10], x, y, FONT_WIDTH, FONT_HEIGHT, color);
 }
