@@ -51,7 +51,7 @@ $(FLOPPY_IMG): $(BOOT_BIN) $(PROGRAM_BIN)
 	truncate -s 1474560 $@
 
 run-qemu: $(FLOPPY_IMG)
-	qemu-system-i386 -soundhw pcspk -drive file=$(FLOPPY_IMG),format=raw
+	qemu-system-i386 -soundhw pcspk -vga cirrus -drive file=$(FLOPPY_IMG),format=raw
 
 debug-qemu: $(FLOPPY_IMG)
 	qemu-system-i386 -soundhw pcspk -s -S -drive file=$(FLOPPY_IMG),format=raw

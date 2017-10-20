@@ -67,7 +67,7 @@ void init_game_state(void) {
      * behavior is not present in running outside of the emulator (actually
      * booting into it).
      */
-    game.player_position_y = VID_HEIGHT - game.player_bar_height - 8;
+    game.player_position_y = VID_HEIGHT - game.player_bar_height;
 
     /* Enemies claim all space vertically in-between info and player bars. */
     game.enemy_mat_height = ((VID_HEIGHT - game.progress_bar_height 
