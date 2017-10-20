@@ -61,12 +61,6 @@ void init_game_state(void) {
     game.player_bar_height = SHIP_SIZE;
     game.player_position_x = (VID_WIDTH - SHIP_SIZE) / 2;
 
-    /* This 8 is truly a magic number. It seems in the emulator, after you fire
-     * a bullet, the bottom 7 rows of the memory buffer stop updating, even
-     * though new values are written to the buffer correctly. This
-     * behavior is not present in running outside of the emulator (actually
-     * booting into it).
-     */
     game.player_position_y = VID_HEIGHT - game.player_bar_height;
 
     /* Enemies claim all space vertically in-between info and player bars. */

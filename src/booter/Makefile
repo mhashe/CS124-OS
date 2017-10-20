@@ -51,6 +51,8 @@ $(FLOPPY_IMG): $(BOOT_BIN) $(PROGRAM_BIN)
 	truncate -s 1474560 $@
 
 run-qemu: $(FLOPPY_IMG)
+	# Run qemu with the -vga cirrus option, which fixes issue in drawing on 
+	# lower ~8 pixels of display in VGA mode
 	qemu-system-i386 -soundhw pcspk -vga cirrus -drive file=$(FLOPPY_IMG),format=raw
 
 debug-qemu: $(FLOPPY_IMG)
