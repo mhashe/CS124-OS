@@ -11,7 +11,7 @@
 #### The BIOS passes in the drive that the loader was read from as
 #### DL, with floppy drives numbered 0x00, 0x01, ... and hard drives
 #### numbered 0x80, 0x81, ...  We want to support booting a kernel on
-#### a different drive from the loader, so we don't take advantage of
+#### a different drive from the loader, so we dont take advantage of
 #### this.
 
 # Runs in real mode, which is a 16-bit segment.
@@ -153,11 +153,11 @@ next_sector:
 #### Transfer control to the kernel that we loaded.  We read the start
 #### address out of the ELF header (see [ELF1]) and convert it from a
 #### 32-bit linear address into a 16:16 segment:offset address for
-#### real mode, then jump to the converted address.  The 80x86 doesn't
+#### real mode, then jump to the converted address.  The 80x86 doesnt
 #### have an instruction to jump to an absolute segment:offset kept in
 #### registers, so in fact we store the address in a temporary memory
 #### location, then jump indirectly through that location.  To save 4
-#### bytes in the loader, we reuse 4 bytes of the loader's code for
+#### bytes in the loader, we reuse 4 bytes of the loaders code for
 #### this temporary pointer.
 
 	mov $0x2000, %ax

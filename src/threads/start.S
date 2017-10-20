@@ -35,7 +35,7 @@ start:
 #### Get memory size, via interrupt 15h function 88h (see [IntrList]),
 #### which returns AX = (kB of physical memory) - 1024.  This only
 #### works for memory sizes <= 65 MB, which should be fine for our
-#### purposes.  We cap memory at 64 MB because that's all we prepare
+#### purposes.  We cap memory at 64 MB because thats all we prepare
 #### page tables for, below.
 
 	movb $0x88, %ah
