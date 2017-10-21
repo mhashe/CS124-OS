@@ -93,6 +93,9 @@ void thread_init(void) {
     init_thread(initial_thread, "main", PRI_DEFAULT);
     initial_thread->status = THREAD_RUNNING;
     initial_thread->tid = allocate_tid();
+
+    /* Initially, the thread does not need to be woken up at some time. */
+    initial_thread->ticks_until_wake = 0;
 }
 
 /*! Starts preemptive thread scheduling by enabling interrupts.
@@ -128,6 +131,30 @@ void thread_tick(void) {
     /* Enforce preemption. */
     if (++thread_ticks >= TIME_SLICE)
         intr_yield_on_return();
+
+    /* Add threads to ready queue that have been blocked and are due to be 
+    woken up. */
+    thread_foreach((thread_action_func *) &wake_thread, NULL);
+}
+
+/* If thread is blocked, checks if it has a timer interrupt. If it does, it 
+decrements it. If it is due, it unblocks the thread. */
+void wake_thread(struct thread *t) {
+    /* Check if the thread has a timer interrupt. */
+    if (t->ticks_until_wake == 0) {
+        return;
+    }
+
+    /* A thread should only have a time until awake if it is  asleep/blocked. */
+    ASSERT(t->status == THREAD_BLOCKED);
+
+    /* wake_thread() is called every tick, so decrement time until wakeup. */
+    t->ticks_until_wake--;
+
+    /* Wake up if it is time to wakeup (sleep time left is 0) */
+    if (t->ticks_until_wake == 0) {
+        thread_unblock(t);
+    }
 }
 
 /*! Prints thread statistics. */

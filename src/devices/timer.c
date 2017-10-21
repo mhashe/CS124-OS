@@ -81,11 +81,21 @@ int64_t timer_elapsed(int64_t then) {
 /*! Sleeps for approximately TICKS timer ticks.  Interrupts must
     be turned on. */
 void timer_sleep(int64_t ticks) {
-    int64_t start = timer_ticks();
-
     ASSERT(intr_get_level() == INTR_ON);
-    while (timer_elapsed(start) < ticks) 
-        thread_yield();
+
+    /* Disable interrupts so this block of code is always executed together and 
+    blocking works correctly. */
+    intr_disable();
+
+    /* Set flag in thread that will cause blocked thread to be moved to ready 
+    queue once the timer interrupt handler has passed "ticks" time. */
+    thread_current()->ticks_until_wake = ticks;
+
+    /* Block this thread. */
+    thread_block();
+
+    /* Thread has been awoken, so renable interrupts. */
+    intr_enable();
 }
 
 /*! Sleeps for approximately MS milliseconds.  Interrupts must be turned on. */
