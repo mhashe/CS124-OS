@@ -67,10 +67,20 @@ void sema_down(struct semaphore *sema) {
     ASSERT(!intr_context());
 
     old_level = intr_disable();
+
+    // TODO: If the semaphore is unavailable (sema->value == 0), donate 
+    // priority to the holder by setting its priority to max of its current 
+    // value and this threads priority (watch out for race conditions!)
+    // That thread should then recall its own priority after raising semaphore.
+    // Do this in sema_try_down as well by functionalizing this out.
+    // Set priority adding field to struct of sema or lock?
+
     while (sema->value == 0) {
         list_push_back(&sema->waiters, &thread_current()->elem);
         thread_block();
     }
+
+
     sema->value--;
     intr_set_level(old_level);
 }
