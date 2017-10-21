@@ -139,7 +139,7 @@ void thread_tick(void) {
 
 /* If thread is blocked, checks if it has a timer interrupt. If it does, it 
 decrements it. If it is due, it unblocks the thread. */
-void wake_thread(struct thread *t) {
+void wake_thread(struct thread *t, void *aux UNUSED) {
     /* Check if the thread has a timer interrupt. */
     if (t->ticks_until_wake == 0) {
         return;
