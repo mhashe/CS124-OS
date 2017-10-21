@@ -246,6 +246,10 @@ void thread_unblock(struct thread *t) {
     ASSERT(t->status == THREAD_BLOCKED);
     list_push_back(&ready_list, &t->elem);
     t->status = THREAD_READY;
+
+    // TODO: If this thread has a higher priority than the currently running 
+    // thread, then yield the processesor to it
+    
     intr_set_level(old_level);
 }
 
@@ -327,7 +331,14 @@ void thread_foreach(thread_action_func *func, void *aux) {
 
 /*! Sets the current thread's priority to NEW_PRIORITY. */
 void thread_set_priority(int new_priority) {
+    ASSERT(PRI_MIN <= priority && priority <= PRI_MAX);
+
+    int old_priority = thread_current()->priority;
     thread_current()->priority = new_priority;
+
+    // TODO: If old priority has a lower priority than new priority, then 
+    // iterate through the ready queue, yielding to any that have a higher 
+    // priority than it.
 }
 
 /*! Returns the current thread's priority. */
