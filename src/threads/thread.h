@@ -157,6 +157,12 @@ int thread_get_recent_cpu(void);
 int thread_get_load_avg(void);
 
 void wake_thread(struct thread *t, void *aux UNUSED);
+struct thread * thread_get_ready_front(void);
+void thread_insert_ordered(struct list *lst, struct list_elem *elem);
+bool thread_queue_compare(const struct list_elem *a,
+                             const struct list_elem *b,
+                             void *aux);
+void print_run_queue(void);
 
 #endif /* threads/thread.h */
 

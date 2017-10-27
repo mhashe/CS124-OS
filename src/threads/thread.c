@@ -98,6 +98,11 @@ void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
     // printf("!INSERT\n");
 }
 
+/* Returns the thread at the front of the ready queue without popping it. */
+struct thread * thread_get_ready_front(void) {
+    return list_entry(list_front(&ready_list), struct thread, elem);
+}
+
 /*! Initializes the threading system by transforming the code
     that's currently running into a thread.  This can't work in
     general and it is possible in this case only because loader.S
@@ -275,8 +280,7 @@ void thread_block(void) {
 }
 
 /*! Transitions a blocked thread T to the ready-to-run state.  This is an
-    error if T is not blocked.  (Use thread_yield() to make the running
-    thread ready.)
+    error if T is not blocked.
 
     This function does not preempt the running thread.  This can be important:
     if the caller had disabled interrupts itself, it may expect that it can
@@ -292,10 +296,6 @@ void thread_unblock(struct thread *t) {
     thread_insert_ordered(&ready_list, &t->elem);
     t->status = THREAD_READY;
 
-    // TODO: If this thread has a higher priority than the currently running 
-    // thread, then yield the processesor to it
-    // thread_yield(); // NOT WORKING? Something to do with idle thread.
-    
     intr_set_level(old_level);
     // print_run_queue();
     // printf("!UNBLOCK\n");
@@ -386,9 +386,21 @@ void thread_set_priority(int new_priority) {
 
     int old_priority = thread_current()->priority;
     thread_current()->priority = new_priority;
+    // printf("HELLO priority? old, new: %d, %d\n", old_priority, new_priority);
 
-    // TODO: If old priority has a lower priority than new priority, then 
-    // iterate through the ready queue, yielding to any that have a higher 
+
+    /* If old priority has a lower priority than new priority, then check if 
+    ready queue has a has a higher priority thread than it and yield if so. */
+    if (old_priority > new_priority) {
+        if (thread_get_ready_front()->priority > new_priority) {
+            if (intr_context()) {
+                intr_yield_on_return();
+            } else {
+                thread_yield();
+            }
+        }
+    }
+
     // priority than it.
 }
 
