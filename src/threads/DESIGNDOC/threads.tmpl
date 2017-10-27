@@ -67,6 +67,23 @@ Michael: Michael focused on Z
 The stuct thread was changed in thread.h to include the "ticks_until_wake" 
 attribute, which represents the number of ticks left that the thread will sleep. 
 
+struct thread {
+    tid_t tid;                          /*!< Thread identifier. */
+    enum thread_status status;          /*!< Thread state. */
+    char name[16];                      /*!< Name (for debugging purposes). */
+    uint8_t *stack;                     /*!< Saved stack pointer. */
+    int priority;                       /*!< Priority. */
+    int64_t ticks_until_wake;           /*!< Ticks until done sleeping. */
+    struct list_elem allelem;           /*!< List element for all threads list. 
+    /*! Shared between thread.c and synch.c. */
+    struct list_elem elem;              /*!< List element. */
+#ifdef USERPROG
+    uint32_t *pagedir;                  /*!< Page directory. */
+#endif
+    /*! Owned by thread.c. */
+    unsigned magic;                     /* Detects stack overflow. */
+};
+
 ---- ALGORITHMS ----
 
 >> A2: Briefly describe what happens in a call to timer_sleep(),
@@ -127,6 +144,7 @@ thread_tick() in thread.c
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+
 >> B2: Explain the data structure used to track priority donation.
 >> Use ASCII art to diagram a nested donation.  (Alternately, submit a
 >> .png file.)
@@ -147,6 +165,18 @@ thread_tick() in thread.c
 >> B6: Describe a potential race in thread_set_priority() and explain
 >> how your implementation avoids it.  Can you use a lock to avoid
 >> this race?
+
+An example of a race condition would be if a timer interrupt occurred during 
+a call to thread_set_priority(), which was changing a thread to a lower 
+priority but it never yielded when it was supposed to due to the interrupt. 
+When the interrupt returns, it may no longer valid that it doesn't have the highest priority (and it should yield), but it will yield incorrectly anyways.
+
+Also, since comparisons are made on the state of the ready queue, it makes 
+sense to disable interrupts, so that this object is not modified simultaneously 
+by another thread.
+
+These condition are avoided in thread_set_priority by disabling interrupts 
+during its execution.
 
 ---- RATIONALE ----
 
