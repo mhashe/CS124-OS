@@ -185,7 +185,10 @@ void wake_thread(struct thread *t, void *aux UNUSED) {
     /* Wake up if it is time to wakeup (sleep time left is 0) */
     if (t->ticks_until_wake == 0) {
         thread_unblock(t);
-        intr_yield_on_return(); // EXPERIMENTAL!
+
+        if (t->priority > thread_current()->priority) {
+            intr_yield_on_return(); // EXPERIMENTAL!
+        }
     }
 }
 
@@ -246,7 +249,9 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
 
     /* Add to run queue. */
     thread_unblock(t);
-    thread_yield(); // TODO: Modify to only yield if new prioriry higher
+    if (priority > thread_current()->priority) {
+        thread_yield(); // TODO: Modify to only yield if new prioriry higher
+    }
 
     return tid;
 }
