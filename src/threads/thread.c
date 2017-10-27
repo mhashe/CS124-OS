@@ -92,8 +92,10 @@ bool thread_queue_compare(const struct list_elem *a,
 }
 
 void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
+    // printf("INSERT\n");
     list_insert_ordered (lst, elem,
                          (list_less_func*) thread_queue_compare, NULL);
+    // printf("!INSERT\n");
 }
 
 /*! Initializes the threading system by transforming the code
@@ -108,7 +110,7 @@ void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
 
     It is not safe to call thread_current() until this function finishes. */
 void thread_init(void) {
-    printf("PROG_START\n");
+    // printf("PROG_START\n");
     ASSERT(intr_get_level() == INTR_OFF);
 
     lock_init(&tid_lock);
@@ -128,7 +130,7 @@ void thread_init(void) {
 /*! Starts preemptive thread scheduling by enabling interrupts.
     Also creates the idle thread. */
 void thread_start(void) {
-    printf("START\n");
+    // printf("START\n");
     /* Create the idle thread. */
     struct semaphore idle_started;
     sema_init(&idle_started, 0);
@@ -183,6 +185,7 @@ void wake_thread(struct thread *t, void *aux UNUSED) {
     /* Wake up if it is time to wakeup (sleep time left is 0) */
     if (t->ticks_until_wake == 0) {
         thread_unblock(t);
+        intr_yield_on_return(); // EXPERIMENTAL!
     }
 }
 
@@ -208,7 +211,7 @@ void thread_print_stats(void) {
     goal of Problem 1-3. */
 tid_t thread_create(const char *name, int priority, thread_func *function,
                     void *aux) {
-    printf("CREATE\n");
+    // printf("CREATE\n");
     struct thread *t;
     struct kernel_thread_frame *kf;
     struct switch_entry_frame *ef;
@@ -243,6 +246,7 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
 
     /* Add to run queue. */
     thread_unblock(t);
+    thread_yield(); // TODO: Modify to only yield if new prioriry higher
 
     return tid;
 }
@@ -269,7 +273,7 @@ void thread_block(void) {
     if the caller had disabled interrupts itself, it may expect that it can
     atomically unblock a thread and update other data. */
 void thread_unblock(struct thread *t) {
-    printf("UNBLOCK\n");
+    // printf("UNBLOCK\n");
     enum intr_level old_level;
 
     ASSERT(is_thread(t));
@@ -281,9 +285,11 @@ void thread_unblock(struct thread *t) {
 
     // TODO: If this thread has a higher priority than the currently running 
     // thread, then yield the processesor to it
+    // thread_yield(); // NOT WORKING? Something to do with idle thread.
     
     intr_set_level(old_level);
-    print_run_queue();
+    // print_run_queue();
+    // printf("!UNBLOCK\n");
 }
 
 /*! Returns the name of the running thread. */
@@ -316,7 +322,7 @@ tid_t thread_tid(void) {
 /*! Deschedules the current thread and destroys it.  Never
     returns to the caller. */
 void thread_exit(void) {
-    printf("EXIT\n");
+    // printf("EXIT\n");
     ASSERT(!intr_context());
 
 #ifdef USERPROG
@@ -336,7 +342,7 @@ void thread_exit(void) {
 /*! Yields the CPU.  The current thread is not put to sleep and
     may be scheduled again immediately at the scheduler's whim. */
 void thread_yield(void) {
-    printf("YIELD\n");
+    // printf("YIELD\n");
     struct thread *cur = thread_current();
     enum intr_level old_level;
 
@@ -348,6 +354,7 @@ void thread_yield(void) {
     cur->status = THREAD_READY;
     schedule();
     intr_set_level(old_level);
+    // printf("!YIELD\n");
 }
 
 /*! Invoke function 'func' on all threads, passing along 'aux'.
@@ -464,9 +471,7 @@ static bool is_thread(struct thread *t) {
 
 /*! Does basic initialization of T as a blocked thread named NAME. */
 static void init_thread(struct thread *t, const char *name, int priority) {
-    printf("INIT\n");
-    static int c = 10;
-    c--;
+    // printf("INIT\n");
     enum intr_level old_level;
 
     ASSERT(t != NULL);
@@ -477,12 +482,13 @@ static void init_thread(struct thread *t, const char *name, int priority) {
     t->status = THREAD_BLOCKED;
     strlcpy(t->name, name, sizeof t->name);
     t->stack = (uint8_t *) t + PGSIZE;
-    // t->priority = priority;
-    t->priority = c;
+    t->priority = priority;
     t->magic = THREAD_MAGIC;
 
     old_level = intr_disable();
     list_push_back(&all_list, &t->allelem);
+
+    // printf("TP: %d\n", t->priority);
     intr_set_level(old_level);
 }
 
