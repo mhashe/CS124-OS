@@ -91,6 +91,9 @@ bool thread_queue_compare(const struct list_elem *a,
     return ta->priority > tb->priority;
 }
 
+
+/* Inserts a thread elem into a list of threads (ie. ready_list) in order 
+ or priority such that front is the highest priority. */
 void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
     // printf("INSERT\n");
     list_insert_ordered (lst, elem,
@@ -382,17 +385,22 @@ void thread_foreach(thread_action_func *func, void *aux) {
 
 /*! Sets the current thread's priority to NEW_PRIORITY. */
 void thread_set_priority(int new_priority) {
+    /* Make sure that new priority is a valid priority. */
     ASSERT(PRI_MIN <= new_priority && new_priority <= PRI_MAX);
 
+    /* Disable interrupts to prevent race conditions. */
+    enum intr_level old_level;
+    old_level = intr_disable();
+
+    /* Retreive old priority and set new priority. */
     int old_priority = thread_current()->priority;
     thread_current()->priority = new_priority;
-    // printf("HELLO priority? old, new: %d, %d\n", old_priority, new_priority);
-
 
     /* If old priority has a lower priority than new priority, then check if 
     ready queue has a has a higher priority thread than it and yield if so. */
     if (old_priority > new_priority) {
         if (thread_get_ready_front()->priority > new_priority) {
+            // TODO: does disabling interrupts prevent intr_contect() from being true?
             if (intr_context()) {
                 intr_yield_on_return();
             } else {
@@ -401,7 +409,7 @@ void thread_set_priority(int new_priority) {
         }
     }
 
-    // priority than it.
+    intr_set_level(old_level);
 }
 
 /*! Returns the current thread's priority. */
