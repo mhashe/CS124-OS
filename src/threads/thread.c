@@ -70,6 +70,32 @@ static void schedule(void);
 void thread_schedule_tail(struct thread *prev);
 static tid_t allocate_tid(void);
 
+
+void print_run_queue(void) {
+    struct list_elem *e;
+    for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
+        struct thread *t = list_entry(e, struct thread, elem);
+        printf("%d ", t->priority);
+    }
+    printf("\n");
+}
+
+/* Compares the value of two list elements A and B, given auxiliary data AUX.
+   Returns true if A is greater than B, or false if A is less than or equal to
+   B. */
+bool thread_queue_compare(const struct list_elem *a,
+                             const struct list_elem *b,
+                             void *aux) {
+    struct thread *ta = list_entry(a, struct thread, elem);
+    struct thread *tb = list_entry(b, struct thread, elem);
+    return ta->priority > tb->priority;
+}
+
+void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
+    list_insert_ordered (lst, elem,
+                         (list_less_func*) thread_queue_compare, NULL);
+}
+
 /*! Initializes the threading system by transforming the code
     that's currently running into a thread.  This can't work in
     general and it is possible in this case only because loader.S
@@ -82,6 +108,7 @@ static tid_t allocate_tid(void);
 
     It is not safe to call thread_current() until this function finishes. */
 void thread_init(void) {
+    printf("PROG_START\n");
     ASSERT(intr_get_level() == INTR_OFF);
 
     lock_init(&tid_lock);
@@ -101,6 +128,7 @@ void thread_init(void) {
 /*! Starts preemptive thread scheduling by enabling interrupts.
     Also creates the idle thread. */
 void thread_start(void) {
+    printf("START\n");
     /* Create the idle thread. */
     struct semaphore idle_started;
     sema_init(&idle_started, 0);
@@ -116,6 +144,7 @@ void thread_start(void) {
 /*! Called by the timer interrupt handler at each timer tick.
     Thus, this function runs in an external interrupt context. */
 void thread_tick(void) {
+    // printf("TICK\n");
     struct thread *t = thread_current();
 
     /* Update statistics. */
@@ -179,6 +208,7 @@ void thread_print_stats(void) {
     goal of Problem 1-3. */
 tid_t thread_create(const char *name, int priority, thread_func *function,
                     void *aux) {
+    printf("CREATE\n");
     struct thread *t;
     struct kernel_thread_frame *kf;
     struct switch_entry_frame *ef;
@@ -223,6 +253,7 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     This function must be called with interrupts turned off.  It is usually a
     better idea to use one of the synchronization primitives in synch.h. */
 void thread_block(void) {
+    // printf("BLOCK\n");
     ASSERT(!intr_context());
     ASSERT(intr_get_level() == INTR_OFF);
 
@@ -238,19 +269,21 @@ void thread_block(void) {
     if the caller had disabled interrupts itself, it may expect that it can
     atomically unblock a thread and update other data. */
 void thread_unblock(struct thread *t) {
+    printf("UNBLOCK\n");
     enum intr_level old_level;
 
     ASSERT(is_thread(t));
 
     old_level = intr_disable();
     ASSERT(t->status == THREAD_BLOCKED);
-    list_push_back(&ready_list, &t->elem);
+    thread_insert_ordered(&ready_list, &t->elem);
     t->status = THREAD_READY;
 
     // TODO: If this thread has a higher priority than the currently running 
     // thread, then yield the processesor to it
     
     intr_set_level(old_level);
+    print_run_queue();
 }
 
 /*! Returns the name of the running thread. */
@@ -283,6 +316,7 @@ tid_t thread_tid(void) {
 /*! Deschedules the current thread and destroys it.  Never
     returns to the caller. */
 void thread_exit(void) {
+    printf("EXIT\n");
     ASSERT(!intr_context());
 
 #ifdef USERPROG
@@ -302,6 +336,7 @@ void thread_exit(void) {
 /*! Yields the CPU.  The current thread is not put to sleep and
     may be scheduled again immediately at the scheduler's whim. */
 void thread_yield(void) {
+    printf("YIELD\n");
     struct thread *cur = thread_current();
     enum intr_level old_level;
 
@@ -309,7 +344,7 @@ void thread_yield(void) {
 
     old_level = intr_disable();
     if (cur != idle_thread) 
-        list_push_back(&ready_list, &cur->elem);
+        thread_insert_ordered(&ready_list, &cur->elem);
     cur->status = THREAD_READY;
     schedule();
     intr_set_level(old_level);
@@ -429,6 +464,9 @@ static bool is_thread(struct thread *t) {
 
 /*! Does basic initialization of T as a blocked thread named NAME. */
 static void init_thread(struct thread *t, const char *name, int priority) {
+    printf("INIT\n");
+    static int c = 10;
+    c--;
     enum intr_level old_level;
 
     ASSERT(t != NULL);
@@ -439,7 +477,8 @@ static void init_thread(struct thread *t, const char *name, int priority) {
     t->status = THREAD_BLOCKED;
     strlcpy(t->name, name, sizeof t->name);
     t->stack = (uint8_t *) t + PGSIZE;
-    t->priority = priority;
+    // t->priority = priority;
+    t->priority = c;
     t->magic = THREAD_MAGIC;
 
     old_level = intr_disable();
