@@ -155,9 +155,11 @@ void thread_init(void) {
     load_avg = fixedp_from_int(LOAD_AVG_INIT);
 
     /* The initial thread has a nice and recent_cpu values of zero. */
-    initial_thread->nice = NICE_INIT;
-    initial_thread->recent_cpu = fixedp_from_int(RECENT_CPU_INIT);
-    thread_update_priority_in_mlfqs(thread_current(), NULL); // TODO: DC this is here
+    if (thread_mlfqs) {
+        initial_thread->nice = NICE_INIT;
+        initial_thread->recent_cpu = fixedp_from_int(RECENT_CPU_INIT);
+        thread_update_priority_in_mlfqs(initial_thread, NULL); // TODO: DC this is here
+    }
 
     /* Set up a thread structure for the running thread. */
     initial_thread = running_thread();
@@ -317,9 +319,11 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
 
     /* A threaded created (outside of the init thread) inherits its nice and 
     recent_cpu values from its parent, and sets its priority from them. */
-    initial_thread->nice = thread_get_nice();
-    initial_thread->recent_cpu = thread_current()->recent_cpu;
-    thread_update_priority_in_mlfqs(thread_current(), NULL);
+    if (thread_mlfqs) {
+        initial_thread->nice = thread_get_nice();
+        initial_thread->recent_cpu = thread_current()->recent_cpu;
+        thread_update_priority_in_mlfqs(thread_current(), NULL);                      ////
+    }
 
     // TODO: should we not do this when not in mlfq mode?
     // TODO: use thread_update_priority_in_mlfqs in mlfqs mode to set priority?
