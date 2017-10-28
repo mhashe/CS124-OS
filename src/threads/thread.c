@@ -82,6 +82,7 @@ static struct thread * thread_get_ready_front(void);
 static void wake_thread(struct thread *t, void *aux UNUSED);
 static void thread_set_priority_from_nice(struct thread *t);
 static int thread_get_num_ready_threads(void);
+static void thread_update_recent_cpu(struct thread *t);
 
 static void print_run_queue(void) {
     struct list_elem *e;
@@ -137,9 +138,8 @@ void thread_init(void) {
     list_init(&ready_list);
     list_init(&all_list);
 
-    ///////
+    /////// Comment
     load_avg = fixedp_from_int(INIT_LOAD_AVG);
-    ///////
 
     /* Set up a thread structure for the running thread. */
     initial_thread = running_thread();
@@ -199,7 +199,10 @@ void thread_tick(void) {
             fixedp_multiply(LOAD_AVG_DECAY, thread_get_num_ready()));
 
         // Calculate cpu time
+        thread_update_recent_cpu(thread_current());
 
+        printf("Load avg: %d, Current recent cpu: %d", thread_get_load_avg();
+            thread_get_recent_cpu());
     }
 
     /* Add threads to ready queue that have been blocked and are due to be 
@@ -502,8 +505,17 @@ static int thread_get_num_ready_threads(void) {
 
 }
 
-static void thread_update_recent_cpu(struct thread *t UNUSED) {
-    // TODO: recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice
+/* Updates the recent_cpu value for thread t. This should not be interrupted, 
+and the calling function should take care of that. */
+static void thread_update_recent_cpu(struct thread *t) {
+    // recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice
+    fixedp twice_load_avg = fixedp_multiply_with_int(load_avg, 2);
+    t->recent_cpu = fixedp_multiply(t->recent_cpu,
+            fixedp_divide(twice_load_avg, 
+                fixedp_add_with_int(twice_load_avg, 1)
+            )
+        );
+    t->recent_cpu = fixedp_add_with_int(t->recent_cpu, t->nice);
 }
 
 /*! Returns 100 times the current thread's recent_cpu value. */
