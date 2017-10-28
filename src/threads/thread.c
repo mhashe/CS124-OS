@@ -85,7 +85,7 @@ void print_run_queue(void) {
    B. */
 bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
-                             void *aux) {
+                             void *aux UNUSED) {
     struct thread *ta = list_entry(a, struct thread, elem);
     struct thread *tb = list_entry(b, struct thread, elem);
     return ta->priority > tb->priority;
@@ -118,7 +118,7 @@ struct thread * thread_get_ready_front(void) {
 
     It is not safe to call thread_current() until this function finishes. */
 void thread_init(void) {
-    // printf("PROG_START\n");
+    printf("PROG_START. mlfqs: %d\n", thread_mlfqs);
     ASSERT(intr_get_level() == INTR_OFF);
 
     lock_init(&tid_lock);
@@ -131,8 +131,8 @@ void thread_init(void) {
     initial_thread->status = THREAD_RUNNING;
     initial_thread->tid = allocate_tid();
 
-    /* Initially, the thread does not need to be woken up at some time. */
-    initial_thread->ticks_until_wake = 0;
+    /* The initial thread has a nice value of zero. */
+    initial_thread->nice = NICE_INIT;
 }
 
 /*! Starts preemptive thread scheduling by enabling interrupts.
@@ -241,6 +241,10 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     /* Initialize thread. */
     init_thread(t, name, priority);
     tid = t->tid = allocate_tid();
+
+    /* A threaded created (outside of the init thread) inherits its nice value 
+    from its parent. */
+    initial_thread->nice = thread_get_nice(); // TODO: should we not do this when not in mlfq mode?
 
     /* Stack frame for kernel_thread(). */
     kf = alloc_frame(t, sizeof *kf);
@@ -385,6 +389,10 @@ void thread_foreach(thread_action_func *func, void *aux) {
 
 /*! Sets the current thread's priority to NEW_PRIORITY. */
 void thread_set_priority(int new_priority) {
+    /* A thread in the mlfqs mode cannot set its priority directly. */
+    if (thread_mlfqs)
+        return;
+
     /* Make sure that new priority is a valid priority. */
     ASSERT(PRI_MIN <= new_priority && new_priority <= PRI_MAX);
 
@@ -414,18 +422,43 @@ void thread_set_priority(int new_priority) {
 
 /*! Returns the current thread's priority. */
 int thread_get_priority(void) {
+    // TODO: confirm that this still holds in mlfqs
     return thread_current()->priority;
 }
 
 /*! Sets the current thread's nice value to NICE. */
-void thread_set_nice(int nice UNUSED) {
-    /* Not yet implemented. */
+void thread_set_nice(int nice) {
+    /* A thread not in the mlfqs mode should not set niceness. */
+    if (!thread_mlfqs)
+        return;
+
+    /* Make sure that new niceness is a valid value. */
+    ASSERT(NICE_MIN <= nice && nice <= NICE_MAX);
+
+    /* Disable interrupts to prevent race conditions. */
+    enum intr_level old_level;
+    old_level = intr_disable();
+
+    /* Set new niceness. */
+    thread_current()->nice = nice;
+
+    /* Set thread priority according to nice value. */
+    thread_set_priority_from_nice(thread_current());
+    /* If the running thread no long has the highest priority, yield. */
+    // TODO. Abstract out this existing implementation in thread_set_priority()?
+
+    intr_set_level(old_level);
 }
 
 /*! Returns the current thread's nice value. */
 int thread_get_nice(void) {
     /* Not yet implemented. */
-    return 0;
+    return thread_current()->nice;
+}
+
+// Comment
+void thread_set_priority_from_nice(struct thread *t) {
+    // TODO
 }
 
 /*! Returns 100 times the system load average. */
@@ -511,7 +544,16 @@ static void init_thread(struct thread *t, const char *name, int priority) {
     t->status = THREAD_BLOCKED;
     strlcpy(t->name, name, sizeof t->name);
     t->stack = (uint8_t *) t + PGSIZE;
+
+    // TODO: ignore the priority argument when thread_mlfqs is true
     t->priority = priority;
+
+    // TODO: should we set nice value here as safety? it isn't currently set 
+    // different in thread_init() and thread_create() for different reasons
+
+    /* Initially, a thread does not need to be woken up at some time. */
+    initial_thread->ticks_until_wake = 0;
+
     t->magic = THREAD_MAGIC;
 
     old_level = intr_disable();

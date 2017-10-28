@@ -28,6 +28,11 @@ typedef int tid_t;
 #define PRI_DEFAULT 31                  /*!< Default priority. */
 #define PRI_MAX 63                      /*!< Highest priority. */
 
+/* Thread niceness values. */
+#define NICE_MIN -20                    /*!< Lowest niceness. */
+#define NICE_INIT 0                     /*!< Niceness of init thread. */
+#define NICE_MAX 20                     /*!< Highest niceness. */
+
 /*! A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -98,6 +103,7 @@ struct thread {
     uint8_t *stack;                     /*!< Saved stack pointer. */
     int priority;                       /*!< Priority. */
     int64_t ticks_until_wake;           /*!< Ticks until done sleeping. */
+    int nice;                           /*!< Nice value. */
     struct list_elem allelem;           /*!< List element for all threads list. */
     /**@}*/
 
@@ -158,12 +164,15 @@ int thread_get_load_avg(void);
 
 void wake_thread(struct thread *t, void *aux UNUSED);
 
+void thread_set_priority_from_nice(struct thread *t);
+
 /* Functionality for thread ordered queues. */
 struct thread * thread_get_ready_front(void);
 void thread_insert_ordered(struct list *lst, struct list_elem *elem);
 bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
-                             void *aux);
+                             void *aux UNUSED);
+
 /* Debug functions. */
 void print_run_queue(void);
 
