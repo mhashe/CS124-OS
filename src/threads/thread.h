@@ -31,6 +31,9 @@ typedef int tid_t;
 
 #define PRI_ORG_DEFAULT -1              /*!< Default priority for donation. */
 
+/* Value of thread->ticks_until_wake when not asleep */
+#define THREAD_AWAKE -1                     
+
 /* Thread niceness values. */
 #define NICE_MIN -20                    /*!< Lowest niceness. */
 #define NICE_INIT 0                     /*!< Niceness of init thread. */

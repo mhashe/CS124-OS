@@ -235,8 +235,8 @@ void thread_tick(void) {
                 &thread_update_recent_cpu, NULL);
 
             // DEBUG/PRINT:
-            printf("Load: %d\n", thread_get_load_avg());
-            printf("All priorities: "); print_all_priorities();
+            // printf("Load: %d\n", thread_get_load_avg());
+            // printf("All priorities: "); print_all_priorities();
         }
 
         // Update priority for all threads every four timer ticks
@@ -251,7 +251,7 @@ void thread_tick(void) {
 
     /* Add threads to ready queue that have been blocked and are due to be 
     woken up. */
-    thread_foreach((thread_action_func *) &wake_thread, NULL);
+    // thread_foreach((thread_action_func *) &wake_thread, NULL);
 }
 
 /* If thread is blocked, checks if it has a timer interrupt. If it does, it 
@@ -493,7 +493,7 @@ void thread_set_priority(int new_priority) {
 
     /* If new_priority has less priority than old_priority, then check if 
     ready queue has a has a higher priority thread than it and yield if so. */
-    if (new_priority < old_priority) {
+    if ((new_priority < old_priority) && !list_empty(&ready_list)) {
         if (thread_get_ready_front()->priority > new_priority) {
             // TODO: does disabling interrupts prevent intr_contect() from being true?
             if (intr_context()) {
