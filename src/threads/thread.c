@@ -481,12 +481,31 @@ void thread_set_priority(int new_priority) {
 
     /* Retreive old priority and set new priority. */
     int old_priority = thread_current()->priority;
-    thread_current()->priority = new_priority;
+    thread_current()->org_pri = new_priority; /* Change base priority. */
+    
+    /* TODO: Method as written doesn't work for multiple priorities for
+       multiple different locks. This might not be necessary? */
+    if (!thread_current()->donated) {
+        /* Highest priority is base priority. */
+        if (new_priority > thread_current()->floor_pri) {
+            /* New priority is higher than any donated priority .*/
+            thread_current()->priority = new_priority;
+        } else {
+            /* Old priority was higher than donated priority, but not
+               anymore. */
+            thread_current()->priority = thread_current()->floor_pri;
+            thread_current()->donated = true;
+        }
+    } else if (new_priority > thread_current()->priority) {
+        /* Donated priority, but this is still higher. */
+        thread_current()->priority = new_priority;
+        thread_current()->donated = false;
+    } /* else: donated priority still higher. */
 
     /* If new_priority has less priority than old_priority, then check if 
     ready queue has a has a higher priority thread than it and yield if so. */
-    if (old_priority > new_priority) {
-        if (thread_get_ready_front()->priority > new_priority) {
+    if (old_priority > thread_current()->priority) {
+        if (thread_get_ready_front()->priority > thread_current()->priority) {
             // TODO: does disabling interrupts prevent intr_contect() from being true?
             if (intr_context()) {
                 intr_yield_on_return();
@@ -673,6 +692,9 @@ static void init_thread(struct thread *t, const char *name, int priority) {
 
     // TODO: ignore the priority argument when thread_mlfqs is true
     t->priority = priority;
+    t->org_pri = priority;
+    t->floor_pri = 0;
+    t->donated = false;
 
     // TODO: should we set nice value here as safety? it isn't currently set 
     // different in thread_init() and thread_create() for different reasons

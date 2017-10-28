@@ -116,11 +116,17 @@ struct thread {
     char name[16];                      /*!< Name (for debugging purposes). */
     uint8_t *stack;                     /*!< Saved stack pointer. */
     int priority;                       /*!< Priority. */
+    struct list_elem allelem;           /*!< List element for all threads list. */
+    /**@}*/
+
+    /* User-added stuff, comment later. */
     int64_t ticks_until_wake;           /*!< Ticks until done sleeping. */
     int nice;                           /*!< Nice value. */
     fixedp recent_cpu;                  /*!< Recent cpu time. */
-    struct list_elem allelem;           /*!< List element for all threads list. */
-    /**@}*/
+
+    int org_pri;                        /* Original priority. */
+    int floor_pri;                      /* Donated priority, even if lower than true priority. */
+    bool donated;                       /* Bool, telling if priority has been donated. */
 
     /*! Shared between thread.c and synch.c. */
     /**@{*/
