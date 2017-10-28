@@ -498,13 +498,25 @@ void thread_set_priority(int new_priority) {
     old_level = intr_disable();
 
     int old_priority = thread_current()->priority;
-    thread_current()->priority = new_priority;
+    /* Check if thread has had priority donated to it. */
+    if (thread_current()->priority_org != PRI_ORG_DEFAULT) {
+        /* Priority has been donated. */
+        if (new_priority > thread_current()->priority) {
+            thread_current()->priority_org = PRI_ORG_DEFAULT;
+            thread_current()->priority = new_priority;
+        } else {
+            thread_current()->priority_org = new_priority;
+        }
+
+    } else {
+        thread_current()->priority = new_priority;
+    }
 
     /* If new_priority has less priority than old_priority, then check if 
     ready queue has a has a higher priority thread than it and yield if so. */
     if ((new_priority < old_priority) && !list_empty(&ready_list)) {
         if (thread_get_ready_front()->priority > new_priority) {
-            // TODO: does disabling interrupts prevent intr_contect() from being true?
+            // TODO: does disabling interrupts prevent intr_context() from being true?
             if (intr_context()) {
                 intr_yield_on_return();
             } else {
