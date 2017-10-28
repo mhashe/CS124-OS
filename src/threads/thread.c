@@ -139,17 +139,6 @@ void thread_init(void) {
 
     ///////
     load_avg = fixedp_from_int(INIT_LOAD_AVG);
-
-    load_avg_momentum = fixedp_divide(
-        fixedp_subtract(fixedp_from_int(LOAD_AVG_PERIOD), 
-                fixedp_from_int(RECALC_PERIOD)
-            ), LOAD_AVG_PERIOD);
-
-    load_avg_decay = fixedp_divide(
-                fixedp_from_int(RECALC_PERIOD),
-                fixedp_from_int(LOAD_AVG_PERIOD)
-            );
-
     ///////
 
     /* Set up a thread structure for the running thread. */
@@ -200,6 +189,18 @@ void thread_tick(void) {
     // from facing the scheduler unnecessarily?
     if (++thread_ticks >= TIME_SLICE)
         intr_yield_on_return();
+
+    /* In mlfqs mode, update update load_avg and recent_cpu every RECALC period 
+    (one second). */
+    if (thread_mlfqs && ((thread_ticks % RECALC_PERIOD) == 0)) {
+        // Calculate load average
+        load_avg = fixedp_multiply(LOAD_AVG_MOMENTUM, load_avg);
+        load_avg = fixedp_add(load_avg,
+            fixedp_multiply(LOAD_AVG_DECAY, thread_get_num_ready()));
+
+        // Calculate cpu time
+
+    }
 
     /* Add threads to ready queue that have been blocked and are due to be 
     woken up. */
@@ -493,29 +494,16 @@ static void thread_set_priority_from_nice(struct thread *t UNUSED) {
 
 /*! Returns 100 times the system load average. */
 int thread_get_load_avg(void) {
-    // TODO: abstract out the constants of this equation as globals
-    load_avg = fixedp_multiply(LOAD_AVG_MOMENTUM, load_avg);
-    load_avg = fixedp_multiply(LOAD_AVG_DECAY, )
-        , 
-            load_avg
-        );
-    load_avg = fixedp_add(load_avg,
-        fixedp_multiply(
-            fixedp_divide(
-                fixedp_from_int(RECALC_PERIOD),
-                fixedp_from_int(LOAD_AVG_PERIOD)
-            ),
-            ready_threads)
-        );
-
-
-    ((LOAD_AVG_PERIOD - RECALC_PERIOD) / RECALC_PERIOD) * load_avg + (RECALC_PERIOD / LOAD_AVG_PERIOD) * ready_threads
-    /* Not yet implemented. */
-    return 0;
+    return fixedp_to_int_nearest(fixedp_multiply_with_int(
+        load_avg, 100));
 }
 
 static int thread_get_num_ready_threads(void) {
 
+}
+
+static void thread_update_recent_cpu(struct thread *t UNUSED) {
+    // TODO: recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice
 }
 
 /*! Returns 100 times the current thread's recent_cpu value. */
