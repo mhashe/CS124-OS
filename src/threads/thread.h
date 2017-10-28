@@ -34,6 +34,11 @@ typedef int tid_t;
 #define NICE_INIT 0                     /*!< Niceness of init thread. */
 #define NICE_MAX 20                     /*!< Highest niceness. */
 
+/* Multi-level feedback queue scheduling. */
+#define RECALC_PERIOD 100  // number of ticks
+#define INIT_LOAD_AVG 0
+#define LOAD_AVG_PERIOD 60000 // number of ticks
+
 /*! A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -105,6 +110,7 @@ struct thread {
     int priority;                       /*!< Priority. */
     int64_t ticks_until_wake;           /*!< Ticks until done sleeping. */
     int nice;                           /*!< Nice value. */
+    fixedp recent_cpu;                  /*!< Recent cpu time. */
     struct list_elem allelem;           /*!< List element for all threads list. */
     /**@}*/
 

@@ -53,6 +53,9 @@ static long long user_ticks;    /*!< # of timer ticks in user programs. */
 #define TIME_SLICE 4            /*!< # of timer ticks to give each thread. */
 static unsigned thread_ticks;   /*!< # of timer ticks since last yield. */
 
+/* Multi-level feedback queue scheduling. */
+static fixedp load_avg;
+
 /*! If false (default), use round-robin scheduler.
     If true, use multi-level feedback queue scheduler.
     Controlled by kernel command-line option "-o mlfqs". */
@@ -134,6 +137,21 @@ void thread_init(void) {
     list_init(&ready_list);
     list_init(&all_list);
 
+    ///////
+    load_avg = fixedp_from_int(INIT_LOAD_AVG);
+
+    load_avg_momentum = fixedp_divide(
+        fixedp_subtract(fixedp_from_int(LOAD_AVG_PERIOD), 
+                fixedp_from_int(RECALC_PERIOD)
+            ), LOAD_AVG_PERIOD);
+
+    load_avg_decay = fixedp_divide(
+                fixedp_from_int(RECALC_PERIOD),
+                fixedp_from_int(LOAD_AVG_PERIOD)
+            );
+
+    ///////
+
     /* Set up a thread structure for the running thread. */
     initial_thread = running_thread();
     init_thread(initial_thread, "main", PRI_DEFAULT);
@@ -175,8 +193,11 @@ void thread_tick(void) {
 #endif
     else
         kernel_ticks++;
+    // TODO: update all priorities in for mlfq mode here and prevent 
+    // this from being interrupted.
 
-    /* Enforce preemption. */
+    /* Enforce preemption. */ // TODO: Should we avoid a high priority thread 
+    // from facing the scheduler unnecessarily?
     if (++thread_ticks >= TIME_SLICE)
         intr_yield_on_return();
 
@@ -432,7 +453,7 @@ void thread_set_priority(int new_priority) {
 
 /*! Returns the current thread's priority. */
 int thread_get_priority(void) {
-    // TODO: confirm that this still holds in mlfqs
+    // TODO: confirm that this still holds in mlfqs?
     return thread_current()->priority;
 }
 
@@ -462,7 +483,6 @@ void thread_set_nice(int nice) {
 
 /*! Returns the current thread's nice value. */
 int thread_get_nice(void) {
-    /* Not yet implemented. */
     return thread_current()->nice;
 }
 
@@ -473,14 +493,30 @@ static void thread_set_priority_from_nice(struct thread *t UNUSED) {
 
 /*! Returns 100 times the system load average. */
 int thread_get_load_avg(void) {
+    // TODO: abstract out the constants of this equation as globals
+    load_avg = fixedp_multiply(
+        , 
+            load_avg
+        );
+    load_avg = fixedp_add(load_avg,
+        fixedp_multiply(
+            fixedp_divide(
+                fixedp_from_int(RECALC_PERIOD),
+                fixedp_from_int(LOAD_AVG_PERIOD)
+            ),
+            ready_threads)
+        );
+
+
+    ((LOAD_AVG_PERIOD - RECALC_PERIOD) / RECALC_PERIOD) * load_avg + (RECALC_PERIOD / LOAD_AVG_PERIOD) * ready_threads
     /* Not yet implemented. */
     return 0;
 }
 
 /*! Returns 100 times the current thread's recent_cpu value. */
 int thread_get_recent_cpu(void) {
-    /* Not yet implemented. */
-    return 0;
+    return fixedp_to_int_nearest(fixedp_multiply_with_int(
+        thread_current()->recent_cpu, 100));
 }
 
 /*! Idle thread.  Executes when no other thread is ready to run.
