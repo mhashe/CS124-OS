@@ -205,8 +205,7 @@ void thread_tick(void) {
 
     enum intr_level old_level;
     old_level = intr_disable();
-
-    intr_set_level(old_level);
+    
     /* Enforce preemption. */ // TODO: Should we avoid a high priority thread 
     // from facing the scheduler unnecessarily?
     if (++thread_ticks >= TIME_SLICE)
@@ -230,6 +229,9 @@ void thread_tick(void) {
             // Calculate recent cpu for all threads
             thread_foreach((thread_action_func *) 
                 &thread_update_recent_cpu, NULL);
+
+            // DEBUG/PRINT:
+            printf("All priorities: "); print_all_priorities();
         }
 
         // Update priority for all threads every four timer ticks
@@ -237,10 +239,6 @@ void thread_tick(void) {
             thread_foreach((thread_action_func *) 
                 &thread_update_priority_in_mlfqs, NULL);
         }
-
-        // DEBUG/PRINT:
-        printf("All priorities: "); print_all_priorities();
-
     }
 
     intr_set_level(old_level);
