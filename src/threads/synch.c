@@ -204,12 +204,20 @@ void lock_init(struct lock *lock) {
     interrupts disabled, but interrupts will be turned back on if
     we need to sleep. */
 void lock_acquire(struct lock *lock) {
+    bool success;
+
     ASSERT(lock != NULL);
     ASSERT(!intr_context());
     ASSERT(!lock_held_by_current_thread(lock));
 
     sema_down(&lock->semaphore);
     lock->holder = thread_current();
+    // success = sema_try_down(&lock->semaphore);
+    // if (success) {
+    //     lock->holder = thread_current();
+    // } else {
+        
+    // }
 }
 
 /*! Tries to acquires LOCK and returns true if successful or false

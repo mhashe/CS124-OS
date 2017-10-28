@@ -440,12 +440,19 @@ void thread_set_priority(int new_priority) {
 
     /* Retreive old priority and set new priority. */
     int old_priority = thread_current()->priority;
-    thread_current()->priority = new_priority;
+    thread_current()->org_pri = new_priority; /* Change base priority. */
+    
+    /* Only change current (potentially donated) priority if higher. */
+    /* TODO: Method as written doesn't work for multiple priorities for
+       multiple different locks. This might not be necessary? */
+    if (thread_current()->priority < new_priority) {
+        thread_current()->priority = new_priority;
+    }
 
     /* If old priority has a lower priority than new priority, then check if 
     ready queue has a has a higher priority thread than it and yield if so. */
-    if (old_priority > new_priority) {
-        if (thread_get_ready_front()->priority > new_priority) {
+    if (old_priority > thread_current()->priority) {
+        if (thread_get_ready_front()->priority > thread_current()->priority) {
             // TODO: does disabling interrupts prevent intr_contect() from being true?
             if (intr_context()) {
                 intr_yield_on_return();
@@ -608,6 +615,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
 
     // TODO: ignore the priority argument when thread_mlfqs is true
     t->priority = priority;
+    t->org_pri = priority;
 
     // TODO: should we set nice value here as safety? it isn't currently set 
     // different in thread_init() and thread_create() for different reasons
