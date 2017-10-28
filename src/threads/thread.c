@@ -85,7 +85,7 @@ static void wake_thread(struct thread *t, void *aux UNUSED);
 /* Multi-level feedback queue scheduling */
 static void thread_update_priority_in_mlfqs(struct thread *t, void *aux UNUSED);
 static void thread_update_recent_cpu(struct thread *t, void *aux UNUSED);
-static int thread_get_num_ready(void);
+static int thread_get_num_ready_and_run(void);
 
 
 static void print_run_queue(void) {
@@ -205,7 +205,7 @@ void thread_tick(void) {
 
     enum intr_level old_level;
     old_level = intr_disable();
-    
+
     /* Enforce preemption. */ // TODO: Should we avoid a high priority thread 
     // from facing the scheduler unnecessarily?
     if (++thread_ticks >= TIME_SLICE)
@@ -224,13 +224,14 @@ void thread_tick(void) {
             // Calculate load average
             load_avg = fixedp_multiply(LOAD_AVG_MOMENTUM, load_avg);
             load_avg = fixedp_add(load_avg,
-                fixedp_multiply_with_int(LOAD_AVG_DECAY, thread_get_num_ready()));
+                fixedp_multiply_with_int(LOAD_AVG_DECAY, thread_get_num_ready_and_run()));
 
             // Calculate recent cpu for all threads
             thread_foreach((thread_action_func *) 
                 &thread_update_recent_cpu, NULL);
 
             // DEBUG/PRINT:
+            printf("Load: %d\n", thread_get_load_avg());
             printf("All priorities: "); print_all_priorities();
         }
 
@@ -588,13 +589,18 @@ int thread_get_load_avg(void) {
         load_avg, 100));
 }
 
-/* Returns the number of threads in the ready_queue. This should not be 
-interrupted, and the calling function should take care of that. */
-int thread_get_num_ready(void) {
+/* Returns the number of threads either running or ready but not including 
+idle. This should not be interrupted, and the calling function should take 
+care of that. */
+int thread_get_num_ready_and_run(void) {
     int count = 0;
 
     struct list_elem *e;
     for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
+        count++;
+    }
+
+    if (thread_current() != idle_thread) {
         count++;
     }
 
