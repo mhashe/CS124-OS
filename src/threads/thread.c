@@ -335,8 +335,8 @@ void thread_unblock(struct thread *t) {
     t->status = THREAD_READY;
 
     intr_set_level(old_level);
-    print_run_queue();
-    printf("%d\n", thread_get_num_ready());
+    // print_run_queue();
+    // printf("%d\n", thread_get_num_ready());
     // printf("!UNBLOCK\n");
 }
 
