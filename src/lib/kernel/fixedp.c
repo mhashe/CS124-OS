@@ -51,7 +51,7 @@ fixedp fixedp_multiply(fixedp x, fixedp y) {
 }
 
 
-fixedp fixedp_multiple_with_int(fixedp x, int n) {
+fixedp fixedp_multiply_with_int(fixedp x, int n) {
     return x * n;
 }
 
@@ -65,6 +65,3 @@ fixedp fixedp_divide_by_int (fixedp x, int n) {
     return x / n;
 }
 
-// int main(void) {
-//     return 0;
-// }
