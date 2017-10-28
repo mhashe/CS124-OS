@@ -119,8 +119,8 @@ struct thread {
     int nice;                           /*!< Nice value. */
     fixedp recent_cpu;                  /*!< Recent cpu time. */
 
-    /* Original priority. */
-    int org_pri;
+    int org_pri;                        /* Original priority. */
+    bool donated;                       /* Bool, telling if priority has been donated. */
 
     /*! Shared between thread.c and synch.c. */
     /**@{*/
