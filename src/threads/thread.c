@@ -80,6 +80,7 @@ static bool thread_queue_compare(const struct list_elem *a,
 static void print_run_queue(void);
 static struct thread * thread_get_ready_front(void);
 static void thread_wake(struct thread *t, void *aux UNUSED);
+static void thread_defer_to_max_priority(int old_priority);
 
 /* Multi-level feedback queue scheduling */
 static void thread_update_mlfqs_state(void);
@@ -169,7 +170,7 @@ void thread_init(void) {
     if (thread_mlfqs) {
         initial_thread->nice = NICE_INIT;
         initial_thread->recent_cpu = fixedp_from_int(RECENT_CPU_INIT);
-        thread_update_priority_in_mlfqs(initial_thread, NULL); // TODO: DC this is here
+        thread_update_priority_in_mlfqs(initial_thread, NULL);
     }
 }
 
@@ -336,9 +337,6 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
         t->recent_cpu = thread_current()->recent_cpu;
         thread_update_priority_in_mlfqs(thread_current(), NULL);
     }
-
-    // TODO: should we not do this when not in mlfq mode?
-    // TODO: use thread_update_priority_in_mlfqs in mlfqs mode to set priority?
 
     /* Stack frame for kernel_thread(). */
     kf = alloc_frame(t, sizeof *kf);
@@ -512,6 +510,19 @@ void thread_set_priority(int new_priority) {
         thread_current()->priority = new_priority;
     }
 
+    thread_defer_to_max_priority(old_priority);
+
+    // TODO: if user raises priority, do we need to trigger donations?
+
+    intr_set_level(old_level);
+}
+
+/* Yields the cpu if the new priority of the current thread is lowered and 
+is now less than the priority at the fron the of ready queue. This should 
+not be interrupted, and the calling function should take care of that. */
+static void thread_defer_to_max_priority(int old_priority) {
+    int new_priority = thread_current()->priority;
+
     /* If new_priority has less priority than old_priority, then check if 
     ready queue has a has a higher priority thread than it and yield if so. */
     if ((new_priority < old_priority) && !list_empty(&ready_list)) {
@@ -524,8 +535,6 @@ void thread_set_priority(int new_priority) {
             }
         }
     }
-
-    intr_set_level(old_level);
 }
 
 /*! Returns the current thread's priority. */
@@ -553,9 +562,11 @@ void thread_set_nice(int nice) {
     thread_current()->nice = nice;
 
     /* Set thread priority according to nice value. */
+    int old_priority = thread_current()->priority;
     thread_update_priority_in_mlfqs(thread_current(), NULL);
+
     /* If the running thread no long has the highest priority, yield. */
-    // TODO. Abstract out this existing implementation in thread_set_priority()?
+    thread_defer_to_max_priority(old_priority);
 
     intr_set_level(old_level);
 }
@@ -711,9 +722,6 @@ static void init_thread(struct thread *t, const char *name, int priority) {
         t->priority_org = PRI_ORG_DEFAULT;
         t->elevated_lock = NULL;
     }
-
-    // TODO: should we set nice value here as safety? it isn't currently set 
-    // different in thread_init() and thread_create() for different reasons
 
     /* Initially, a thread does not need to be woken up at some time. */
     t->ticks_until_wake = THREAD_AWAKE;
