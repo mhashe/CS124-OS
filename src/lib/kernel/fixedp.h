@@ -8,6 +8,8 @@
 /* A fixed point number, i.e. a number scaled by fp_f. */
 typedef int fixedp;
 
+// #define load_mom fixedp_divide(fixedp_from_int(59), fixedp_from_int(60))
+
 
 /* Converts int into fixed-point by scaling up. */
 fixedp fixedp_from_int(int n);

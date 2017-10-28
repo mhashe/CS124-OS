@@ -57,7 +57,7 @@ fixedp fixedp_multiple_with_int(fixedp x, int n) {
 
 
 fixedp fixedp_divide(fixedp x, fixedp y) {
-    return ((int64_t) x) * y / fp_f;
+    return ((int64_t) x) * fp_f / y;
 }
 
 
@@ -65,3 +65,6 @@ fixedp fixedp_divide_by_int (fixedp x, int n) {
     return x / n;
 }
 
+// int main(void) {
+//     return 0;
+// }
