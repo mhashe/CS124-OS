@@ -81,7 +81,7 @@ static void thread_insert_ordered(struct list *lst, struct list_elem *elem);
 static struct thread * thread_get_ready_front(void);
 static void wake_thread(struct thread *t, void *aux UNUSED);
 static void thread_set_priority_from_nice(struct thread *t);
-static int thread_get_num_ready_threads(void);
+static int thread_get_num_ready(void);
 
 static void print_run_queue(void) {
     struct list_elem *e;
@@ -137,20 +137,8 @@ void thread_init(void) {
     list_init(&ready_list);
     list_init(&all_list);
 
-    ///////
+    /* Set initial average load. */
     load_avg = fixedp_from_int(INIT_LOAD_AVG);
-
-    load_avg_momentum = fixedp_divide(
-        fixedp_subtract(fixedp_from_int(LOAD_AVG_PERIOD), 
-                fixedp_from_int(RECALC_PERIOD)
-            ), LOAD_AVG_PERIOD);
-
-    load_avg_decay = fixedp_divide(
-                fixedp_from_int(RECALC_PERIOD),
-                fixedp_from_int(LOAD_AVG_PERIOD)
-            );
-
-    ///////
 
     /* Set up a thread structure for the running thread. */
     initial_thread = running_thread();
@@ -335,7 +323,8 @@ void thread_unblock(struct thread *t) {
     t->status = THREAD_READY;
 
     intr_set_level(old_level);
-    // print_run_queue();
+    print_run_queue();
+    printf("%d\n", thread_get_num_ready());
     // printf("!UNBLOCK\n");
 }
 
@@ -514,8 +503,15 @@ int thread_get_load_avg(void) {
     return 0;
 }
 
-static int thread_get_num_ready_threads(void) {
+int thread_get_num_ready(void) {
+    int count = 0;
 
+    struct list_elem *e;
+    for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
+        count++;
+    }
+
+    return count;
 }
 
 /*! Returns 100 times the current thread's recent_cpu value. */
