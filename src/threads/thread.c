@@ -81,8 +81,10 @@ static void thread_insert_ordered(struct list *lst, struct list_elem *elem);
 static struct thread * thread_get_ready_front(void);
 static void wake_thread(struct thread *t, void *aux UNUSED);
 static void thread_set_priority_from_nice(struct thread *t);
-static int thread_get_num_ready_threads(void);
+
 static void thread_update_recent_cpu(struct thread *t);
+static int thread_get_num_ready(void);
+
 
 static void print_run_queue(void) {
     struct list_elem *e;
@@ -138,7 +140,7 @@ void thread_init(void) {
     list_init(&ready_list);
     list_init(&all_list);
 
-    /////// Comment
+    /* Set constants for mflq scheduler. */
     load_avg = fixedp_from_int(INIT_LOAD_AVG);
 
     /* Set up a thread structure for the running thread. */
@@ -201,7 +203,7 @@ void thread_tick(void) {
         // Calculate cpu time
         thread_update_recent_cpu(thread_current());
 
-        printf("Load avg: %d, Current recent cpu: %d", thread_get_load_avg();
+        printf("Load avg: %d, Current recent cpu: %d", thread_get_load_avg(),
             thread_get_recent_cpu());
     }
 
@@ -339,7 +341,8 @@ void thread_unblock(struct thread *t) {
     t->status = THREAD_READY;
 
     intr_set_level(old_level);
-    // print_run_queue();
+    print_run_queue();
+    printf("%d\n", thread_get_num_ready());
     // printf("!UNBLOCK\n");
 }
 
@@ -501,8 +504,15 @@ int thread_get_load_avg(void) {
         load_avg, 100));
 }
 
-static int thread_get_num_ready_threads(void) {
+int thread_get_num_ready(void) {
+    int count = 0;
 
+    struct list_elem *e;
+    for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
+        count++;
+    }
+
+    return count;
 }
 
 /* Updates the recent_cpu value for thread t. This should not be interrupted, 
