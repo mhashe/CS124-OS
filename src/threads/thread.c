@@ -94,7 +94,7 @@ static void print_run_queue(void) {
    B. */
 static bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
-                             void *aux UNUSED) {
+                             void *aux UNUSED) {    
     struct thread *ta = list_entry(a, struct thread, elem);
     struct thread *tb = list_entry(b, struct thread, elem);
     return ta->priority > tb->priority;
