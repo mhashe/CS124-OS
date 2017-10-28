@@ -74,11 +74,10 @@ static void schedule(void);
 void thread_schedule_tail(struct thread *prev);
 static tid_t allocate_tid(void);
 
-static void print_run_queue(void);
-bool thread_queue_compare(const struct list_elem *a,
+static bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
                              void *aux UNUSED);
-static void thread_insert_ordered(struct list *lst, struct list_elem *elem);
+static void print_run_queue(void);
 static struct thread * thread_get_ready_front(void);
 static void wake_thread(struct thread *t, void *aux UNUSED);
 
@@ -90,9 +89,10 @@ static int thread_get_num_ready_and_run(void);
 
 static void print_run_queue(void) {
     struct list_elem *e;
+    printf("READY_QUEUE: \n");
     for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
         struct thread *t = list_entry(e, struct thread, elem);
-        printf("%d ", t->priority);
+        printf("%s(%d) ", t->name, t->priority);
     }
     printf("\n");
 }
@@ -109,7 +109,7 @@ static void print_all_priorities(void) {
 /* Compares the value of two list elements A and B, given auxiliary data AUX.
    Returns true if A is greater than B, or false if A is less than or equal to
    B. */
-bool thread_queue_compare(const struct list_elem *a,
+static bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
                              void *aux UNUSED) {    
     struct thread *ta = list_entry(a, struct thread, elem);
@@ -120,11 +120,15 @@ bool thread_queue_compare(const struct list_elem *a,
 
 /* Inserts a thread elem into a list of threads (ie. ready_list) in order 
  or priority such that front is the highest priority. */
-static inline void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
-    // printf("INSERT\n");
+inline void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
+    // printf("INSERT %s\n", list_entry(elem, struct thread, elem)->name);
     list_insert_ordered (lst, elem,
                          (list_less_func*) thread_queue_compare, NULL);
     // printf("!INSERT\n");
+}
+
+void sort_ready_list(void) {
+    list_sort(&ready_list, (list_less_func*) thread_queue_compare, NULL);
 }
 
 /* Returns the thread at the front of the ready queue without popping it. */
@@ -359,7 +363,7 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     This function must be called with interrupts turned off.  It is usually a
     better idea to use one of the synchronization primitives in synch.h. */
 void thread_block(void) {
-    // printf("BLOCK\n");
+    // printf("%s:BLOCK %s\n", thread_current()->name, thread_current()->name);
     ASSERT(!intr_context());
     ASSERT(intr_get_level() == INTR_OFF);
 
@@ -374,7 +378,7 @@ void thread_block(void) {
     if the caller had disabled interrupts itself, it may expect that it can
     atomically unblock a thread and update other data. */
 void thread_unblock(struct thread *t) {
-    // printf("UNBLOCK\n");
+    // printf("%s:UNBLOCK %s\n", thread_current()->name, t->name);
     enum intr_level old_level;
 
     ASSERT(is_thread(t));
@@ -474,6 +478,8 @@ void thread_set_priority(int new_priority) {
     /* A thread in the mlfqs mode cannot set its priority directly. */
     if (thread_mlfqs)
         return;
+    
+    // printf("%s:SET %d\n", thread_current()->name, new_priority);
 
     /* Make sure that new priority is a valid priority. */
     ASSERT(PRI_MIN <= new_priority && new_priority <= PRI_MAX);
@@ -482,33 +488,13 @@ void thread_set_priority(int new_priority) {
     enum intr_level old_level;
     old_level = intr_disable();
 
-    /* Retreive old priority and set new priority. */
     int old_priority = thread_current()->priority;
-    thread_current()->org_pri = new_priority; /* Change base priority. */
-    
-    /* TODO: Method as written doesn't work for multiple priorities for
-       multiple different locks. This might not be necessary? */
-    if (!thread_current()->donated) {
-        /* Highest priority is base priority. */
-        if (new_priority > thread_current()->floor_pri) {
-            /* New priority is higher than any donated priority .*/
-            thread_current()->priority = new_priority;
-        } else {
-            /* Old priority was higher than donated priority, but not
-               anymore. */
-            thread_current()->priority = thread_current()->floor_pri;
-            thread_current()->donated = true;
-        }
-    } else if (new_priority > thread_current()->priority) {
-        /* Donated priority, but this is still higher. */
-        thread_current()->priority = new_priority;
-        thread_current()->donated = false;
-    } /* else: donated priority still higher. */
+    thread_current()->priority = new_priority;
 
     /* If new_priority has less priority than old_priority, then check if 
     ready queue has a has a higher priority thread than it and yield if so. */
-    if (old_priority > thread_current()->priority) {
-        if (thread_get_ready_front()->priority > thread_current()->priority) {
+    if (new_priority < old_priority) {
+        if (thread_get_ready_front()->priority > new_priority) {
             // TODO: does disabling interrupts prevent intr_contect() from being true?
             if (intr_context()) {
                 intr_yield_on_return();
@@ -686,7 +672,7 @@ static bool is_thread(struct thread *t) {
 
 /*! Does basic initialization of T as a blocked thread named NAME. */
 static void init_thread(struct thread *t, const char *name, int priority) {
-    // printf("INIT\n");
+    // printf("INIT %s\n", name);
     enum intr_level old_level;
 
     ASSERT(t != NULL);
@@ -700,9 +686,8 @@ static void init_thread(struct thread *t, const char *name, int priority) {
 
     // TODO: ignore the priority argument when thread_mlfqs is true
     t->priority = priority;
-    t->org_pri = priority;
-    t->floor_pri = 0;
-    t->donated = false;
+    t->priority_org = PRI_ORG_DEFAULT;
+    t->elevated_lock = NULL;
 
     // TODO: should we set nice value here as safety? it isn't currently set 
     // different in thread_init() and thread_create() for different reasons

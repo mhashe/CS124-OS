@@ -29,6 +29,8 @@ typedef int tid_t;
 #define PRI_DEFAULT 31                  /*!< Default priority. */
 #define PRI_MAX 63                      /*!< Highest priority. */
 
+#define PRI_ORG_DEFAULT -1              /*!< Default priority for donation. */
+
 /* Thread niceness values. */
 #define NICE_MIN -20                    /*!< Lowest niceness. */
 #define NICE_INIT 0                     /*!< Niceness of init thread. */
@@ -124,9 +126,9 @@ struct thread {
     int nice;                           /*!< Nice value. */
     fixedp recent_cpu;                  /*!< Recent cpu time. */
 
-    int org_pri;                        /* Original priority. */
-    int floor_pri;                      /* Donated priority, even if lower than true priority. */
-    bool donated;                       /* Bool, telling if priority has been donated. */
+    int priority_org;                   /*!< Stores original priority when
+                                             when elevated. */
+    struct lock *elevated_lock;         /*!< Lock which priority was donated. */
 
     /*! Shared between thread.c and synch.c. */
     /**@{*/
@@ -183,9 +185,8 @@ void thread_set_nice(int);
 int thread_get_recent_cpu(void);
 int thread_get_load_avg(void);
 
-bool thread_queue_compare(const struct list_elem *a,
-                             const struct list_elem *b,
-                             void *aux UNUSED);
+void thread_insert_ordered(struct list *lst, struct list_elem *elem);
+void sort_ready_list(void);
 
 
 #endif /* threads/thread.h */
