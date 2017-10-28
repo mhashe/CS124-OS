@@ -54,7 +54,7 @@ static long long user_ticks;    /*!< # of timer ticks in user programs. */
 #define TIME_SLICE 4            /*!< # of timer ticks to give each thread. */
 static unsigned thread_ticks;   /*!< # of timer ticks since last yield. */
 
-/* Multi-level feedback queue scheduling. */
+/* Multi-level feedback queue scheduling */
 static fixedp load_avg;
 
 /*! If false (default), use round-robin scheduler.
@@ -82,12 +82,22 @@ static void thread_insert_ordered(struct list *lst, struct list_elem *elem);
 static struct thread * thread_get_ready_front(void);
 static void wake_thread(struct thread *t, void *aux UNUSED);
 
-static void thread_update_priority_in_mlfqs(struct thread *t);
-static void thread_update_recent_cpu(struct thread *t);
+/* Multi-level feedback queue scheduling */
+static void thread_update_priority_in_mlfqs(struct thread *t, void *aux UNUSED);
+static void thread_update_recent_cpu(struct thread *t, void *aux UNUSED);
 static int thread_get_num_ready(void);
 
 
 static void print_run_queue(void) {
+    struct list_elem *e;
+    for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
+        struct thread *t = list_entry(e, struct thread, elem);
+        printf("%d ", t->priority);
+    }
+    printf("\n");
+}
+
+static void print_all_priorities(void) {
     struct list_elem *e;
     for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
         struct thread *t = list_entry(e, struct thread, elem);
@@ -110,7 +120,7 @@ bool thread_queue_compare(const struct list_elem *a,
 
 /* Inserts a thread elem into a list of threads (ie. ready_list) in order 
  or priority such that front is the highest priority. */
-static void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
+static inline void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
     // printf("INSERT\n");
     list_insert_ordered (lst, elem,
                          (list_less_func*) thread_queue_compare, NULL);
@@ -118,7 +128,7 @@ static void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
 }
 
 /* Returns the thread at the front of the ready queue without popping it. */
-static struct thread * thread_get_ready_front(void) {
+static inline struct thread * thread_get_ready_front(void) {
     return list_entry(list_front(&ready_list), struct thread, elem);
 }
 
@@ -147,6 +157,7 @@ void thread_init(void) {
     /* The initial thread has a nice and recent_cpu values of zero. */
     initial_thread->nice = NICE_INIT;
     initial_thread->recent_cpu = fixedp_from_int(RECENT_CPU_INIT);
+    thread_update_priority_in_mlfqs(thread_current(), NULL); // TODO: DC this is here
 
     /* Set up a thread structure for the running thread. */
     initial_thread = running_thread();
@@ -199,16 +210,34 @@ void thread_tick(void) {
     if (++thread_ticks >= TIME_SLICE)
         intr_yield_on_return();
 
-    /* In mlfqs mode, update update load_avg and recent_cpu every RECALC period 
-    (one second). */
-    if (thread_mlfqs && (timer_ticks() % RECALC_PERIOD == 0)) {
-        // Calculate load average
-        load_avg = fixedp_multiply(LOAD_AVG_MOMENTUM, load_avg);
-        load_avg = fixedp_add(load_avg,
-            fixedp_multiply_with_int(LOAD_AVG_DECAY, thread_get_num_ready()));
+    /* Recalculate (priority, recent_cpu, and load_avg) used in mlfqs mode. */
+    if (thread_mlfqs) {
+        /* Increment recent_cpu by 1 for running thread every interrupt. */
+        if (thread_current() != idle_thread) {
+            thread_current()->recent_cpu = fixedp_add_with_int(
+                thread_current()->recent_cpu, 1);
+        }
 
-        // Calculate cpu time
-        thread_update_recent_cpu(thread_current());
+        /* Update load_avg and recent_cpu once per second. */
+        if (timer_ticks() % TIMER_FREQ == 0) {
+            // Calculate load average
+            load_avg = fixedp_multiply(LOAD_AVG_MOMENTUM, load_avg);
+            load_avg = fixedp_add(load_avg,
+                fixedp_multiply_with_int(LOAD_AVG_DECAY, thread_get_num_ready()));
+
+            // Calculate recent cpu for all threads
+            thread_foreach((thread_action_func *) 
+                &thread_update_recent_cpu, NULL);
+        }
+
+        // Update priority for all threads every four timer ticks
+        if (timer_ticks() % PRI_RECALC_PERIOD == 0) {
+            thread_foreach((thread_action_func *) 
+                &thread_update_priority_in_mlfqs, NULL);
+        }
+
+        // DEBUG/PRINT:
+        printf("All priorities: "); print_all_priorities();
 
     }
 
@@ -286,10 +315,12 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     init_thread(t, name, priority);
     tid = t->tid = allocate_tid();
 
-    /* A threaded created (outside of the init thread) inherits its nice value 
-    from its parent. */
+    /* A threaded created (outside of the init thread) inherits its nice and 
+    recent_cpu values from its parent, and sets its priority from them. */
     initial_thread->nice = thread_get_nice();
     initial_thread->recent_cpu = thread_current()->recent_cpu;
+    thread_update_priority_in_mlfqs(thread_current(), NULL);
+
     // TODO: should we not do this when not in mlfq mode?
     // TODO: use thread_update_priority_in_mlfqs in mlfqs mode to set priority?
 
@@ -493,7 +524,7 @@ void thread_set_nice(int nice) {
     thread_current()->nice = nice;
 
     /* Set thread priority according to nice value. */
-    thread_update_priority_in_mlfqs(thread_current());
+    thread_update_priority_in_mlfqs(thread_current(), NULL);
     /* If the running thread no long has the highest priority, yield. */
     // TODO. Abstract out this existing implementation in thread_set_priority()?
 
@@ -511,7 +542,7 @@ int thread_get_nice(void) {
 /* Sets the priority of the thread using the thread's nice and recent_cpu 
 values. This should not be interrupted, and the calling function should take 
 care of that. */
-static void thread_update_priority_in_mlfqs(struct thread *t) {
+static void thread_update_priority_in_mlfqs(struct thread *t, void *aux UNUSED) {
     if (t == idle_thread)
         return;
 
@@ -551,7 +582,7 @@ int thread_get_num_ready(void) {
 
 /* Updates the recent_cpu value for thread t. This should not be interrupted, 
 and the calling function should take care of that. */
-static void thread_update_recent_cpu(struct thread *t) {
+static void thread_update_recent_cpu(struct thread *t, void *aux UNUSED) {
     // recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice
     fixedp twice_load_avg = fixedp_multiply_with_int(load_avg, 2);
     t->recent_cpu = fixedp_multiply(t->recent_cpu,

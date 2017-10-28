@@ -35,12 +35,17 @@ typedef int tid_t;
 #define NICE_MAX 20                     /*!< Highest niceness. */
 
 /* Multi-level feedback queue scheduling. */
-#define RECALC_PERIOD 100  // number of ticks in recalc period
+/* Number of ticks between recalculations of priority. */
+#define PRI_RECALC_PERIOD 4
+/* Initial values of load_avg and recent_cpu in initial thread. */
 #define LOAD_AVG_INIT 0
-#define RECENT_CPU_INIT 0   // initial value of recent_cpu for initial thread
-#define LOAD_AVG_PERIOD 60000 // number of ticks in load_average_period
-#define LOAD_AVG_MOMENTUM fixedp_divide(fixedp_from_int(LOAD_AVG_PERIOD - 1000), fixedp_from_int(LOAD_AVG_PERIOD))
-#define LOAD_AVG_DECAY    fixedp_divide(fixedp_from_int(1000),                   fixedp_from_int(LOAD_AVG_PERIOD))
+#define RECENT_CPU_INIT 0
+/* Number of ticks in interval used for averaging load into load_avg. */
+#define LOAD_AVG_PERIOD 6000
+/* Coefficient of momentum in calculating load_avg. */
+#define LOAD_AVG_MOMENTUM fixedp_divide(fixedp_from_int(LOAD_AVG_PERIOD - TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
+/* Coefficient of decay in calculating load_avg. */
+#define LOAD_AVG_DECAY    fixedp_divide(fixedp_from_int(TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 
 /*! A kernel thread or user process.
 
