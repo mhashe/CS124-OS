@@ -191,6 +191,9 @@ int thread_get_load_avg(void);
 void thread_insert_ordered(struct list *lst, struct list_elem *elem);
 void sort_ready_list(void);
 
+void print_run_queue(void);
+void print_all_priorities(void);
+
 
 #endif /* threads/thread.h */
 
