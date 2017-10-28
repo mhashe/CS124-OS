@@ -512,10 +512,22 @@ int thread_get_nice(void) {
 values. This should not be interrupted, and the calling function should take 
 care of that. */
 static void thread_update_priority_in_mlfqs(struct thread *t) {
+    if (t == idle_thread)
+        return;
+
     /* Set priority = PRI_MAX - (recent_cpu / 4) - (nice * 2) */
-    int cpu_penalty = fixedp_to_int_nearest(
-        fixedp_divide_by_int(t->recent_cpu, 4));
+    
+    // Ceil the penalty since we want priority to be "rounded down"
+    int cpu_penalty = fixedp_to_int_floored(
+        fixedp_divide_by_int(t->recent_cpu, 4)) + 1;
+
     t->priority = PRI_MAX - cpu_penalty - (t->nice * 2);
+
+    /* Priority should be bounded by PRI_MIN and PRI_MAX. */
+    if (t->priority < PRI_MIN)
+        t->priority = PRI_MIN;
+    else if (t->priority > PRI_MAX)
+        t->priority = PRI_MAX;
 }
 
 /*! Returns 100 times the system load average. */
