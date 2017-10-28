@@ -43,7 +43,7 @@ typedef int tid_t;
 /* Number of ticks between recalculations of priority. */
 #define PRI_RECALC_PERIOD 4
 /* Initial values of load_avg and recent_cpu in initial thread. */
-#define LOAD_AVG_INIT 3
+#define LOAD_AVG_INIT 0
 #define RECENT_CPU_INIT 0
 /* Number of ticks in interval used for averaging load into load_avg. */
 #define LOAD_AVG_PERIOD 6000
