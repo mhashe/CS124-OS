@@ -79,9 +79,10 @@ static bool thread_queue_compare(const struct list_elem *a,
                              void *aux UNUSED);
 static void print_run_queue(void);
 static struct thread * thread_get_ready_front(void);
-static void wake_thread(struct thread *t, void *aux UNUSED);
+static void thread_wake(struct thread *t, void *aux UNUSED);
 
 /* Multi-level feedback queue scheduling */
+static void thread_update_mlfqs_state(void);
 static void thread_update_priority_in_mlfqs(struct thread *t, void *aux UNUSED);
 static void thread_update_recent_cpu(struct thread *t, void *aux UNUSED);
 static int thread_get_num_ready_and_run(void);
@@ -203,9 +204,10 @@ void thread_tick(void) {
 #endif
     else
         kernel_ticks++;
-    
-    /* Update all priorities in for mlfq mode here and prevent 
-    this from being interrupted by disabling interrupts. */
+
+    /* Update all priorities in mlfq mode here and prevent this from being 
+    interrupted by disabling interrupts (include tick increment with priority 
+    update so a kernel never receives ticks that do not match priority). */
 
     enum intr_level old_level;
     old_level = intr_disable();
@@ -217,41 +219,15 @@ void thread_tick(void) {
 
     /* Recalculate (priority, recent_cpu, and load_avg) used in mlfqs mode. */
     if (thread_mlfqs) {
-        /* Increment recent_cpu by 1 for running thread every interrupt. */
-        if (thread_current() != idle_thread) {
-            thread_current()->recent_cpu = fixedp_add_with_int(
-                thread_current()->recent_cpu, 1);
-        }
-
-        /* Update load_avg and recent_cpu once per second. */
-        if (timer_ticks() % TIMER_FREQ == 0) {
-            // Calculate load average
-            load_avg = fixedp_multiply(LOAD_AVG_MOMENTUM, load_avg);
-            load_avg = fixedp_add(load_avg,
-                fixedp_multiply_with_int(LOAD_AVG_DECAY, thread_get_num_ready_and_run()));
-
-            // Calculate recent cpu for all threads
-            thread_foreach((thread_action_func *) 
-                &thread_update_recent_cpu, NULL);
-
-            // DEBUG/PRINT:
-            // printf("Load: %d\n", thread_get_load_avg());
-            // printf("All priorities: "); print_all_priorities();
-        }
-
-        // Update priority for all threads every four timer ticks
-        if (timer_ticks() % PRI_RECALC_PERIOD == 0) {
-            thread_foreach((thread_action_func *) 
-                &thread_update_priority_in_mlfqs, NULL);
-        }
+        thread_update_mlfqs_state();
     }
-
-    intr_set_level(old_level);
-    ////
 
     /* Add threads to ready queue that have been blocked and are due to be 
     woken up. */
-    thread_foreach((thread_action_func *) &wake_thread, NULL);
+    thread_foreach((thread_action_func *) &thread_wake, NULL);
+
+    intr_set_level(old_level);
+
 
     /* If any of newly ready threads have higher priority than current thread,
        run once this interrupt completes. */
@@ -262,14 +238,44 @@ void thread_tick(void) {
     }
 }
 
+static void thread_update_mlfqs_state(void) {
+    /* Increment recent_cpu by 1 for running thread every interrupt. */
+    if (thread_current() != idle_thread) {
+        thread_current()->recent_cpu = fixedp_add_with_int(
+            thread_current()->recent_cpu, 1);
+    }
+
+    /* Update load_avg and recent_cpu once per second. */
+    if (timer_ticks() % TIMER_FREQ == 0) {
+        // Calculate load average
+        load_avg = fixedp_multiply(LOAD_AVG_MOMENTUM, load_avg);
+        load_avg = fixedp_add(load_avg,
+            fixedp_multiply_with_int(LOAD_AVG_DECAY, 
+                thread_get_num_ready_and_run()));
+
+        // Calculate recent cpu for all threads
+        thread_foreach((thread_action_func *) &thread_update_recent_cpu, NULL);
+
+        // DEBUG/PRINT:
+        // printf("Load: %d\n", thread_get_load_avg());
+        // printf("All priorities: "); print_all_priorities();
+    }
+
+    /* Update priority for all threads every four timer ticks. */
+    if (timer_ticks() % PRI_RECALC_PERIOD == 0) {
+        thread_foreach((thread_action_func *) 
+            &thread_update_priority_in_mlfqs, NULL);
+    }
+}
+
 /* If thread is blocked, checks if it has a timer interrupt. If it does, it 
 decrements it. If it is due, it unblocks the thread. */
-static void wake_thread(struct thread *t, void *aux UNUSED) {
+static void thread_wake(struct thread *t, void *aux UNUSED) {
     /* Check if the thread has a timer interrupt. */
     if (t->ticks_until_wake == THREAD_AWAKE) {
         return;
     }
-
+    
     /* A thread should only have a time until awake if it is  asleep/blocked. */
     ASSERT(t->status == THREAD_BLOCKED);
 
@@ -277,7 +283,7 @@ static void wake_thread(struct thread *t, void *aux UNUSED) {
     t->ticks_until_wake--;
 
     /* Wake up if it is time to wakeup (sleep time left is 0) */
-    if (t->ticks_until_wake == 0) {
+    if (t->ticks_until_wake <= 0) {
         t->ticks_until_wake = THREAD_AWAKE;
         thread_unblock(t);
     }
@@ -326,9 +332,9 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     /* A threaded created (outside of the init thread) inherits its nice and 
     recent_cpu values from its parent, and sets its priority from them. */
     if (thread_mlfqs) {
-        initial_thread->nice = thread_get_nice();
-        initial_thread->recent_cpu = thread_current()->recent_cpu;
-        thread_update_priority_in_mlfqs(thread_current(), NULL);                      ////
+        t->nice = thread_get_nice();
+        t->recent_cpu = thread_current()->recent_cpu;
+        thread_update_priority_in_mlfqs(thread_current(), NULL);
     }
 
     // TODO: should we not do this when not in mlfq mode?
@@ -698,7 +704,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
     // different in thread_init() and thread_create() for different reasons
 
     /* Initially, a thread does not need to be woken up at some time. */
-    initial_thread->ticks_until_wake = THREAD_AWAKE;
+    t->ticks_until_wake = THREAD_AWAKE;
 
     t->magic = THREAD_MAGIC;
 
