@@ -266,7 +266,7 @@ void thread_tick(void) {
 decrements it. If it is due, it unblocks the thread. */
 static void wake_thread(struct thread *t, void *aux UNUSED) {
     /* Check if the thread has a timer interrupt. */
-    if (t->ticks_until_wake == 0) {
+    if (t->ticks_until_wake == THREAD_AWAKE) {
         return;
     }
 
@@ -278,6 +278,7 @@ static void wake_thread(struct thread *t, void *aux UNUSED) {
 
     /* Wake up if it is time to wakeup (sleep time left is 0) */
     if (t->ticks_until_wake == 0) {
+        t->ticks_until_wake = THREAD_AWAKE;
         thread_unblock(t);
     }
 }
