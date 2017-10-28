@@ -209,7 +209,6 @@ void thread_tick(void) {
     /* Update all priorities in mlfq mode here and prevent this from being 
     interrupted by disabling interrupts (include tick increment with priority 
     update so a kernel never receives ticks that do not match priority). */
-
     enum intr_level old_level;
     old_level = intr_disable();
 

@@ -43,7 +43,7 @@ which parts.
 >> L1: How many hours did each team member spend on this assignment?
    Make sure that each member's total time is listed.
 
-Vaibhav: ~6+5+10+SAT hours                                                      TODO
+Vaibhav: ~6+5+10+3+SAT_AFT                                                    TODO
 Nikhil : ~Y hours
 Michael: ~Z hours
 
@@ -193,6 +193,16 @@ during its execution.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+A new type "typedef int fixedp;" was created to represent floating point 
+numbers as integers in the kernel and implemented in libs/kernel.
+
+A global variable "static fixedp load_avg;" was created in thread.c. It 
+holds the load average for the system and is represented by a fixedp type.
+
+The fields "int nice;" and "fixedp recent_cpu" were added to the thread 
+struct, which represent the niceness and recent_cpu value of thread 
+respectively, to be used in calculating a thread's new priority.
+
 ---- ALGORITHMS ----
 
 >> C2: Suppose threads A, B, and C have nice values 0, 1, and 2.  Each
@@ -200,26 +210,39 @@ during its execution.
 >> scheduling decision and the priority and recent_cpu values for each
 >> thread after each given number of timer ticks:
 
+In the following, we will assume the load_avg has equalized to 3.               TODO
+
 timer  recent_cpu    priority   thread
 ticks   A   B   C   A   B   C   to run
 -----  --  --  --  --  --  --   ------
- 0
- 4
- 8
-12
-16
-20
-24
-28
-32
-36
+ 0     3   1   2   63  61  59   A
+ 4     6   1   3   62  60  58   A
+ 8     8   2   5   61  60  58   A
+12     7   6   6   60  60  57   B
+16     9   6   7   61  59  57   A
+20     11  6   8   60  59  57   A
+24     13  6   9   60  59  56   A
+28     11  10  9   59  59  56   B
+32     13  9   10  60  58  56   A
+36     14  9   11  59  58  56   A
 
 >> C3: Did any ambiguities in the scheduler specification make values
 >> in the table uncertain?  If so, what rule did you use to resolve
 >> them?  Does this match the behavior of your scheduler?
 
+The only uncertain was was load_avg, since the problem did not specify its 
+value. So we assumed it to be 3.
+
+TODO: does this match behavior of scheduler....write a test function for this!  TODO
+
+
 >> C4: How is the way you divided the cost of scheduling between code
 >> inside and outside interrupt context likely to affect performance?
+
+Most of the scheduling occurs on intervals, and thus is placed inside the 
+timer interrupt. It is likely to degrade performance, but only on the ticks 
+in which the interval has finished and the mlfqr variables need to be updated.
+
 
 ---- RATIONALE ----
 
