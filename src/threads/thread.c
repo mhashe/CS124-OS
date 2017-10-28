@@ -70,8 +70,17 @@ static void schedule(void);
 void thread_schedule_tail(struct thread *prev);
 static tid_t allocate_tid(void);
 
+static void print_run_queue(void);
+static bool thread_queue_compare(const struct list_elem *a,
+                             const struct list_elem *b,
+                             void *aux UNUSED);
+static void thread_insert_ordered(struct list *lst, struct list_elem *elem);
+static struct thread * thread_get_ready_front(void);
+static void wake_thread(struct thread *t, void *aux UNUSED);
+static void thread_set_priority_from_nice(struct thread *t);
 
-void print_run_queue(void) {
+
+static void print_run_queue(void) {
     struct list_elem *e;
     for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
         struct thread *t = list_entry(e, struct thread, elem);
@@ -83,7 +92,7 @@ void print_run_queue(void) {
 /* Compares the value of two list elements A and B, given auxiliary data AUX.
    Returns true if A is greater than B, or false if A is less than or equal to
    B. */
-bool thread_queue_compare(const struct list_elem *a,
+static bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
                              void *aux UNUSED) {
     struct thread *ta = list_entry(a, struct thread, elem);
@@ -94,7 +103,7 @@ bool thread_queue_compare(const struct list_elem *a,
 
 /* Inserts a thread elem into a list of threads (ie. ready_list) in order 
  or priority such that front is the highest priority. */
-void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
+static void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
     // printf("INSERT\n");
     list_insert_ordered (lst, elem,
                          (list_less_func*) thread_queue_compare, NULL);
@@ -102,7 +111,7 @@ void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
 }
 
 /* Returns the thread at the front of the ready queue without popping it. */
-struct thread * thread_get_ready_front(void) {
+static struct thread * thread_get_ready_front(void) {
     return list_entry(list_front(&ready_list), struct thread, elem);
 }
 
@@ -178,7 +187,7 @@ void thread_tick(void) {
 
 /* If thread is blocked, checks if it has a timer interrupt. If it does, it 
 decrements it. If it is due, it unblocks the thread. */
-void wake_thread(struct thread *t, void *aux UNUSED) {
+static void wake_thread(struct thread *t, void *aux UNUSED) {
     /* Check if the thread has a timer interrupt. */
     if (t->ticks_until_wake == 0) {
         return;
@@ -245,6 +254,7 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     /* A threaded created (outside of the init thread) inherits its nice value 
     from its parent. */
     initial_thread->nice = thread_get_nice(); // TODO: should we not do this when not in mlfq mode?
+    // TODO: use thread_set_priority_from_nice in mlfqs mode to set priority?
 
     /* Stack frame for kernel_thread(). */
     kf = alloc_frame(t, sizeof *kf);
@@ -457,7 +467,7 @@ int thread_get_nice(void) {
 }
 
 // Comment
-void thread_set_priority_from_nice(struct thread *t) {
+static void thread_set_priority_from_nice(struct thread *t UNUSED) {
     // TODO
 }
 

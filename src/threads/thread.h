@@ -162,19 +162,6 @@ void thread_set_nice(int);
 int thread_get_recent_cpu(void);
 int thread_get_load_avg(void);
 
-void wake_thread(struct thread *t, void *aux UNUSED);
-
-void thread_set_priority_from_nice(struct thread *t);
-
-/* Functionality for thread ordered queues. */
-struct thread * thread_get_ready_front(void);
-void thread_insert_ordered(struct list *lst, struct list_elem *elem);
-bool thread_queue_compare(const struct list_elem *a,
-                             const struct list_elem *b,
-                             void *aux UNUSED);
-
-/* Debug functions. */
-void print_run_queue(void);
 
 #endif /* threads/thread.h */
 
