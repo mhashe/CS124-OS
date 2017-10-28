@@ -77,7 +77,8 @@ static tid_t allocate_tid(void);
 static bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
                              void *aux UNUSED);
-static void print_run_queue(void);
+void print_run_queue(void);
+void print_all_priorities(void);
 static struct thread * thread_get_ready_front(void);
 static void thread_wake(struct thread *t, void *aux UNUSED);
 static void thread_defer_to_max_priority(int old_priority);
@@ -89,7 +90,7 @@ static void thread_update_recent_cpu(struct thread *t, void *aux UNUSED);
 static int thread_get_num_ready_and_run(void);
 
 
-static void print_run_queue(void) {
+void print_run_queue(void) {
     struct list_elem *e;
     printf("READY_QUEUE: \n");
     for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
@@ -99,7 +100,7 @@ static void print_run_queue(void) {
     printf("\n");
 }
 
-static void print_all_priorities(void) {
+void print_all_priorities(void) {
     struct list_elem *e;
     for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
         struct thread *t = list_entry(e, struct thread, elem);
