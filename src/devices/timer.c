@@ -81,6 +81,11 @@ int64_t timer_elapsed(int64_t then) {
 /*! Sleeps for approximately TICKS timer ticks.  Interrupts must
     be turned on. */
 void timer_sleep(int64_t ticks) {
+    /* Cannot sleep for negative of zero time. */
+    if (ticks <= 0) {
+        return;
+    }
+
     ASSERT(intr_get_level() == INTR_ON);
 
     /* Disable interrupts so this block of code is always executed together and 
