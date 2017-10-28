@@ -2,8 +2,8 @@ alarm-single                    PASS
 alarm-multiple                  PASS
 alarm-simultaneous              PASS
 alarm-priority                  PASS
-alarm-zero                      
-alarm-negative                  
+alarm-zero                      PASS
+alarm-negative                  PASS
 priority-change                 PASS
 priority-donate-one             PASS
 priority-donate-multiple        
@@ -16,12 +16,12 @@ priority-fifo                   PASS
 priority-preempt                PASS
 priority-sema                   
 priority-condvar                
-mlfqs-load-1                    
-mlfqs-load-60                   
-mlfqs-load-avg                  
-mlfqs-recent-1                  
-mlfqs-fair-2                    
-mlfqs-fair-20                   
-mlfqs-nice-2                    
-mlfqs-nice-10                   
-mlfqs-block                     
+mlfqs-load-1                    PASS 
+mlfqs-load-60                   PASS - ~0.8% error
+mlfqs-load-avg                  PASS - ~0.3% error
+mlfqs-recent-1                  PASS - ~0.02% error
+mlfqs-fair-2                    PASS
+mlfqs-fair-20                   PASS - ~2% error
+mlfqs-nice-2                    PASS - ~1% error
+mlfqs-nice-10                   PASS - 0-3% errror
+mlfqs-block                     FAIL
