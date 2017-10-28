@@ -251,7 +251,15 @@ void thread_tick(void) {
 
     /* Add threads to ready queue that have been blocked and are due to be 
     woken up. */
-    // thread_foreach((thread_action_func *) &wake_thread, NULL);
+    thread_foreach((thread_action_func *) &wake_thread, NULL);
+
+    /* If any of newly ready threads have higher priority than current thread,
+       run once this interrupt completes. */
+    if (!list_empty(&ready_list)) {
+        if (thread_get_ready_front()->priority > thread_current()->priority) {
+            intr_yield_on_return();
+        }
+    }
 }
 
 /* If thread is blocked, checks if it has a timer interrupt. If it does, it 
@@ -271,12 +279,6 @@ static void wake_thread(struct thread *t, void *aux UNUSED) {
     /* Wake up if it is time to wakeup (sleep time left is 0) */
     if (t->ticks_until_wake == 0) {
         thread_unblock(t);
-
-        /* If newly ready thread higher priority than current thread,
-           run once this interrupt completes. */
-        if (t->priority > thread_current()->priority) {
-            intr_yield_on_return();
-        }
     }
 }
 
