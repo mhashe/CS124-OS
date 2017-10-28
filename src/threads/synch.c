@@ -51,6 +51,9 @@ void sema_init(struct semaphore *sema, unsigned value) {
 
     sema->value = value;
     list_init(&sema->waiters);
+
+    ASSERT(is_sorted(list_begin(&sema->waiters), list_end(&sema->waiters), 
+        (list_less_func*) thread_queue_compare, NULL));
 }
 
 /*! Down or "P" operation on a semaphore.  Waits for SEMA's value
@@ -76,7 +79,13 @@ void sema_down(struct semaphore *sema) {
     // Set priority adding field to struct of sema or lock?
 
     while (sema->value == 0) {
-        list_push_back(&sema->waiters, &thread_current()->elem);
+        // list_push_back(&sema->waiters, &thread_current()->elem);
+        list_insert_ordered (&sema->waiters, &thread_current()->elem,
+                         (list_less_func*) thread_queue_compare, NULL);
+
+        ASSERT(is_sorted(list_begin(&sema->waiters), list_end(&sema->waiters), 
+            (list_less_func*) thread_queue_compare, NULL));
+
         thread_block();
     }
 
@@ -125,6 +134,9 @@ void sema_up(struct semaphore *sema) {
     if (!list_empty(&sema->waiters)) {
         thread_unblock(list_entry(list_pop_front(&sema->waiters),
                                   struct thread, elem));
+
+        ASSERT(is_sorted(list_begin(&sema->waiters), list_end(&sema->waiters), 
+            (list_less_func*) thread_queue_compare, NULL));
     }
     sema->value++;
     intr_set_level(old_level);
