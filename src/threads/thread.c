@@ -81,7 +81,7 @@ static void thread_insert_ordered(struct list *lst, struct list_elem *elem);
 static struct thread * thread_get_ready_front(void);
 static void wake_thread(struct thread *t, void *aux UNUSED);
 static void thread_set_priority_from_nice(struct thread *t);
-
+static int thread_get_num_ready_threads(void);
 
 static void print_run_queue(void) {
     struct list_elem *e;
@@ -494,7 +494,8 @@ static void thread_set_priority_from_nice(struct thread *t UNUSED) {
 /*! Returns 100 times the system load average. */
 int thread_get_load_avg(void) {
     // TODO: abstract out the constants of this equation as globals
-    load_avg = fixedp_multiply(
+    load_avg = fixedp_multiply(LOAD_AVG_MOMENTUM, load_avg);
+    load_avg = fixedp_multiply(LOAD_AVG_DECAY, )
         , 
             load_avg
         );
@@ -511,6 +512,10 @@ int thread_get_load_avg(void) {
     ((LOAD_AVG_PERIOD - RECALC_PERIOD) / RECALC_PERIOD) * load_avg + (RECALC_PERIOD / LOAD_AVG_PERIOD) * ready_threads
     /* Not yet implemented. */
     return 0;
+}
+
+static int thread_get_num_ready_threads(void) {
+
 }
 
 /*! Returns 100 times the current thread's recent_cpu value. */
