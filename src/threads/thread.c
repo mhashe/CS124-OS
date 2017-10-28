@@ -158,19 +158,18 @@ void thread_init(void) {
     /* Set constants for mflq scheduler. load_avg is initially zero. */
     load_avg = fixedp_from_int(LOAD_AVG_INIT);
 
-    /* The initial thread has a nice and recent_cpu values of zero. */
-    if (thread_mlfqs) {
-        initial_thread->nice = NICE_INIT;
-        initial_thread->recent_cpu = fixedp_from_int(RECENT_CPU_INIT);
-        thread_update_priority_in_mlfqs(initial_thread, NULL); // TODO: DC this is here
-    }
-
     /* Set up a thread structure for the running thread. */
     initial_thread = running_thread();
     init_thread(initial_thread, "main", PRI_DEFAULT);
     initial_thread->status = THREAD_RUNNING;
     initial_thread->tid = allocate_tid();
 
+    /* The initial thread has a nice and recent_cpu values of zero. */
+    if (thread_mlfqs) {
+        initial_thread->nice = NICE_INIT;
+        initial_thread->recent_cpu = fixedp_from_int(RECENT_CPU_INIT);
+        thread_update_priority_in_mlfqs(initial_thread, NULL); // TODO: DC this is here
+    }
 }
 
 /*! Starts preemptive thread scheduling by enabling interrupts.
@@ -204,8 +203,9 @@ void thread_tick(void) {
 #endif
     else
         kernel_ticks++;
-    // TODO: update all priorities in for mlfq mode here and prevent 
-    // this from being interrupted.
+    
+    /* Update all priorities in for mlfq mode here and prevent 
+    this from being interrupted by disabling interrupts. */
 
     enum intr_level old_level;
     old_level = intr_disable();
@@ -687,16 +687,18 @@ static void init_thread(struct thread *t, const char *name, int priority) {
     strlcpy(t->name, name, sizeof t->name);
     t->stack = (uint8_t *) t + PGSIZE;
 
-    // TODO: ignore the priority argument when thread_mlfqs is true
-    t->priority = priority;
-    t->priority_org = PRI_ORG_DEFAULT;
-    t->elevated_lock = NULL;
+    /* Ignore the priority argument when thread_mlfqs is true. */
+    if (!thread_mlfqs) {
+        t->priority = priority;
+        t->priority_org = PRI_ORG_DEFAULT;
+        t->elevated_lock = NULL;
+    }
 
     // TODO: should we set nice value here as safety? it isn't currently set 
     // different in thread_init() and thread_create() for different reasons
 
     /* Initially, a thread does not need to be woken up at some time. */
-    initial_thread->ticks_until_wake = 0;
+    initial_thread->ticks_until_wake = THREAD_AWAKE;
 
     t->magic = THREAD_MAGIC;
 
