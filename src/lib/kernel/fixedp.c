@@ -2,46 +2,46 @@
 #include "../debug.h"
 
 
-fixedp fixedp_from_int(int n UNUSED) {
+fixedp fixedp_from_int(int n) {
     // TODO
 }
 
-int fixedp_to_int_rounded(fixedp x UNUSED) {
+int fixedp_to_int_rounded(fixedp x) {
     // TODO
 }
 
-int fixedp_to_int_nearest(fixedp x UNUSED) {
+int fixedp_to_int_nearest(fixedp x) {
     // TODO
 }
 
-fixedp fixedp_add(UNUSED fixedp x, UNUSED fixedp y) {
+fixedp fixedp_add(fixedp x, fixedp y) {
     // TODO
 }
 
-fixedp fixedp_subtract(UNUSED fixedp x, UNUSED fixedp y) {
+fixedp fixedp_subtract(fixedp x, fixedp y) {
     // TODO
 }
 
-fixedp fixedp_add_with_int(UNUSED fixedp x, UNUSED int n) {
+fixedp fixedp_add_with_int(fixedp x, int n) {
     // TODO
 }
 
-fixedp fixedp_sub_from_fp(UNUSED fixedp x, UNUSED int n) {
+fixedp fixedp_sub_from_fp(fixedp x, int n) {
     // TODO
 }
 
-fixedp fixedp_multiply(UNUSED fixedp x, UNUSED fixedp y) {
+fixedp fixedp_multiply(fixedp x, fixedp y) {
     // TODO
 }
 
-fixedp fixedp_multiple_with_int(UNUSED fixedp x, UNUSED int n) {
+fixedp fixedp_multiple_with_int(fixedp x, int n) {
     // TODO
 }
 
-fixedp fixedp_divide(UNUSED fixedp x, UNUSED fixedp y) {
+fixedp fixedp_divide(fixedp x, fixedp y) {
     // TODO
 }
 
-fixedp fixedp_divide_by_intUNUSED (fixedp x, UNUSED int n) {
+fixedp fixedp_divide_by_int (fixedp x, int n) {
     // TODO
 }
