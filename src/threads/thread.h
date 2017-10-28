@@ -120,6 +120,7 @@ struct thread {
     fixedp recent_cpu;                  /*!< Recent cpu time. */
 
     int org_pri;                        /* Original priority. */
+    int floor_pri;                      /* Donated priority, even if lower than true priority. */
     bool donated;                       /* Bool, telling if priority has been donated. */
 
     /*! Shared between thread.c and synch.c. */

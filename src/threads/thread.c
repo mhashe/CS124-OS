@@ -455,8 +455,16 @@ void thread_set_priority(int new_priority) {
     /* TODO: Method as written doesn't work for multiple priorities for
        multiple different locks. This might not be necessary? */
     if (!thread_current()->donated) {
-        /* No dated priority, change to new priority. */
-        thread_current()->priority = new_priority;
+        /* Highest priority is base priority. */
+        if (new_priority > thread_current()->floor_pri) {
+            /* New priority is higher than any donated priority .*/
+            thread_current()->priority = new_priority;
+        } else {
+            /* Old priority was higher than donated priority, but not
+               anymore. */
+            thread_current()->priority = thread_current()->floor_pri;
+            thread_current()->donated = true;
+        }
     } else if (new_priority > thread_current()->priority) {
         /* Donated priority, but this is still higher. */
         thread_current()->priority = new_priority;
@@ -654,6 +662,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
     // TODO: ignore the priority argument when thread_mlfqs is true
     t->priority = priority;
     t->org_pri = priority;
+    t->floor_pri = 0;
     t->donated = false;
 
     // TODO: should we set nice value here as safety? it isn't currently set 

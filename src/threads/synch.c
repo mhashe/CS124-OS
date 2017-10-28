@@ -216,7 +216,9 @@ void lock_acquire(struct lock *lock) {
     // if (success) {
     //     lock->holder = thread_current();
     // } else {
-        
+    //      Lock already occupied! 
+    //     int donor_pri = thread_current()->priority;
+    //     int donee_pri = lock->holder()->priority;
     // }
 }
 
@@ -233,8 +235,9 @@ bool lock_try_acquire(struct lock *lock) {
     ASSERT(!lock_held_by_current_thread(lock));
 
     success = sema_try_down(&lock->semaphore);
-    if (success)
+    if (success) {
       lock->holder = thread_current();
+    }
 
     return success;
 }
