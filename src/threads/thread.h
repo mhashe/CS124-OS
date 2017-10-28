@@ -36,7 +36,8 @@ typedef int tid_t;
 
 /* Multi-level feedback queue scheduling. */
 #define RECALC_PERIOD 100  // number of ticks in recalc period
-#define INIT_LOAD_AVG 0
+#define LOAD_AVG_INIT 0
+#define RECENT_CPU_INIT 0   // initial value of recent_cpu for initial thread
 #define LOAD_AVG_PERIOD 60000 // number of ticks in load_average_period
 #define LOAD_AVG_MOMENTUM fixedp_divide(fixedp_from_int(LOAD_AVG_PERIOD - 1000), fixedp_from_int(LOAD_AVG_PERIOD))
 #define LOAD_AVG_DECAY    fixedp_divide(fixedp_from_int(1000),                   fixedp_from_int(LOAD_AVG_PERIOD))

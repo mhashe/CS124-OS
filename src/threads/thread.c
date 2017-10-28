@@ -11,6 +11,7 @@
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+#include "../devices/timer.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -80,8 +81,8 @@ bool thread_queue_compare(const struct list_elem *a,
 static void thread_insert_ordered(struct list *lst, struct list_elem *elem);
 static struct thread * thread_get_ready_front(void);
 static void wake_thread(struct thread *t, void *aux UNUSED);
-static void thread_set_priority_from_nice(struct thread *t);
 
+static void thread_update_priority_in_mlfqs(struct thread *t);
 static void thread_update_recent_cpu(struct thread *t);
 static int thread_get_num_ready(void);
 
@@ -140,8 +141,12 @@ void thread_init(void) {
     list_init(&ready_list);
     list_init(&all_list);
 
-    /* Set constants for mflq scheduler. */
-    load_avg = fixedp_from_int(INIT_LOAD_AVG);
+    /* Set constants for mflq scheduler. load_avg is initially zero. */
+    load_avg = fixedp_from_int(LOAD_AVG_INIT);
+
+    /* The initial thread has a nice and recent_cpu values of zero. */
+    initial_thread->nice = NICE_INIT;
+    initial_thread->recent_cpu = fixedp_from_int(RECENT_CPU_INIT);
 
     /* Set up a thread structure for the running thread. */
     initial_thread = running_thread();
@@ -149,8 +154,6 @@ void thread_init(void) {
     initial_thread->status = THREAD_RUNNING;
     initial_thread->tid = allocate_tid();
 
-    /* The initial thread has a nice value of zero. */
-    initial_thread->nice = NICE_INIT;
 }
 
 /*! Starts preemptive thread scheduling by enabling interrupts.
@@ -187,6 +190,10 @@ void thread_tick(void) {
     // TODO: update all priorities in for mlfq mode here and prevent 
     // this from being interrupted.
 
+    enum intr_level old_level;
+    old_level = intr_disable();
+
+    intr_set_level(old_level);
     /* Enforce preemption. */ // TODO: Should we avoid a high priority thread 
     // from facing the scheduler unnecessarily?
     if (++thread_ticks >= TIME_SLICE)
@@ -194,18 +201,19 @@ void thread_tick(void) {
 
     /* In mlfqs mode, update update load_avg and recent_cpu every RECALC period 
     (one second). */
-    if (thread_mlfqs && ((thread_ticks % RECALC_PERIOD) == 0)) {
+    if (thread_mlfqs && (timer_ticks() % RECALC_PERIOD == 0)) {
         // Calculate load average
         load_avg = fixedp_multiply(LOAD_AVG_MOMENTUM, load_avg);
         load_avg = fixedp_add(load_avg,
-            fixedp_multiply(LOAD_AVG_DECAY, thread_get_num_ready()));
+            fixedp_multiply_with_int(LOAD_AVG_DECAY, thread_get_num_ready()));
 
         // Calculate cpu time
         thread_update_recent_cpu(thread_current());
 
-        printf("Load avg: %d, Current recent cpu: %d", thread_get_load_avg(),
-            thread_get_recent_cpu());
     }
+
+    intr_set_level(old_level);
+    ////
 
     /* Add threads to ready queue that have been blocked and are due to be 
     woken up. */
@@ -280,8 +288,10 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
 
     /* A threaded created (outside of the init thread) inherits its nice value 
     from its parent. */
-    initial_thread->nice = thread_get_nice(); // TODO: should we not do this when not in mlfq mode?
-    // TODO: use thread_set_priority_from_nice in mlfqs mode to set priority?
+    initial_thread->nice = thread_get_nice();
+    initial_thread->recent_cpu = thread_current()->recent_cpu;
+    // TODO: should we not do this when not in mlfq mode?
+    // TODO: use thread_update_priority_in_mlfqs in mlfqs mode to set priority?
 
     /* Stack frame for kernel_thread(). */
     kf = alloc_frame(t, sizeof *kf);
@@ -449,7 +459,7 @@ void thread_set_priority(int new_priority) {
         thread_current()->priority = new_priority;
     }
 
-    /* If old priority has a lower priority than new priority, then check if 
+    /* If new_priority has less priority than old_priority, then check if 
     ready queue has a has a higher priority thread than it and yield if so. */
     if (old_priority > thread_current()->priority) {
         if (thread_get_ready_front()->priority > thread_current()->priority) {
@@ -467,8 +477,10 @@ void thread_set_priority(int new_priority) {
 
 /*! Returns the current thread's priority. */
 int thread_get_priority(void) {
-    // TODO: confirm that this still holds in mlfqs?
-    return thread_current()->priority;
+    enum intr_level old_level = intr_disable ();
+    int tmp = thread_current()->priority;
+    intr_set_level (old_level);
+    return tmp;
 }
 
 /*! Sets the current thread's nice value to NICE. */
@@ -488,7 +500,7 @@ void thread_set_nice(int nice) {
     thread_current()->nice = nice;
 
     /* Set thread priority according to nice value. */
-    thread_set_priority_from_nice(thread_current());
+    thread_update_priority_in_mlfqs(thread_current());
     /* If the running thread no long has the highest priority, yield. */
     // TODO. Abstract out this existing implementation in thread_set_priority()?
 
@@ -497,12 +509,20 @@ void thread_set_nice(int nice) {
 
 /*! Returns the current thread's nice value. */
 int thread_get_nice(void) {
-    return thread_current()->nice;
+    enum intr_level old_level = intr_disable ();
+    int tmp = thread_current()->nice;
+    intr_set_level (old_level);
+    return tmp;
 }
 
-// Comment
-static void thread_set_priority_from_nice(struct thread *t UNUSED) {
-    // TODO
+/* Sets the priority of the thread using the thread's nice and recent_cpu 
+values. This should not be interrupted, and the calling function should take 
+care of that. */
+static void thread_update_priority_in_mlfqs(struct thread *t) {
+    /* Set priority = PRI_MAX - (recent_cpu / 4) - (nice * 2) */
+    int cpu_penalty = fixedp_to_int_nearest(
+        fixedp_divide_by_int(t->recent_cpu, 4));
+    t->priority = PRI_MAX - cpu_penalty - (t->nice * 2);
 }
 
 /*! Returns 100 times the system load average. */
@@ -511,6 +531,8 @@ int thread_get_load_avg(void) {
         load_avg, 100));
 }
 
+/* Returns the number of threads in the ready_queue. This should not be 
+interrupted, and the calling function should take care of that. */
 int thread_get_num_ready(void) {
     int count = 0;
 
