@@ -210,16 +210,33 @@ void lock_acquire(struct lock *lock) {
     ASSERT(!intr_context());
     ASSERT(!lock_held_by_current_thread(lock));
 
-    sema_down(&lock->semaphore);
-    lock->holder = thread_current();
-    // success = sema_try_down(&lock->semaphore);
-    // if (success) {
-    //     lock->holder = thread_current();
-    // } else {
-    //      Lock already occupied! 
-    //     int donor_pri = thread_current()->priority;
-    //     int donee_pri = lock->holder()->priority;
-    // }
+    // sema_down(&lock->semaphore);
+    // lock->holder = thread_current();
+    success = sema_try_down(&lock->semaphore);
+    if (success) {
+        lock->holder = thread_current();
+    } else {
+        /* Lock already occupied! */
+        int donor_pri = thread_current()->priority;
+        int donee_pri = lock->holder->priority;
+
+        /* If floor_pri higher, should be priority. */
+        ASSERT(donee_pri >= lock->holder->floor_pri);
+
+        if (donor_pri > donee_pri) {
+            /* Donated priority. */
+            lock->holder->priority = donor_pri;
+            lock->holder->floor_pri = donor_pri;
+            lock->holder->donated = true;
+        } else if (donor_pri > lock->holder->floor_pri) {
+            /* Keep track, just in case priority lowers later. */
+            lock->holder->floor_pri = donor_pri;
+        }
+
+        /* Now that priority is donated, block until lock arrives. */
+        sema_down(&lock->semaphore);
+        lock->holder = thread_current();
+    }
 }
 
 /*! Tries to acquires LOCK and returns true if successful or false
