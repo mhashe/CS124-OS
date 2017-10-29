@@ -69,7 +69,8 @@ void sema_down(struct semaphore *sema) {
     old_level = intr_disable();
 
     while (sema->value == 0) {
-        list_remove(&thread_current()->elem);
+        if (is_interior(&thread_current()->elem))
+            list_remove(&thread_current()->elem);
         thread_insert_ordered(&sema->waiters, &thread_current()->elem);
         thread_block();
     }
@@ -188,10 +189,17 @@ void lock_acquire(struct lock *lock) {
     ASSERT(!intr_context());
     ASSERT(!lock_held_by_current_thread(lock));
 
-    int success = sema_try_down(&lock->semaphore);
-
     enum intr_level old_level;
     old_level = intr_disable();
+
+    if(thread_mlfqs) {
+        sema_down(&lock->semaphore);
+        lock->holder = thread_current();
+        intr_set_level(old_level);
+        return;
+    }
+
+    int success = sema_try_down(&lock->semaphore);
 
     if (!success) {
 
@@ -200,7 +208,8 @@ void lock_acquire(struct lock *lock) {
 
         // If couldn't get lock, that means that someone else is holding it. As
         // such, we elevate them to our priority.
-        thread_insert_ordered(&lock.semaphore.waiters, &thread_current()->elem);
+        thread_insert_ordered(&lock->semaphore.waiters, &thread_current()->elem);
+        thread_current()->blocked_lock = lock;
 
         recalculate_priority(lock->holder);
         sort_ready_list();
@@ -208,7 +217,8 @@ void lock_acquire(struct lock *lock) {
         sema_down(&lock->semaphore);
     }
     lock->holder = thread_current();
-    list_push_back(&thread_current()->locks, lock->elem);
+    thread_current()->blocked_lock = NULL;
+    list_push_back(&thread_current()->locks, &lock->elem);
 
     intr_set_level(old_level);
 }
@@ -248,8 +258,15 @@ void lock_release(struct lock *lock) {
     lock->holder = NULL;
     sema_up(&lock->semaphore);
 
-    list_remove(lock->elem);
-    thread_set_priority(thread_current()->priority)
+    if (thread_mlfqs) {
+        intr_set_level(old_level);
+        return;
+    }
+
+    int old_priority = thread_current()->priority;
+
+    list_remove(&lock->elem);
+    thread_set_priority(thread_current()->priority_org);
 
     intr_set_level(old_level);
 }

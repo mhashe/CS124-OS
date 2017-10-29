@@ -6,8 +6,8 @@ alarm-zero                      PASS
 alarm-negative                  PASS
 priority-change                 PASS
 priority-donate-one             PASS
-priority-donate-multiple        
-priority-donate-multiple2       
+priority-donate-multiple        PASS
+priority-donate-multiple2       PASS
 priority-donate-nest            PASS
 priority-donate-sema            
 priority-donate-lower           PASS

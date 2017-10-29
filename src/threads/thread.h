@@ -130,6 +130,7 @@ struct thread {
     int priority_org;                   /*!< Stores original priority when
                                              when elevated. */
     struct list locks;                  /*!< Locks which thread owns. */
+    struct lock *blocked_lock;           /*!< Lock which thread wants. */
 
     /*! Shared between thread.c and synch.c. */
     /**@{*/
@@ -191,6 +192,8 @@ void sort_ready_list(void);
 
 void print_run_queue(void);
 void print_all_priorities(void);
+
+void recalculate_priority(struct thread *t);
 
 
 #endif /* threads/thread.h */

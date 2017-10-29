@@ -154,11 +154,16 @@ void recalculate_priority(struct thread *t) {
         for (f = list_begin(&(l->semaphore.waiters)); 
              f != list_end(&(l->semaphore.waiters)); f = list_next(f)) {
 
-            struct thread *t = list_entry(f, struct thread, elem);
+            struct thread *t_wait = list_entry(f, struct thread, elem);
 
-            max = MAX(max, t->priority);
+            max = MAX(max, t_wait->priority);
 
         }
+    }
+    t->priority = max;
+
+    if (t->blocked_lock) {
+        recalculate_priority(t->blocked_lock->holder);
     }
 
     ASSERT(max >= t->priority_org);
@@ -737,6 +742,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
         t->priority = priority;
         t->priority_org = priority;
         list_init(&t->locks);
+        t->blocked_lock = NULL;
     }
 
     /* Initially, a thread does not need to be woken up at some time. */
