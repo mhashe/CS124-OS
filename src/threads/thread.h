@@ -122,7 +122,7 @@ struct thread {
     struct list_elem allelem;           /*!< List element for all threads list. */
     /**@}*/
 
-    /* User-added stuff, comment later. */
+    /* User-added stuff. */
     int64_t ticks_until_wake;           /*!< Ticks until done sleeping. */
     int nice;                           /*!< Nice value. */
     fixedp recent_cpu;                  /*!< Recent cpu time. */

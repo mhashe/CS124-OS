@@ -15,7 +15,7 @@ priority-donate-chain           PASS
 priority-fifo                   PASS
 priority-preempt                PASS
 priority-sema                   
-priority-condvar                
+priority-condvar                PASS
 mlfqs-load-1                    PASS 
 mlfqs-load-60                   PASS - ~0.8% error
 mlfqs-load-avg                  PASS - ~0.3% error

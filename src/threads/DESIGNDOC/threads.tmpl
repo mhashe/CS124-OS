@@ -43,16 +43,16 @@ which parts.
 >> L1: How many hours did each team member spend on this assignment?
    Make sure that each member's total time is listed.
 
-Vaibhav: ~6+5+10+4+SAT_AFT                                                    TODO
-Nikhil : ~Y hours
+Vaibhav: ~6+5+10+4+SAT_AFT                                                     TODO
+Nikhil : 20 hours
 Michael: ~5+5+... hours
 
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
 
-Vaibhav: Vaibhav focused on alarm clock, priority set, and advanced scheduler.
-Nikhil: Nikhil focused on priority donation, locks/synchronization.
-Michael: Michael focused on priority preemption, fixedp struct implementaiton.
+Vaibhav: alarm clock, priority set, and advanced scheduler.
+Nikhil:  priority donation, locks/synchronization, condvar.
+Michael: priority preemption, fixedp struct implementaiton.
 
 
 			     ALARM CLOCK
@@ -68,20 +68,42 @@ The stuct thread was changed in thread.h to include the "ticks_until_wake"
 attribute, which represents the number of ticks left that the thread will sleep. 
 
 struct thread {
+    /*! Owned by thread.c. */
+    /**@{*/
     tid_t tid;                          /*!< Thread identifier. */
     enum thread_status status;          /*!< Thread state. */
     char name[16];                      /*!< Name (for debugging purposes). */
     uint8_t *stack;                     /*!< Saved stack pointer. */
     int priority;                       /*!< Priority. */
+    struct list_elem allelem;           /*!< List element for all threads list. */
+    /**@}*/
+
+    /* User-added stuff. */
     int64_t ticks_until_wake;           /*!< Ticks until done sleeping. */
-    struct list_elem allelem;           /*!< List element for all threads list. 
+    int nice;                           /*!< Nice value. */
+    fixedp recent_cpu;                  /*!< Recent cpu time. */
+
+    int priority_org;                   /*!< Stores original priority when
+                                             when elevated. */
+    struct list locks;                  /*!< Locks which thread owns. */
+    struct lock *blocked_lock;           /*!< Lock which thread wants. */
+
     /*! Shared between thread.c and synch.c. */
+    /**@{*/
     struct list_elem elem;              /*!< List element. */
+    /**@}*/
+
 #ifdef USERPROG
+    /*! Owned by userprog/process.c. */
+    /**@{*/
     uint32_t *pagedir;                  /*!< Page directory. */
+    /**@{*/
 #endif
+
     /*! Owned by thread.c. */
+    /**@{*/
     unsigned magic;                     /* Detects stack overflow. */
+    /**@}*/
 };
 
 ---- ALGORITHMS ----
@@ -144,15 +166,102 @@ thread_tick() in thread.c
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+locks is all the locks that the current thread holds. 
+blocked_lock is the lock which this thread is trying to get.
+
+struct thread {
+    /*! Owned by thread.c. */
+    /**@{*/
+    tid_t tid;                          /*!< Thread identifier. */
+    enum thread_status status;          /*!< Thread state. */
+    char name[16];                      /*!< Name (for debugging purposes). */
+    uint8_t *stack;                     /*!< Saved stack pointer. */
+    int priority;                       /*!< Priority. */
+    struct list_elem allelem;           /*!< List element for all threads list. */
+    /**@}*/
+
+    /* User-added stuff. */
+    int64_t ticks_until_wake;           /*!< Ticks until done sleeping. */
+    int nice;                           /*!< Nice value. */
+    fixedp recent_cpu;                  /*!< Recent cpu time. */
+
+    int priority_org;                   /*!< Stores original priority when
+                                             when elevated. */
+    struct list locks;                  /*!< Locks which thread owns. */
+    struct lock *blocked_lock;           /*!< Lock which thread wants. */
+
+    /*! Shared between thread.c and synch.c. */
+    /**@{*/
+    struct list_elem elem;              /*!< List element. */
+    /**@}*/
+
+#ifdef USERPROG
+    /*! Owned by userprog/process.c. */
+    /**@{*/
+    uint32_t *pagedir;                  /*!< Page directory. */
+    /**@{*/
+#endif
+
+    /*! Owned by thread.c. */
+    /**@{*/
+    unsigned magic;                     /* Detects stack overflow. */
+    /**@}*/
+};
+
 
 >> B2: Explain the data structure used to track priority donation.
 >> Use ASCII art to diagram a nested donation.  (Alternately, submit a
 >> .png file.)
 
+Each thread maintains a list of the locks that it owns. Since a thread now has
+access to the list of locks, it has access to all the threads that are waiting
+on those locks, from which it can easily calculate its running priority by
+taking the max of all the threads that are waiting on it and itself. This
+recalculate_priority function is called whenever a thread might change priority,
+like in set_priority and acquire_lock (when it might have a higher priority
+donated to it). It is also implicitly called in release_lock because priority
+might be taken away from it.
+
+
+TIME 1:  T1 (Low)  -----> [Lock A]      (T1 has lock A)
+                              |
+                              |         (T2 wants lock A)
+                              |
+TIME 2:                      T2 (Med) ---> [Lock B]         (T3 has lock B)
+Time 3:     (Med)  T2 donates to T1           |             
+                                              |             (T3 wants lock B)
+                                              |
+TIME 4:                                      T3 (High)
+TIME 5:                         (High)  T3 donates to T2 in lock_acquire via 
+                                        recalculate_priority on T2
+
+TIME 6:     (High)          recalculate_priority sees that T2 is blocked so it
+                            recursively recalculates the priority for the owner
+                            of the lock T2 is blocked on
+
+TIME 7:     (Low)           T1 releases lock A and loses all priority donation
+TIME 8:                     T2 (High) ---> [Lock A, Lock B]
+                                                      |  
+                                                      |  
+                                                      |  
+                                                     T3 (High)
+TIME 9:                   (Med)    T2 releases locks A and B and loses donation
+TIME 10:                                             T3 (High) ---> [Lock B]
+
+
+
+
 ---- ALGORITHMS ----
 
 >> B3: How do you ensure that the highest priority thread waiting for
 >> a lock, semaphore, or condition variable wakes up first?
+
+Anytime a thread needs to removed from the list of waiters (waiting threads),
+the highest priority thread is unblocked. For semaphores (and therefore locks),
+this is done by finding the max priority of the waiters. For condvars, this is
+done by iterating over all the semaphores, and finding the priority associated
+with the waiter on each of those semaphores and taking the max one.
+
 
 >> B4: Describe the sequence of events when a call to lock_acquire()
 >> causes a priority donation.  How is nested donation handled?
@@ -182,6 +291,12 @@ during its execution.
 
 >> B7: Why did you choose this design?  In what ways is it superior to
 >> another design you considered?
+
+We went through multiple iterations for the design of the priority donation
+system. At first, we tried maintaining explicit priority donations for each
+thread but that did not scale well. As such, we decided on the design where
+whenever a thread might change priority, to recalculate the priority it is going
+to run under.
 
 
 			  ADVANCED SCHEDULER
