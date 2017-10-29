@@ -121,15 +121,6 @@ bool thread_queue_compare(const struct list_elem *a,
 }
 
 
-/* Inserts a thread elem into a list of threads (ie. ready_list) in order 
- or priority such that front is the highest priority. */
-inline void thread_insert_ordered(struct list *lst, struct list_elem *elem) {
-    // printf("INSERT %s\n", list_entry(elem, struct thread, elem)->name);
-    list_insert_ordered (lst, elem,
-                         (list_less_func*) thread_queue_compare, NULL);
-    // printf("!INSERT\n");
-}
-
 void sort_ready_list(void) {
     list_sort(&ready_list, (list_less_func*) thread_queue_compare, NULL);
 }
@@ -138,7 +129,6 @@ void sort_ready_list(void) {
 static inline struct thread * thread_get_ready_front(void) {
     return list_entry(list_max(&ready_list, 
         (list_less_func*) thread_queue_compare, NULL), struct thread, elem);
-    // return list_entry(list_front(&ready_list), struct thread, elem);
 }
 
 /*! Recalculates priority of thread. */
@@ -423,7 +413,7 @@ void thread_unblock(struct thread *t) {
 
     old_level = intr_disable();
     ASSERT(t->status == THREAD_BLOCKED);
-    thread_insert_ordered(&ready_list, &t->elem);
+    list_push_back(&ready_list, &t->elem);
     t->status = THREAD_READY;
 
     intr_set_level(old_level);
@@ -489,8 +479,9 @@ void thread_yield(void) {
     ASSERT(!intr_context());
 
     old_level = intr_disable();
-    if (cur != idle_thread) 
-        thread_insert_ordered(&ready_list, &cur->elem);
+    if (cur != idle_thread)  {
+        list_push_back(&ready_list, &cur->elem);
+    }
     cur->status = THREAD_READY;
     schedule();
     intr_set_level(old_level);
@@ -781,7 +772,6 @@ static struct thread * next_thread_to_run(void) {
       max = list_max(&ready_list, (list_less_func*) thread_queue_compare, NULL);
       list_remove(max); /* Basically pop_max, but less overhead. */
       return list_entry(max, struct thread, elem);
-      // return list_entry(list_pop_front(&ready_list), struct thread, elem);
 }
 
 /*! Completes a thread switch by activating the new thread's page tables, and,
