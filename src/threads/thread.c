@@ -720,7 +720,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
     if (!thread_mlfqs) {
         t->priority = priority;
         t->priority_org = PRI_ORG_DEFAULT;
-        t->elevated_lock = NULL;
+        list_init(&t->locks);
     }
 
     /* Initially, a thread does not need to be woken up at some time. */

@@ -131,7 +131,7 @@ struct thread {
 
     int priority_org;                   /*!< Stores original priority when
                                              when elevated. */
-    struct lock *elevated_lock;         /*!< Lock which priority was donated. */
+    struct list locks;                  /*!< Locks which thread owns. */
 
     /*! Shared between thread.c and synch.c. */
     /**@{*/
