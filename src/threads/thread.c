@@ -514,12 +514,8 @@ void thread_set_priority(int new_priority) {
 is now less than the priority at the fron the of ready queue. This should 
 not be interrupted, and the calling function should take care of that. */
 void thread_defer_to_max_priority(void) {
-    int new_priority = thread_current()->priority;
-
-    /* If new_priority has less priority than old_priority, then check if 
-    ready queue has a has a higher priority thread than it and yield if so. */
     if (!list_empty(&ready_list)) {
-        if (thread_get_ready_max()->priority > new_priority) {
+        if (thread_get_ready_max()->priority > thread_current()->priority) {
             if (intr_context()) {
                 intr_yield_on_return();
             } else {

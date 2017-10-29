@@ -58,7 +58,7 @@ Michael: 20 hours
 
 Vaibhav: alarm clock, priority set, and advanced scheduler.
 Nikhil:  priority donation, locks/synchronization, condvar.
-Michael: priority preemption, fixedp struct implementaiton.
+Michael: priority preemption, fixedp struct implementation.
 
 
 			     ALARM CLOCK
@@ -70,8 +70,8 @@ Michael: priority preemption, fixedp struct implementaiton.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
-No data structures were altered in this portion of the project.
-
+The field "int64_t ticks_until_awake;" was added to the thread struct, to 
+represent the number of ticks a thread is left sleeping for (-1 if awake).
 
 ---- ALGORITHMS ----
 
@@ -98,9 +98,10 @@ is a farily light-weight series of operations.
 >> A4: How are race conditions avoided when multiple threads call
 >> timer_sleep() simultaneously?
 
-Race conditions are avoided in timer_sleep() by disabling interrupts while      TODO
-changing the thread struct and blocking. Whichever call to timer_sleep() is 
-able to disable interrupts first will be able to block and sleep first.
+Race conditions are avoided in timer_sleep() by disabling interrupts while 
+changing the thread struct and blocking. Therefore, if multiple threads call 
+timer_sleep() simultaneously, only one will be able to block and sleep 
+at a time.
 
 
 >> A5: How are race conditions avoided when a timer interrupt occurs
@@ -357,7 +358,7 @@ ticks   A   B   C   A   B   C   to run
 >> them?  Does this match the behavior of your scheduler?
 
 The only uncertainties were the load_avg, since the problem did not specify its
-value, and the behavior under equal priorities. Ths load_avg does not affect
+value, and the behavior under equal priorities. The load_avg does not affect
 computations on this time interval, so we can safely ignore its value. We assume
 that this scheduler, much like the simpler schedulers implemented, operates by
 pushing threads to a (sorted) ready queue; in this case, it obeys round-robin
@@ -368,7 +369,7 @@ scheduling for threads of equal priority.
 
 Most of the scheduling occurs on intervals, and thus is placed inside the timer
 interrupt. It is likely to degrade performance, but only on the ticks in which
-the interval has finished and the mlfqr variables need to be updated.
+the interval has finished and the mlfqs variables need to be updated.
 
 
 ---- RATIONALE ----
@@ -378,12 +379,28 @@ the interval has finished and the mlfqr variables need to be updated.
 >> time to work on this part of the project, how might you choose to
 >> refine or improve your design?
 
+One design choice was to initialize the mlfqs fields of threads in 
+thread_create() and thread_init() and not anywhere in init_thread(). The 
+reason for this was that thread_create() is called iff it has a parent, where 
+as thread_init() does not, and both types of threads have different rules 
+for setting the mlfqs fields.
+
+Another design choice was to isolate mlfqs mode from normal priority 
+preemption mode. This reduce the probability of one mode potentially causing 
+bugs in the other.
+
 >> C6: The assignment explains arithmetic for fixed-point math in
 >> detail, but it leaves it open to you to implement it.  Why did you
 >> decide to implement it the way you did?  If you created an
 >> abstraction layer for fixed-point math, that is, an abstract data
 >> type and/or a set of functions or macros to manipulate fixed-point
 >> numbers, why did you do so?  If not, why not?
+
+We chose to abstract the fixed-point arithmetic outside of the thread.c code 
+and into another module with an abstract data type. The advantage of this was 
+that finding bugs (ie. knowing what number represented what data-type) as 
+well as understanding the math in the code was much easier after testing 
+the fixed-point layer separately.
 
 
 			  SURVEY QUESTIONS
