@@ -121,7 +121,7 @@ void sema_up(struct semaphore *sema) {
 
     if (!list_empty(&sema->waiters)) {
 
-        /* Min because this function wants (oddly enough) a < function, not > */
+        /* Max because this function wants (oddly enough) a < function, not > */
         max = list_max(&sema->waiters, (list_less_func*) thread_queue_compare, NULL);
         list_remove(max); /* Basically pop_max, but less overhead. */
         t = list_entry(max, struct thread, elem);
@@ -344,6 +344,20 @@ void cond_wait(struct condition *cond, struct lock *lock) {
     lock_acquire(lock);
 }
 
+/* Mimics a "less-than" function*/
+static bool condvar_queue_compare(const struct list_elem *a,
+                                  const struct list_elem *b,
+                                  void *aux UNUSED) {    
+    struct semaphore sa = list_entry(a, struct semaphore_elem, elem)->semaphore;
+    struct semaphore sb = list_entry(b, struct semaphore_elem, elem)->semaphore;
+
+    struct thread *ta = list_entry(
+        list_front(&sa.waiters), struct thread, elem);
+    struct thread *tb = list_entry(
+        list_front(&sb.waiters), struct thread, elem);
+    return ta->priority < tb->priority;
+}
+
 /*! If any threads are waiting on COND (protected by LOCK), then
     this function signals one of them to wake up from its wait.
     LOCK must be held before calling this function.
@@ -357,11 +371,16 @@ void cond_signal(struct condition *cond, struct lock *lock UNUSED) {
     ASSERT(!intr_context ());
     ASSERT(lock_held_by_current_thread (lock));
 
-    // TODO: Instead of popping the front of the list, pop the highest priority
-    // waiter.
+    struct list_elem *max;
+
     if (!list_empty(&cond->waiters)) {
-        sema_up(&list_entry(list_pop_front(&cond->waiters),
-                            struct semaphore_elem, elem)->semaphore);
+        /* Max because this function wants (oddly enough) a < function, not > */
+        max = list_max(&cond->waiters, (list_less_func*) condvar_queue_compare, 
+            NULL);
+        list_remove(max); /* Basically pop_max, but less overhead. */
+
+        sema_up(&list_entry(max, struct semaphore_elem, elem)->semaphore);
+        thread_yield();
     }
 }
 
