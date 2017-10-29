@@ -300,6 +300,10 @@ to run under.
 /* Coefficient of decay in calculating load_avg. */
 #define LOAD_AVG_DECAY    fixedp_divide(fixedp_from_int(TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 
+typedef int fixedp;
+
+#define fp_f    (2<<(14-1)) /* Using 17.14 fixed point representation. *
+
 
 A new type "typedef int fixedp;" was created to represent floating point 
 numbers as integers in the kernel and implemented in libs/kernel.
