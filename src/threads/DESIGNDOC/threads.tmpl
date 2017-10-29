@@ -132,11 +132,22 @@ this might lead to difficulties with race conditions.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+A default value for "ticks_until_wake" when a thread is not asleep.
+
 #define THREAD_AWAKE -1  
 
 
-The stuct thread was changed in thread.h to include the "ticks_until_wake" 
-attribute, which represents the number of ticks left that the thread will sleep. 
+Several attributes were added to the thread struct. A "ticks_until_wake" 
+attribute was added to assist in timed sleep. "Nice" and "recent_cpu" values
+were for use in MLFQS priority computations. Since "priority" can be changed
+through priority donations, threads keep track of their original 'base' 
+priority in the attibute "priority_org". To allow threads to compute their
+priority (= max(priority_org, donated priorities)), a list "locks" was added.
+Since locks keep track of their holders, this allows for priority to be
+calculated whenever needed. To allow a thread to donate its priority, a
+"blocked_lock" attribute was added; whenever a thread is blocked on a lock, it 
+uses this attribute to signal the holder of said lock to recompute its 
+priority.
 
 struct thread {
     /*! Owned by thread.c. */
@@ -146,7 +157,7 @@ struct thread {
     char name[16];                      /*!< Name (for debugging purposes). */
     uint8_t *stack;                     /*!< Saved stack pointer. */
     int priority;                       /*!< Priority. */
-    struct list_elem allelem;           /*!< List element for all threads list. */
+    struct list_elem allelem;           /*!< List element for allthreads list.*/
     /**@}*/
 
     /* User-added stuff. */
@@ -227,8 +238,6 @@ TIME 8:                     T2 (High) ---> [Lock A, Lock B]
                                                      T3 (High)
 TIME 9:                   (Med)    T2 releases locks A and B and loses donation
 TIME 10:                                             T3 (High) ---> [Lock B]
-
-
 
 
 ---- ALGORITHMS ----
