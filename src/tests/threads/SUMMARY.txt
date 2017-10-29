@@ -9,12 +9,12 @@ priority-donate-one             PASS
 priority-donate-multiple        PASS
 priority-donate-multiple2       PASS
 priority-donate-nest            PASS
-priority-donate-sema            
+priority-donate-sema            PASS
 priority-donate-lower           PASS
 priority-donate-chain           PASS
 priority-fifo                   PASS
 priority-preempt                PASS
-priority-sema                   
+priority-sema                   PASS
 priority-condvar                PASS
 mlfqs-load-1                    PASS 
 mlfqs-load-60                   PASS - ~0.8% error
@@ -24,4 +24,4 @@ mlfqs-fair-2                    PASS
 mlfqs-fair-20                   PASS - ~2% error
 mlfqs-nice-2                    PASS - ~1% error
 mlfqs-nice-10                   PASS - 0-3% errror
-mlfqs-block                     FAIL
+mlfqs-block                     PASS

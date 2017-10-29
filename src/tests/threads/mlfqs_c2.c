@@ -11,6 +11,7 @@
 #include "threads/init.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
+#include "devices/timer.h"
 
 static thread_func simple_thread_func;
 
