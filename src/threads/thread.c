@@ -104,9 +104,10 @@ void print_run_queue(void) {
 
 void print_all_priorities(void) {
     struct list_elem *e;
-    for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
+    for (e = list_begin (&all_list); e != list_end (&all_list); e = list_next (e)) {
         struct thread *t = list_entry(e, struct thread, elem);
-        printf("%d ", t->priority);
+        if (t != idle_thread)
+            printf("n%s-p%d-c%d  ", t->name, t->priority, t->recent_cpu);
     }
     printf("\n");
 }
@@ -366,7 +367,7 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     if (thread_mlfqs) {
         t->nice = thread_get_nice();
         t->recent_cpu = thread_current()->recent_cpu;
-        thread_update_priority_in_mlfqs(thread_current(), NULL);
+        thread_update_priority_in_mlfqs(t, NULL);
     }
 
     /* Stack frame for kernel_thread(). */
@@ -610,8 +611,8 @@ static void thread_update_priority_in_mlfqs(struct thread *t, void *aux UNUSED) 
     /* Set priority = PRI_MAX - (recent_cpu / 4) - (nice * 2) */
     
     // Ceil the penalty since we want priority to be "rounded down"
-    int cpu_penalty = fixedp_to_int_floored(
-        fixedp_divide_by_int(t->recent_cpu, 4)) + 1;
+    int cpu_penalty = fixedp_to_int_ceiled(
+        fixedp_divide_by_int(t->recent_cpu, 4));
 
     t->priority = PRI_MAX - cpu_penalty - (t->nice * 2);
 
@@ -657,6 +658,10 @@ static void thread_update_recent_cpu(struct thread *t, void *aux UNUSED) {
             )
         );
     t->recent_cpu = fixedp_add_with_int(t->recent_cpu, t->nice);
+    if (t != idle_thread) {
+        printf("New cpu: %d, name: %s, priority: %d, current: %s\n", 
+            (int) t->recent_cpu, t->name, t->priority, thread_current()->name);
+    }
 }
 
 /*! Returns 100 times the current thread's recent_cpu value. */
