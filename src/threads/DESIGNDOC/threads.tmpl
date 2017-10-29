@@ -12,15 +12,18 @@ Vaibhav Anand <vanand@caltech.edu>
 Nikhil  Gupta <nkgupta@caltech.edu>
 Michael Hashe <mhashe@caltech.edu>
 
->> Specify how many late tokens you are using on this assignment:  
-2
+
+>> Specify how many late tokens you are using on this assignment:
+
+2 late tokens.  
+
 
 >> What is the Git repository and commit hash for your submission?
    (You only need to include the commit-hash in the file you submit
    on Moodle.)
 
-   Repository URL:  https://github.com/MichaelHashe/CS124-OS
-   commit        :                                                              TODO
+Repository URL:  https://github.com/MichaelHashe/CS124-OS
+commit        :                                                                 TODO
 
 ---- PRELIMINARIES ----
 
@@ -41,12 +44,14 @@ These questions will help us to keep track of the difficulty level of
 assignments, as well as keeping track of which team members worked on
 which parts.
 
+
 >> L1: How many hours did each team member spend on this assignment?
    Make sure that each member's total time is listed.
 
 Vaibhav: ~6+5+10+4+4+SUN                                                        TODO
 Nikhil : 20 hours
-Michael: ~5+5+... hours
+Michael: 20 hours
+
 
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
@@ -65,36 +70,38 @@ Michael: priority preemption, fixedp struct implementaiton.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
-                                                                                TODO
+No data structures were altered in this portion of the project.
+
 
 ---- ALGORITHMS ----
 
 >> A2: Briefly describe what happens in a call to timer_sleep(),
 >> including the effects of the timer interrupt handler.
 
-The function asserts that the thread has not already disabled interrupts, 
-before disabling them, at which point it sets the number of ticks until it 
-should awake in the current thread's struct to the argument it receives. 
-It then blocks.
+The function first checks that interrupts are enabled, at which point it 
+disables interrupts and stores its argument ("ticks") in the corresponding
+thread structure ("ticks_until_wake"). It then blocks.
 
-When the thread becomes unblocked later by the scheduler, it resumes in the 
-function timer sleep, where it then re-enables interrupts and returns.
+When the thread is unblocked, it re-enables interrupts and returns.
+
 
 >> A3: What steps are taken to minimize the amount of time spent in
 >> the timer interrupt handler?
 
-Instead of scheduling individual timer interrupts for sleeping, it is checked 
-whether any thread is sleeping and needs to be woken during the thread_tick() 
-call in thread.c, which is anyway called everytime the clock progresses a tick. TODO
+The majority of time is spent in the subroutine "thread_ticks", which 
+updates certain statistics and decrements "ticks_until_wakes" counters. This
+is a farily light-weight series of operations.
+
 
 ---- SYNCHRONIZATION ----
 
 >> A4: How are race conditions avoided when multiple threads call
 >> timer_sleep() simultaneously?
 
-Race conditions are avoided in timer_sleep() by disabling interrupts while 
+Race conditions are avoided in timer_sleep() by disabling interrupts while      TODO
 changing the thread struct and blocking. Whichever call to timer_sleep() is 
 able to disable interrupts first will be able to block and sleep first.
+
 
 >> A5: How are race conditions avoided when a timer interrupt occurs
 >> during a call to timer_sleep()?
@@ -102,20 +109,18 @@ able to disable interrupts first will be able to block and sleep first.
 It disables interrupts when it schedules itself to awaken later and blocks, 
 so it cannot be interrupted by another timer interrupts during that time.
 
+
 ---- RATIONALE ----
 
 >> A6: Why did you choose this design?  In what ways is it superior to
 >> another design you considered?
 
-Another option would have been to create a queue of sleeping threads instead 
-of changing the struct of thread and check it every tick instead, but this is 
-unnecessary (although many threads might scale better).
+We could have created a queue of sleeping threads instead, but this is 
+an unnecessary complication (although it might scale better for many threads).
 
-Another option would have been to possible register the interrupt at a lower 
-level, but since thread_tick() is called every tick in thread.c and it would 
-avoid potential race conditions to use the same handler (as opposed to two 
-handlers with different measures of ticks passed), it made sense to use 
-thread_tick() in thread.c
+We could also have reduced timer overhead by registering the interrupt at a 
+lower frequency, or potentially by having multiple timer interrupts. However,
+this might lead to difficulties with race conditions.
 
 
 			 PRIORITY SCHEDULING
