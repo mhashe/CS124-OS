@@ -46,9 +46,11 @@ typedef int tid_t;
 /* Number of ticks in interval used for averaging load into load_avg. */
 #define LOAD_AVG_PERIOD 6000
 /* Coefficient of momentum in calculating load_avg. */
-#define LOAD_AVG_MOMENTUM fixedp_divide(fixedp_from_int(LOAD_AVG_PERIOD - TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
+#define LOAD_AVG_MOMENTUM fixedp_divide( \
+fixedp_from_int(LOAD_AVG_PERIOD - TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 /* Coefficient of decay in calculating load_avg. */
-#define LOAD_AVG_DECAY    fixedp_divide(fixedp_from_int(TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
+#define LOAD_AVG_DECAY    \
+  fixedp_divide(fixedp_from_int(TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 
 /*! A kernel thread or user process.
 
@@ -119,7 +121,7 @@ struct thread {
     char name[16];                      /*!< Name (for debugging purposes). */
     uint8_t *stack;                     /*!< Saved stack pointer. */
     int priority;                       /*!< Priority. */
-    struct list_elem allelem;           /*!< List element for all threads list. */
+    struct list_elem allelem;         /*!< List element for all threads list. */
     /**@}*/
 
     /* User-added stuff. */
@@ -189,9 +191,8 @@ int thread_get_load_avg(void);
 
 void sort_ready_list(void);
 
-void print_run_queue(void);
+void print_ready_queue(void);
 void print_all_priorities(void);
-void print_is_ready_empty(void);
 
 void recalculate_priority(struct thread *t);
 

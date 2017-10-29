@@ -122,7 +122,8 @@ void sema_up(struct semaphore *sema) {
     if (!list_empty(&sema->waiters)) {
 
         /* Max because this function wants (oddly enough) a < function, not > */
-        max = list_max(&sema->waiters, (list_less_func*) thread_queue_compare, NULL);
+        max = list_max(&sema->waiters, 
+                       (list_less_func*) thread_queue_compare, NULL);
         list_remove(max); /* Basically pop_max, but less overhead. */
         t = list_entry(max, struct thread, elem);
         thread_unblock(t);
@@ -212,17 +213,12 @@ void lock_acquire(struct lock *lock) {
     int success = sema_try_down(&lock->semaphore);
 
     if (!success) {
-
-        // printf("%s ELEVATING %s\n", thread_current()->name, lock->holder->name);
-        // printf("%d ELEVATING %d\n", thread_get_priority(), lock->holder->priority);
-
         // If couldn't get lock, that means that someone else is holding it. As
         // such, we elevate them to our priority.
         list_push_back(&lock->semaphore.waiters, &thread_current()->elem);
         thread_current()->blocked_lock = lock;
 
         recalculate_priority(lock->holder);
-        sort_ready_list();
 
         sema_down(&lock->semaphore);
     }
@@ -262,7 +258,6 @@ void lock_release(struct lock *lock) {
     enum intr_level old_level;
     old_level = intr_disable();
 
-    // printf("RELEASE %s (%d)\n", thread_current()->name, thread_current()->priority_org);
     ASSERT(lock != NULL);
     ASSERT(lock_held_by_current_thread(lock));
 
@@ -340,7 +335,8 @@ void cond_wait(struct condition *cond, struct lock *lock) {
     lock_acquire(lock);
 }
 
-/* Mimics a "less-than" function*/
+/* Mimics a "less-than" function for conditional variables. We need to go into 
+   the structure a bit to figure out the ordering.*/
 static bool condvar_queue_compare(const struct list_elem *a,
                                   const struct list_elem *b,
                                   void *aux UNUSED) {    

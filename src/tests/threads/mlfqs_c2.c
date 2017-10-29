@@ -46,7 +46,7 @@ simple_thread_func (void *aux UNUSED)
   /* Print stats, sleep until yield. */
   // for (int i = 0; i < 5; i++) {
   msg ("Thread %s computing!", thread_name ());
-  print_run_queue();
+  print_ready_queue();
   print_all_priorities();
   msg ("\n");
 
