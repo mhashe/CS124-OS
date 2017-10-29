@@ -81,9 +81,8 @@ bool thread_queue_compare(const struct list_elem *a,
                              void *aux UNUSED);
 void print_run_queue(void);
 void print_all_priorities(void);
-static struct thread * thread_get_ready_front(void);
+static struct thread * thread_get_ready_max(void);
 static void thread_wake(struct thread *t, void *aux UNUSED);
-static void thread_defer_to_max_priority(int old_priority);
 
 /* Multi-level feedback queue scheduling */
 static void thread_update_mlfqs_state(void);
@@ -112,6 +111,10 @@ void print_all_priorities(void) {
     printf("\n");
 }
 
+void print_is_ready_empty(void) {
+    printf("%d\n", list_empty(&ready_list));
+}
+
 /* Mimics a "less-than" function*/
 bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
@@ -126,8 +129,8 @@ void sort_ready_list(void) {
     list_sort(&ready_list, (list_less_func*) thread_queue_compare, NULL);
 }
 
-/* Returns the thread at the front of the ready queue without popping it. */
-static inline struct thread * thread_get_ready_front(void) {
+/* Returns the max-priority thread in tthe ready queue without popping it. */
+static inline struct thread * thread_get_ready_max(void) {
     return list_entry(list_max(&ready_list, 
         (list_less_func*) thread_queue_compare, NULL), struct thread, elem);
 }
@@ -248,6 +251,10 @@ void thread_tick(void) {
     /* Add threads to ready queue that have been blocked and are due to be 
     woken up. */
     thread_foreach((thread_action_func *) &thread_wake, NULL);
+    // printf("              Readys: %d\n", list_empty(&ready_list));
+
+    /* Defer to max priority */
+    thread_defer_to_max_priority();
 
     intr_set_level(old_level);
 }
@@ -279,6 +286,9 @@ static void thread_update_mlfqs_state(void) {
     if (timer_ticks() % PRI_RECALC_PERIOD == 0) {
         thread_foreach((thread_action_func *) 
             &thread_update_priority_in_mlfqs, NULL);
+
+        /* Defer to max priority */
+        thread_defer_to_max_priority();
     }
 }
 
@@ -514,7 +524,8 @@ void thread_set_priority(int new_priority) {
     thread_current()->priority_org = new_priority;
     recalculate_priority(thread_current());
 
-    thread_defer_to_max_priority(old_priority);
+    if (new_priority < old_priority)
+        thread_defer_to_max_priority();
 
     // TODO: if user raises priority, do we need to trigger donations?
 
@@ -524,13 +535,14 @@ void thread_set_priority(int new_priority) {
 /* Yields the cpu if the new priority of the current thread is lowered and 
 is now less than the priority at the fron the of ready queue. This should 
 not be interrupted, and the calling function should take care of that. */
-static void thread_defer_to_max_priority(int old_priority) {
+void thread_defer_to_max_priority(void) {
     int new_priority = thread_current()->priority;
-
+    
     /* If new_priority has less priority than old_priority, then check if 
     ready queue has a has a higher priority thread than it and yield if so. */
-    if ((new_priority < old_priority) && !list_empty(&ready_list)) {
-        if (thread_get_ready_front()->priority > new_priority) {
+    if (!list_empty(&ready_list)) {
+        // printf("DEFERMENT!\n");
+        if (thread_get_ready_max()->priority > new_priority) {
             // TODO: does disabling interrupts prevent intr_context() from being true?
             if (intr_context()) {
                 intr_yield_on_return();
@@ -570,7 +582,8 @@ void thread_set_nice(int nice) {
     thread_update_priority_in_mlfqs(thread_current(), NULL);
 
     /* If the running thread no long has the highest priority, yield. */
-    thread_defer_to_max_priority(old_priority);
+    if (thread_current()->priority < old_priority)
+        thread_defer_to_max_priority();
 
     intr_set_level(old_level);
 }

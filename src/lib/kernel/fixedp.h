@@ -13,11 +13,13 @@ typedef int fixedp;
 fixedp fixedp_from_int(int n);
 
 
-/* Converts int into fixed-point by scaling down, rounding towards zero. */
+/* Converts fixed-point into int by scaling down, rounding towards zero. */
 int fixedp_to_int_floored(fixedp x);
 
+/* Converts fixed-point into int by scaling up. */
+int fixedp_to_int_ceiled(fixedp x);
 
-/* Converts int into fixed-point by scaling down, towards nearest int. */
+/* Converts fixed-point into int by scaling down, towards nearest int. */
 int fixedp_to_int_nearest(fixedp x);
 
 

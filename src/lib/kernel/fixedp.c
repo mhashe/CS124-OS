@@ -15,6 +15,14 @@ int fixedp_to_int_floored(fixedp x) {
     return x / fp_f;
 }
 
+int fixedp_to_int_ceiled(fixedp x) {
+    if (x % fp_f == 0) {
+        return x / fp_f;
+    } else {
+        return (x / fp_f) + 1;
+    }
+}
+
 
 int fixedp_to_int_nearest(fixedp x) {
     /* Perturb number so that divison has desired effect. */
