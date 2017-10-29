@@ -130,12 +130,6 @@ void sema_up(struct semaphore *sema) {
     sema->value++;
 
     intr_set_level(old_level);
-
-    // if (intr_context()) {
-    //     intr_yield_on_return();
-    // } else {
-    //     thread_yield();
-    // }
 }
 
 static void sema_test_helper(void *sema_);
