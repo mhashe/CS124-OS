@@ -79,7 +79,7 @@ static tid_t allocate_tid(void);
 bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
                              void *aux UNUSED);
-void print_run_queue(void);
+void print_ready_queue(void);
 void print_all_priorities(void);
 static struct thread * thread_get_ready_max(void);
 static void thread_wake(struct thread *t, void *aux UNUSED);
@@ -91,19 +91,24 @@ static void thread_update_recent_cpu(struct thread *t, void *aux UNUSED);
 static int thread_get_num_ready_and_run(void);
 
 
-void print_run_queue(void) {
+/* Prints threads in the ready queue with their priorities. */
+void print_ready_queue(void) {
     struct list_elem *e;
     printf("READY_QUEUE: \n");
-    for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
+    for (e = list_begin (&ready_list); 
+         e != list_end (&ready_list); e = list_next (e)) {
         struct thread *t = list_entry(e, struct thread, elem);
         printf("%s(%d) ", t->name, t->priority);
     }
     printf("\n");
 }
 
+
+/* Prints name, priority, and recent cpu for all threads. */
 void print_all_priorities(void) {
     struct list_elem *e;
-    for (e = list_begin (&all_list); e != list_end (&all_list); e = list_next (e)) {
+    for (e = list_begin (&all_list); 
+         e != list_end (&all_list); e = list_next (e)) {
         struct thread *t = list_entry(e, struct thread, elem);
         if (t != idle_thread)
             printf("n%s-p%d-c%d  ", t->name, t->priority, t->recent_cpu);
@@ -111,9 +116,6 @@ void print_all_priorities(void) {
     printf("\n");
 }
 
-void print_is_ready_empty(void) {
-    printf("%d\n", list_empty(&ready_list));
-}
 
 /* Mimics a "less-than" function*/
 bool thread_queue_compare(const struct list_elem *a,
@@ -135,14 +137,15 @@ static inline struct thread * thread_get_ready_max(void) {
         (list_less_func*) thread_queue_compare, NULL), struct thread, elem);
 }
 
-/*! Recalculates priority of thread. */
+/*! Recalculates priority of thread for priority mode, not mlfqs. */
 void recalculate_priority(struct thread *t) {
     ASSERT(is_thread(t));
     struct list_elem *e, *f;
 
     int max = t->priority_org;
 
-    for (e = list_begin(&(t->locks)); e != list_end(&(t->locks)); e = list_next(e)) {
+    for (e = list_begin(&(t->locks)); 
+         e != list_end(&(t->locks)); e = list_next(e)) {
 
         struct lock *l = list_entry(e, struct lock, elem);
         for (f = list_begin(&(l->semaphore.waiters)); 
@@ -572,7 +575,8 @@ int thread_get_nice(void) {
 /* Sets the priority of the thread using the thread's nice and recent_cpu 
 values. This should not be interrupted, and the calling function should take 
 care of that. */
-static void thread_update_priority_in_mlfqs(struct thread *t, void *aux UNUSED) {
+static void thread_update_priority_in_mlfqs(struct thread *t, 
+                                            void *aux UNUSED) {
     if (t == idle_thread)
         return;
 
@@ -604,7 +608,8 @@ int thread_get_num_ready_and_run(void) {
     int count = 0;
 
     struct list_elem *e;
-    for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
+    for (e = list_begin (&ready_list); 
+         e != list_end (&ready_list); e = list_next (e)) {
         count++;
     }
 
