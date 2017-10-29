@@ -256,8 +256,26 @@ with the waiter on each of those semaphores and taking the max one.
 >> B4: Describe the sequence of events when a call to lock_acquire()
 >> causes a priority donation.  How is nested donation handled?
 
+We disable interrupts, if they have not already been disabled. We attempt to
+acquire the lock through sema_try_down; since the lock is already held, we
+do not succeed. Before blocking, we store this thread on the lock's list
+of waiters and store the lock as the "blocked lock" for the thread. We then
+recalculate the priority of the lock's holder; this forces that thread to 
+recheck its donated priorities. If it has to update its priorities, and if it
+is also waiting on a lock, it recursively calls "recalculate_priority" on the 
+holder of the lock it is waiting on, and so on. Thus, we handled nesting to
+arbitrary depth.
+
+
 >> B5: Describe the sequence of events when lock_release() is called
 >> on a lock that a higher-priority thread is waiting for.
+
+We up the corresponding semaphore; this wakes the highest-priority thread
+currently sleeping, and schedules an interrupt once interrupts are enabled.
+We then remove the lock from the current thread's list of acquired locks, and
+recalculate its priority (i.e., without any donations corresponding to that
+lock).
+
 
 ---- SYNCHRONIZATION ----
 
@@ -278,6 +296,13 @@ by another thread.
 These condition are avoided in thread_set_priority by disabling interrupts 
 during its execution.
 
+While we did not implement it this way, this condition could also be 
+avoided through using a lock for whenever threads are changing priority, 
+which must be available for timer interrupts (since we don't want to block
+on these interrupts, we could simply check availability of this lock instead
+of explicitly acquiring it during the interrupt).
+
+
 ---- RATIONALE ----
 
 >> B7: Why did you choose this design?  In what ways is it superior to
@@ -287,7 +312,8 @@ We went through multiple iterations for the design of the priority donation
 system. At first, we tried maintaining explicit priority donations for each
 thread but that did not scale well. As such, we decided on the design where
 whenever a thread might change priority, to recalculate the priority it is going
-to run under.
+to run under. This is highly scalable, and relies on fewer lines of code than
+the alternatives we tried.
 
 
 			  ADVANCED SCHEDULER
@@ -299,38 +325,46 @@ to run under.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+Niceness values; used by the MLFQS system to calculate priority.
+
 /* Thread niceness values. */
 #define NICE_MIN -20                    /*!< Lowest niceness. */
 #define NICE_INIT 0                     /*!< Niceness of init thread. */
 #define NICE_MAX 20                     /*!< Highest niceness. */
 
+
+Various constants used in calculating priority for MLFQS. In particular,
+the last two (momentum and decay) correspond to 59/60 and 1/60.
+
 /* Multi-level feedback queue scheduling. */
 /* Number of ticks between recalculations of priority. */
 #define PRI_RECALC_PERIOD 4
+
 /* Initial values of load_avg and recent_cpu in initial thread. */
 #define LOAD_AVG_INIT 0
 #define RECENT_CPU_INIT 0
+
 /* Number of ticks in interval used for averaging load into load_avg. */
 #define LOAD_AVG_PERIOD 6000
+
 /* Coefficient of momentum in calculating load_avg. */
-#define LOAD_AVG_MOMENTUM fixedp_divide(fixedp_from_int(LOAD_AVG_PERIOD - TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
+#define LOAD_AVG_MOMENTUM fixedp_divide(fixedp_from_int(LOAD_AVG_PERIOD - 
+    TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 /* Coefficient of decay in calculating load_avg. */
-#define LOAD_AVG_DECAY    fixedp_divide(fixedp_from_int(TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
+#define LOAD_AVG_DECAY    fixedp_divide(fixedp_from_int(TIMER_FREQ), 
+    fixedp_from_int(LOAD_AVG_PERIOD))
+
+
+A fixed-point number, possessing the standard set of operations explained in
+the pintos documentation.
 
 typedef int fixedp;
 
+
+The constant scaling factor used for 17.14 fixed point representation.
+
 #define fp_f    (2<<(14-1)) /* Using 17.14 fixed point representation. *
 
-
-A new type "typedef int fixedp;" was created to represent floating point 
-numbers as integers in the kernel and implemented in libs/kernel.
-
-A global variable "static fixedp load_avg;" was created in thread.c. It 
-holds the load average for the system and is represented by a fixedp type.
-
-The fields "int nice;" and "fixedp recent_cpu" were added to the thread 
-struct, which represent the niceness and recent_cpu value of thread 
-respectively, to be used in calculating a thread's new priority.
 
 ---- ALGORITHMS ----
 
@@ -353,6 +387,7 @@ ticks   A   B   C   A   B   C   to run
 32     16  12  4   59  58  58   A
 36     20  12  4   58  58  58   C
 
+
 >> C3: Did any ambiguities in the scheduler specification make values
 >> in the table uncertain?  If so, what rule did you use to resolve
 >> them?  Does this match the behavior of your scheduler?
@@ -361,8 +396,9 @@ The only uncertainties were the load_avg, since the problem did not specify its
 value, and the behavior under equal priorities. The load_avg does not affect
 computations on this time interval, so we can safely ignore its value. We assume
 that this scheduler, much like the simpler schedulers implemented, operates by
-pushing threads to a (sorted) ready queue; in this case, it obeys round-robin
+pushing threads to the back of a ready queue; in this case, it obeys round-robin
 scheduling for threads of equal priority.
+
 
 >> C4: How is the way you divided the cost of scheduling between code
 >> inside and outside interrupt context likely to affect performance?
@@ -377,7 +413,7 @@ the interval has finished and the mlfqs variables need to be updated.
 >> C5: Briefly critique your design, pointing out advantages and
 >> disadvantages in your design choices.  If you were to have extra
 >> time to work on this part of the project, how might you choose to
->> refine or improve your design?
+>> refine or improve your design?                                               TODO
 
 One design choice was to initialize the mlfqs fields of threads in 
 thread_create() and thread_init() and not anywhere in init_thread(). The 
@@ -396,11 +432,13 @@ bugs in the other.
 >> type and/or a set of functions or macros to manipulate fixed-point
 >> numbers, why did you do so?  If not, why not?
 
-We chose to abstract the fixed-point arithmetic outside of the thread.c code 
-and into another module with an abstract data type. The advantage of this was 
-that finding bugs (ie. knowing what number represented what data-type) as 
-well as understanding the math in the code was much easier after testing 
-the fixed-point layer separately.
+An abstraction layer was implemented. This was largely for purposes of 
+consistency and code flow; all these operations could be fairly easily
+written in-line, but we found it easier to explicitly record whether or not
+a number is intended to be in fixed-point notation. Putting all this algebraic
+clutter in fixed_point.c also simplifies its use in the rest of the project. 
+It allowed code to be written in thread.c that could be understood easily 
+and without mixing up the representation of different numbers.
 
 
 			  SURVEY QUESTIONS
@@ -415,15 +453,31 @@ penalized.  We can't fix things until we know about them.  :-)
 >> In your opinion, was this assignment, or any of the parts of it, too
 >> easy or too hard?  Did it take too long or too little time?
 
+Threading has a habit of introducing very subtle and difficult-to-fix bugs, 
+many of which can't be easily tracked down even the tools provided (i.e.,
+backtrace). Any improvements to such tools would make the assignment less
+time-consuming.
+
+
 >> Did you find that working on a particular part of the assignment gave
 >> you greater insight into some aspect of OS design?
+
+It was interesting to see the practical consequences of locks at play (namely,
+the necessity of priority donation, the benefits of dynamic priority, etc.).
+
 
 >> Were there any parts of the assignment that you felt were unnecessarily
 >> tedious or pointless?
 
+De-bugging was tedious, but that's pretty standard.
+
+
 >> Is there some particular fact or hint we should give students in
 >> future quarters to help them solve the problems?  Conversely, did you
 >> find any of our guidance to be misleading?
+
+None seemed really necessary; guidance was not misleading.
+
 
 >> Do you have any suggestions for the instructor and/or TAs to more
 >> effectively assist students, either for future quarters or the remaining

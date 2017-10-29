@@ -238,8 +238,7 @@ void thread_tick(void) {
     enum intr_level old_level;
     old_level = intr_disable();
 
-    /* Enforce preemption. */ // TODO: Should we avoid a high priority thread 
-    // from facing the scheduler unnecessarily?
+    /* Enforce preemption. */
     if (++thread_ticks >= TIME_SLICE)
         intr_yield_on_return();
 
