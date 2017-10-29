@@ -106,6 +106,16 @@ struct thread {
     /**@}*/
 };
 
+The lock struct was changed to add an elem variable, which allows them to be 
+stored in lists by their (thread) owner.
+
+struct lock {
+    struct thread *holder;      /*!< Thread holding lock (for debugging). */
+    struct semaphore semaphore; /*!< Binary semaphore controlling access. */
+
+    struct list_elem elem;      /*!< So threads know which locks they have. */
+};
+
 ---- ALGORITHMS ----
 
 >> A2: Briefly describe what happens in a call to timer_sleep(),
