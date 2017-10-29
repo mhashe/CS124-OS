@@ -128,6 +128,7 @@ void sema_up(struct semaphore *sema) {
         thread_unblock(t);
     }
     sema->value++;
+    thread_defer_to_max_priority();
 
     intr_set_level(old_level);
 }
@@ -269,6 +270,7 @@ void lock_release(struct lock *lock) {
     sema_up(&lock->semaphore);
 
     if (thread_mlfqs) {
+        thread_defer_to_max_priority();
         intr_set_level(old_level);
         return;
     }

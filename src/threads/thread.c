@@ -254,7 +254,7 @@ void thread_tick(void) {
     // printf("              Readys: %d\n", list_empty(&ready_list));
 
     /* Defer to max priority */
-    thread_defer_to_max_priority();
+    // thread_defer_to_max_priority();
 
     intr_set_level(old_level);
 }
