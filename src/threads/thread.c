@@ -16,6 +16,8 @@
 #include "userprog/process.h"
 #endif
 
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+
 /*! Random value for struct thread's `magic' member.
     Used to detect stack overflow.  See the big comment at the top
     of thread.h for details. */
@@ -137,6 +139,26 @@ void sort_ready_list(void) {
 /* Returns the thread at the front of the ready queue without popping it. */
 static inline struct thread * thread_get_ready_front(void) {
     return list_entry(list_front(&ready_list), struct thread, elem);
+}
+
+/*! Recalculates priority of thread. */
+void recalculate_priority(struct thread *t) {
+    struct list_elem *e, *f;
+
+    int max = t->priority_org;
+
+    for (e = list_begin(t->locks); e != list_end(t->locks); e = list_next(e)) {
+
+        struct lock *l = list_entry(e, struct lock, elem)
+        for (f = list_begin(l->semaphore->waiters); 
+             f != list_end(l->semaphore->waiters); f = list_next(f)) {
+
+            struct thread *t = list_entry(f, struct thread, elem);
+
+            max = MAX(max, t->priority);
+
+        }
+    }
 }
 
 /*! Initializes the threading system by transforming the code
