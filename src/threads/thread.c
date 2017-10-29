@@ -111,15 +111,13 @@ void print_all_priorities(void) {
     printf("\n");
 }
 
-/* Compares the value of two list elements A and B, given auxiliary data AUX.
-   Returns true if A is greater than B, or false if A is less than or equal to
-   B. */
+/* Mimics a "less-than" function*/
 bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
                              void *aux UNUSED) {    
     struct thread *ta = list_entry(a, struct thread, elem);
     struct thread *tb = list_entry(b, struct thread, elem);
-    return ta->priority > tb->priority;
+    return ta->priority < tb->priority;
 }
 
 
@@ -138,7 +136,9 @@ void sort_ready_list(void) {
 
 /* Returns the thread at the front of the ready queue without popping it. */
 static inline struct thread * thread_get_ready_front(void) {
-    return list_entry(list_front(&ready_list), struct thread, elem);
+    return list_entry(list_max(&ready_list, 
+        (list_less_func*) thread_queue_compare, NULL), struct thread, elem);
+    // return list_entry(list_front(&ready_list), struct thread, elem);
 }
 
 /*! Recalculates priority of thread. */
@@ -773,10 +773,15 @@ static void * alloc_frame(struct thread *t, size_t size) {
     thread can continue running, then it will be in the run queue.)  If the
     run queue is empty, return idle_thread. */
 static struct thread * next_thread_to_run(void) {
+    struct list_elem *max;
+    
     if (list_empty(&ready_list))
       return idle_thread;
     else
-      return list_entry(list_pop_front(&ready_list), struct thread, elem);
+      max = list_max(&ready_list, (list_less_func*) thread_queue_compare, NULL);
+      list_remove(max); /* Basically pop_max, but less overhead. */
+      return list_entry(max, struct thread, elem);
+      // return list_entry(list_pop_front(&ready_list), struct thread, elem);
 }
 
 /*! Completes a thread switch by activating the new thread's page tables, and,
