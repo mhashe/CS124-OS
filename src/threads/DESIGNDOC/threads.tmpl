@@ -64,47 +64,7 @@ Michael: priority preemption, fixedp struct implementaiton.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
-The stuct thread was changed in thread.h to include the "ticks_until_wake" 
-attribute, which represents the number of ticks left that the thread will sleep. 
-
-struct thread {
-    /*! Owned by thread.c. */
-    /**@{*/
-    tid_t tid;                          /*!< Thread identifier. */
-    enum thread_status status;          /*!< Thread state. */
-    char name[16];                      /*!< Name (for debugging purposes). */
-    uint8_t *stack;                     /*!< Saved stack pointer. */
-    int priority;                       /*!< Priority. */
-    struct list_elem allelem;           /*!< List element for all threads list. */
-    /**@}*/
-
-    /* User-added stuff. */
-    int64_t ticks_until_wake;           /*!< Ticks until done sleeping. */
-    int nice;                           /*!< Nice value. */
-    fixedp recent_cpu;                  /*!< Recent cpu time. */
-
-    int priority_org;                   /*!< Stores original priority when
-                                             when elevated. */
-    struct list locks;                  /*!< Locks which thread owns. */
-    struct lock *blocked_lock;           /*!< Lock which thread wants. */
-
-    /*! Shared between thread.c and synch.c. */
-    /**@{*/
-    struct list_elem elem;              /*!< List element. */
-    /**@}*/
-
-#ifdef USERPROG
-    /*! Owned by userprog/process.c. */
-    /**@{*/
-    uint32_t *pagedir;                  /*!< Page directory. */
-    /**@{*/
-#endif
-
-    /*! Owned by thread.c. */
-    /**@{*/
-    unsigned magic;                     /* Detects stack overflow. */
-    /**@}*/
-};
+                                                                                TODO
 
 ---- ALGORITHMS ----
 
@@ -166,8 +126,11 @@ thread_tick() in thread.c
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
-locks is all the locks that the current thread holds. 
-blocked_lock is the lock which this thread is trying to get.
+#define THREAD_AWAKE -1  
+
+
+The stuct thread was changed in thread.h to include the "ticks_until_wake" 
+attribute, which represents the number of ticks left that the thread will sleep. 
 
 struct thread {
     /*! Owned by thread.c. */
@@ -206,6 +169,17 @@ struct thread {
     /**@{*/
     unsigned magic;                     /* Detects stack overflow. */
     /**@}*/
+};
+
+
+The lock struct was changed to add an elem variable, which allows them to be 
+stored in lists by their (thread) owner.
+
+struct lock {
+    struct thread *holder;      /*!< Thread holding lock (for debugging). */
+    struct semaphore semaphore; /*!< Binary semaphore controlling access. */
+
+    struct list_elem elem;      /*!< So threads know which locks they have. */
 };
 
 
@@ -307,6 +281,29 @@ to run under.
 >> C1: Copy here the declaration of each new or changed `struct' or
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
+
+/* Thread niceness values. */
+#define NICE_MIN -20                    /*!< Lowest niceness. */
+#define NICE_INIT 0                     /*!< Niceness of init thread. */
+#define NICE_MAX 20                     /*!< Highest niceness. */
+
+/* Multi-level feedback queue scheduling. */
+/* Number of ticks between recalculations of priority. */
+#define PRI_RECALC_PERIOD 4
+/* Initial values of load_avg and recent_cpu in initial thread. */
+#define LOAD_AVG_INIT 0
+#define RECENT_CPU_INIT 0
+/* Number of ticks in interval used for averaging load into load_avg. */
+#define LOAD_AVG_PERIOD 6000
+/* Coefficient of momentum in calculating load_avg. */
+#define LOAD_AVG_MOMENTUM fixedp_divide(fixedp_from_int(LOAD_AVG_PERIOD - TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
+/* Coefficient of decay in calculating load_avg. */
+#define LOAD_AVG_DECAY    fixedp_divide(fixedp_from_int(TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
+
+typedef int fixedp;
+
+#define fp_f    (2<<(14-1)) /* Using 17.14 fixed point representation. *
+
 
 A new type "typedef int fixedp;" was created to represent floating point 
 numbers as integers in the kernel and implemented in libs/kernel.
