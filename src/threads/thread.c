@@ -249,15 +249,6 @@ void thread_tick(void) {
     thread_foreach((thread_action_func *) &thread_wake, NULL);
 
     intr_set_level(old_level);
-
-
-    /* If any of newly ready threads have higher priority than current thread,
-       run once this interrupt completes. */
-    if (!list_empty(&ready_list)) {
-        if (thread_get_ready_front()->priority > thread_current()->priority) {
-            intr_yield_on_return();
-        }
-    }
 }
 
 static void thread_update_mlfqs_state(void) {
