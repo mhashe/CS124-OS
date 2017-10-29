@@ -187,13 +187,16 @@ void thread_set_nice(int);
 int thread_get_recent_cpu(void);
 int thread_get_load_avg(void);
 
-void thread_insert_ordered(struct list *lst, struct list_elem *elem);
 void sort_ready_list(void);
 
 void print_run_queue(void);
 void print_all_priorities(void);
 
 void recalculate_priority(struct thread *t);
+
+bool thread_queue_compare(const struct list_elem *a,
+                             const struct list_elem *b,
+                             void *aux UNUSED);
 
 
 #endif /* threads/thread.h */

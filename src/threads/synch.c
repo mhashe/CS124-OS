@@ -51,6 +51,7 @@ void sema_init(struct semaphore *sema, unsigned value) {
 
     sema->value = value;
     list_init(&sema->waiters);
+
 }
 
 /*! Down or "P" operation on a semaphore.  Waits for SEMA's value
@@ -71,7 +72,8 @@ void sema_down(struct semaphore *sema) {
     while (sema->value == 0) {
         if (is_interior(&thread_current()->elem))
             list_remove(&thread_current()->elem);
-        thread_insert_ordered(&sema->waiters, &thread_current()->elem);
+
+        list_push_back(&sema->waiters, &thread_current()->elem);        
         thread_block();
     }
 
@@ -109,6 +111,8 @@ bool sema_try_down(struct semaphore *sema) {
 
     This function may be called from an interrupt handler. */
 void sema_up(struct semaphore *sema) {
+    struct list_elem *max;
+    struct thread *t;
     enum intr_level old_level;
 
     ASSERT(sema != NULL);
@@ -116,10 +120,15 @@ void sema_up(struct semaphore *sema) {
     old_level = intr_disable();
 
     if (!list_empty(&sema->waiters)) {
-        thread_unblock(list_entry(list_pop_front(&sema->waiters),
-                                  struct thread, elem));
+
+        /* Min because this function wants (oddly enough) a < function, not > */
+        max = list_max(&sema->waiters, (list_less_func*) thread_queue_compare, NULL);
+        list_remove(max); /* Basically pop_max, but less overhead. */
+        t = list_entry(max, struct thread, elem);
+        thread_unblock(t);
     }
     sema->value++;
+
     intr_set_level(old_level);
 }
 
@@ -208,7 +217,7 @@ void lock_acquire(struct lock *lock) {
 
         // If couldn't get lock, that means that someone else is holding it. As
         // such, we elevate them to our priority.
-        thread_insert_ordered(&lock->semaphore.waiters, &thread_current()->elem);
+        list_push_back(&lock->semaphore.waiters, &thread_current()->elem);
         thread_current()->blocked_lock = lock;
 
         recalculate_priority(lock->holder);
@@ -222,6 +231,7 @@ void lock_acquire(struct lock *lock) {
 
     intr_set_level(old_level);
 }
+
 
 /*! Tries to acquires LOCK and returns true if successful or false
     on failure.  The lock must not already be held by the current
@@ -262,8 +272,6 @@ void lock_release(struct lock *lock) {
         intr_set_level(old_level);
         return;
     }
-
-    int old_priority = thread_current()->priority;
 
     list_remove(&lock->elem);
     thread_set_priority(thread_current()->priority_org);
