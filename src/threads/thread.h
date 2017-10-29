@@ -195,6 +195,10 @@ void print_all_priorities(void);
 
 void recalculate_priority(struct thread *t);
 
+bool thread_queue_compare(const struct list_elem *a,
+                             const struct list_elem *b,
+                             void *aux UNUSED);
+
 
 #endif /* threads/thread.h */
 

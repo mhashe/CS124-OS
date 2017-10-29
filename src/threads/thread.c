@@ -76,7 +76,7 @@ static void schedule(void);
 void thread_schedule_tail(struct thread *prev);
 static tid_t allocate_tid(void);
 
-static bool thread_queue_compare(const struct list_elem *a,
+bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
                              void *aux UNUSED);
 void print_run_queue(void);
@@ -114,7 +114,7 @@ void print_all_priorities(void) {
 /* Compares the value of two list elements A and B, given auxiliary data AUX.
    Returns true if A is greater than B, or false if A is less than or equal to
    B. */
-static bool thread_queue_compare(const struct list_elem *a,
+bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
                              void *aux UNUSED) {    
     struct thread *ta = list_entry(a, struct thread, elem);
