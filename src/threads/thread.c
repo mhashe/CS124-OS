@@ -143,15 +143,16 @@ static inline struct thread * thread_get_ready_front(void) {
 
 /*! Recalculates priority of thread. */
 void recalculate_priority(struct thread *t) {
+    ASSERT(is_thread(t));
     struct list_elem *e, *f;
 
     int max = t->priority_org;
 
-    for (e = list_begin(t->locks); e != list_end(t->locks); e = list_next(e)) {
+    for (e = list_begin(&(t->locks)); e != list_end(&(t->locks)); e = list_next(e)) {
 
-        struct lock *l = list_entry(e, struct lock, elem)
-        for (f = list_begin(l->semaphore->waiters); 
-             f != list_end(l->semaphore->waiters); f = list_next(f)) {
+        struct lock *l = list_entry(e, struct lock, elem);
+        for (f = list_begin(&(l->semaphore.waiters)); 
+             f != list_end(&(l->semaphore.waiters)); f = list_next(f)) {
 
             struct thread *t = list_entry(f, struct thread, elem);
 
@@ -159,6 +160,9 @@ void recalculate_priority(struct thread *t) {
 
         }
     }
+
+    ASSERT(max >= t->priority_org);
+
 }
 
 /*! Initializes the threading system by transforming the code
@@ -517,20 +521,10 @@ void thread_set_priority(int new_priority) {
     enum intr_level old_level;
     old_level = intr_disable();
 
+    /* Lower base priority, recalculate overall priority. */
     int old_priority = thread_current()->priority;
-    /* Check if thread has had priority donated to it. */
-    if (thread_current()->priority_org != PRI_ORG_DEFAULT) {
-        /* Priority has been donated. */
-        if (new_priority > thread_current()->priority) {
-            thread_current()->priority_org = PRI_ORG_DEFAULT;
-            thread_current()->priority = new_priority;
-        } else {
-            thread_current()->priority_org = new_priority;
-        }
-
-    } else {
-        thread_current()->priority = new_priority;
-    }
+    thread_current()->priority_org = new_priority;
+    recalculate_priority(thread_current());
 
     thread_defer_to_max_priority(old_priority);
 
