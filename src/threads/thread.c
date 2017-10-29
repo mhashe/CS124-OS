@@ -203,7 +203,6 @@ void thread_init(void) {
 /*! Starts preemptive thread scheduling by enabling interrupts.
     Also creates the idle thread. */
 void thread_start(void) {
-    // printf("START\n");
     /* Create the idle thread. */
     struct semaphore idle_started;
     sema_init(&idle_started, 0);
@@ -219,7 +218,6 @@ void thread_start(void) {
 /*! Called by the timer interrupt handler at each timer tick.
     Thus, this function runs in an external interrupt context. */
 void thread_tick(void) {
-    // printf("TICK\n");
     struct thread *t = thread_current();
 
     /* Update statistics. */
@@ -251,10 +249,6 @@ void thread_tick(void) {
     /* Add threads to ready queue that have been blocked and are due to be 
     woken up. */
     thread_foreach((thread_action_func *) &thread_wake, NULL);
-    // printf("              Readys: %d\n", list_empty(&ready_list));
-
-    /* Defer to max priority */
-    thread_defer_to_max_priority();
 
     intr_set_level(old_level);
 }
@@ -268,13 +262,13 @@ static void thread_update_mlfqs_state(void) {
 
     /* Update load_avg and recent_cpu once per second. */
     if (timer_ticks() % TIMER_FREQ == 0) {
-        // Calculate load average
+        /* Calculate load average */
         load_avg = fixedp_multiply(LOAD_AVG_MOMENTUM, load_avg);
         load_avg = fixedp_add(load_avg,
             fixedp_multiply_with_int(LOAD_AVG_DECAY, 
                 thread_get_num_ready_and_run()));
 
-        // Calculate recent cpu for all threads
+        /* Calculate recent cpu for all threads */
         thread_foreach((thread_action_func *) &thread_update_recent_cpu, NULL);
 
         // DEBUG/PRINT:
@@ -287,7 +281,6 @@ static void thread_update_mlfqs_state(void) {
         thread_foreach((thread_action_func *) 
             &thread_update_priority_in_mlfqs, NULL);
 
-        /* Defer to max priority */
         thread_defer_to_max_priority();
     }
 }
@@ -335,7 +328,6 @@ void thread_print_stats(void) {
     goal of Problem 1-3. */
 tid_t thread_create(const char *name, int priority, thread_func *function,
                     void *aux) {
-    // printf("CREATE\n");
     struct thread *t;
     struct kernel_thread_frame *kf;
     struct switch_entry_frame *ef;
@@ -393,7 +385,6 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     This function must be called with interrupts turned off.  It is usually a
     better idea to use one of the synchronization primitives in synch.h. */
 void thread_block(void) {
-    // printf("%s:BLOCK %s\n", thread_current()->name, thread_current()->name);
     ASSERT(!intr_context());
     ASSERT(intr_get_level() == INTR_OFF);
 
@@ -408,7 +399,6 @@ void thread_block(void) {
     if the caller had disabled interrupts itself, it may expect that it can
     atomically unblock a thread and update other data. */
 void thread_unblock(struct thread *t) {
-    // printf("%s:UNBLOCK %s\n", thread_current()->name, t->name);
     enum intr_level old_level;
 
     ASSERT(is_thread(t));
@@ -419,9 +409,6 @@ void thread_unblock(struct thread *t) {
     t->status = THREAD_READY;
 
     intr_set_level(old_level);
-    // print_run_queue();
-    // printf("%d\n", thread_get_num_ready());
-    // printf("!UNBLOCK\n");
 }
 
 /*! Returns the name of the running thread. */
@@ -454,7 +441,6 @@ tid_t thread_tid(void) {
 /*! Deschedules the current thread and destroys it.  Never
     returns to the caller. */
 void thread_exit(void) {
-    // printf("EXIT\n");
     ASSERT(!intr_context());
 
 #ifdef USERPROG
@@ -474,7 +460,6 @@ void thread_exit(void) {
 /*! Yields the CPU.  The current thread is not put to sleep and
     may be scheduled again immediately at the scheduler's whim. */
 void thread_yield(void) {
-    // printf("YIELD\n");
     struct thread *cur = thread_current();
     enum intr_level old_level;
 
@@ -487,7 +472,6 @@ void thread_yield(void) {
     cur->status = THREAD_READY;
     schedule();
     intr_set_level(old_level);
-    // printf("!YIELD\n");
 }
 
 /*! Invoke function 'func' on all threads, passing along 'aux'.
@@ -510,8 +494,6 @@ void thread_set_priority(int new_priority) {
     if (thread_mlfqs)
         return;
     
-    // printf("%s:SET %d\n", thread_current()->name, new_priority);
-
     /* Make sure that new priority is a valid priority. */
     ASSERT(PRI_MIN <= new_priority && new_priority <= PRI_MAX);
 
@@ -527,8 +509,6 @@ void thread_set_priority(int new_priority) {
     if (new_priority < old_priority)
         thread_defer_to_max_priority();
 
-    // TODO: if user raises priority, do we need to trigger donations?
-
     intr_set_level(old_level);
 }
 
@@ -537,13 +517,11 @@ is now less than the priority at the fron the of ready queue. This should
 not be interrupted, and the calling function should take care of that. */
 void thread_defer_to_max_priority(void) {
     int new_priority = thread_current()->priority;
-    
+
     /* If new_priority has less priority than old_priority, then check if 
     ready queue has a has a higher priority thread than it and yield if so. */
     if (!list_empty(&ready_list)) {
-        // printf("DEFERMENT!\n");
         if (thread_get_ready_max()->priority > new_priority) {
-            // TODO: does disabling interrupts prevent intr_context() from being true?
             if (intr_context()) {
                 intr_yield_on_return();
             } else {
@@ -605,7 +583,7 @@ static void thread_update_priority_in_mlfqs(struct thread *t, void *aux UNUSED) 
 
     /* Set priority = PRI_MAX - (recent_cpu / 4) - (nice * 2) */
     
-    // Ceil the penalty since we want priority to be "rounded down"
+    /* Ceil the penalty since we want priority to be "rounded down". */
     int cpu_penalty = fixedp_to_int_ceiled(
         fixedp_divide_by_int(t->recent_cpu, 4));
 
@@ -645,18 +623,15 @@ int thread_get_num_ready_and_run(void) {
 /* Updates the recent_cpu value for thread t. This should not be interrupted, 
 and the calling function should take care of that. */
 static void thread_update_recent_cpu(struct thread *t, void *aux UNUSED) {
-    // recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice
     fixedp twice_load_avg = fixedp_multiply_with_int(load_avg, 2);
+
+    /* recent_cpu = (2*load_avg)/(2*load_avg + 1) * recent_cpu + nice */
     t->recent_cpu = fixedp_multiply(t->recent_cpu,
             fixedp_divide(twice_load_avg, 
                 fixedp_add_with_int(twice_load_avg, 1)
             )
         );
     t->recent_cpu = fixedp_add_with_int(t->recent_cpu, t->nice);
-    if (t != idle_thread) {
-        printf("New cpu: %d, name: %s, priority: %d, current: %s\n", 
-            (int) t->recent_cpu, t->name, t->priority, thread_current()->name);
-    }
 }
 
 /*! Returns 100 times the current thread's recent_cpu value. */
@@ -725,7 +700,6 @@ static bool is_thread(struct thread *t) {
 
 /*! Does basic initialization of T as a blocked thread named NAME. */
 static void init_thread(struct thread *t, const char *name, int priority) {
-    // printf("INIT %s\n", name);
     enum intr_level old_level;
 
     ASSERT(t != NULL);
@@ -753,7 +727,6 @@ static void init_thread(struct thread *t, const char *name, int priority) {
     old_level = intr_disable();
     list_push_back(&all_list, &t->allelem);
 
-    // printf("TP: %d\n", t->priority);
     intr_set_level(old_level);
 }
 
