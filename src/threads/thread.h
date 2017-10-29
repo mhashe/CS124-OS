@@ -29,8 +29,6 @@ typedef int tid_t;
 #define PRI_DEFAULT 31                  /*!< Default priority. */
 #define PRI_MAX 63                      /*!< Highest priority. */
 
-#define PRI_ORG_DEFAULT -1              /*!< Default priority for donation. */
-
 /* Value of thread->ticks_until_wake when not asleep */
 #define THREAD_AWAKE -1                     
 

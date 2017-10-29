@@ -719,7 +719,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
     /* Ignore the priority argument when thread_mlfqs is true. */
     if (!thread_mlfqs) {
         t->priority = priority;
-        t->priority_org = PRI_ORG_DEFAULT;
+        t->priority_org = priority;
         list_init(&t->locks);
     }
 

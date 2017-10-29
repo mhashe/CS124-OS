@@ -69,6 +69,7 @@ void sema_down(struct semaphore *sema) {
     old_level = intr_disable();
 
     while (sema->value == 0) {
+        list_remove(&thread_current()->elem);
         thread_insert_ordered(&sema->waiters, &thread_current()->elem);
         thread_block();
     }
@@ -199,20 +200,15 @@ void lock_acquire(struct lock *lock) {
 
         // If couldn't get lock, that means that someone else is holding it. As
         // such, we elevate them to our priority.
-        if (lock->holder->priority_org == PRI_ORG_DEFAULT) {
-            lock->holder->priority_org = lock->holder->priority;
-        }
-        if (thread_get_priority() > lock->holder->priority) {
-            lock->holder->priority = thread_get_priority();
-            // printf("ELEVATED %d\n", lock->holder->priority);
-            sort_ready_list();
-        }
+        thread_insert_ordered(&lock.semaphore.waiters, &thread_current()->elem);
 
-        lock->holder->elevated_lock = lock;
+        recalculate_priority(lock->holder);
+        sort_ready_list();
 
         sema_down(&lock->semaphore);
     }
     lock->holder = thread_current();
+    list_push_back(&thread_current()->locks, lock->elem);
 
     intr_set_level(old_level);
 }
@@ -252,14 +248,9 @@ void lock_release(struct lock *lock) {
     lock->holder = NULL;
     sema_up(&lock->semaphore);
 
-    // Check to see if this thread's priority was elevated. 
-    if (thread_current()->priority_org != PRI_ORG_DEFAULT && 
-        thread_current()->elevated_lock == lock) {
-        
-        int org = thread_current()->priority_org;
-        thread_current()->priority_org = PRI_ORG_DEFAULT;
-        thread_set_priority(org);
-    }
+    list_remove(lock->elem);
+    thread_set_priority(thread_current()->priority)
+
     intr_set_level(old_level);
 }
 
