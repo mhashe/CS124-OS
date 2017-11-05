@@ -1,0 +1,45 @@
+CS124 Project 2 - PC Booter
+
+
+
+Team: AGH
+
+Graded By: Michael Goulet
+
+
+
+Days Late:
+
+Tokens Used: 2
+
+
+
+Raw Score:  116/100
+
+Final Score:  116/100
+
+
+
+Correctness:  65/65
+
+
+
+Design Document / Code Inspection / Git Usage:  33/35
+
+-0: Oh my gosh like half of your commits are merges. Please consider 'git pull --rebase'
+
+    or using branches while y'all are working so your logs aren't so dirty!
+
+-2: Update your commit strings in your VMs so commits don't get logged as "Donnie's"
+
+    commits e.g. commit 105bf19
+
+
+
+Extra credit:
+
++10: VGA
+
++3: Physical bootable medium
+
++5: Speaker

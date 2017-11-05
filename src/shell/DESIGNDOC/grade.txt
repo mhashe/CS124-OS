@@ -1,0 +1,60 @@
+    
+CS124 Project 1 - Command Shell
+
+
+
+Team: AGH
+
+Graded By: Michael Goulet
+
+
+
+Days Late: 1
+
+Tokens Used: 1
+
+
+
+Raw Score:  106/100
+
+Final Score:  106/100
+
+
+
+
+
+Correctness:  65/65
+
+
+
+
+
+Design Document / Code Inspection / Git Usage:  ??/35
+
+-0: Please tag your commits!
+
+
+
+-3: Please maintain the 50/72 rule for all git commits. If you have a lot to say,
+
+put it into the comments section. Give _every_ commit a Capitalized, meaningful
+
+(short) description of what it does, and you should also elaborate on any
+
+additional additions in the description of the commit, such that everything the
+
+commit contains gets mentioned somewhere.
+
+
+
+Extra credit:  +9
+
++1: Multi-line
+
++1: Append
+
++2: Redirection of stderr
+
++3: History
+
++2: !n recall
