@@ -8,10 +8,10 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/thread.h"
-#include "filesys/filesys.h"
 
 #include "devices/shutdown.h" /* For halt. */
 #include "filesys/filesys.h"  /* For filesys ops. */
+#include "filesys/file.h"     /* For file ops. */
 #include "threads/malloc.h"    /* For malloc. */
 #include "filesys/off_t.h" /* For off_t. */
 #include "filesys/file.h" /* For file_length, seek, tell. */
@@ -21,7 +21,7 @@ static void syscall_handler(struct intr_frame *);
 
 /* Helper functions. */
 static uint32_t get_arg(struct intr_frame *f, int offset);
-static struct file* file_from_fd(int fd);
+static struct file *file_from_fd(int fd);
 
 /* Handlers for Project 4. */
 static void     halt(struct intr_frame *f);
@@ -136,7 +136,7 @@ static uint32_t get_arg(struct intr_frame *f, int offset) {
     return *(stack + offset);
 }
 
-static struct file* file_from_fd(int fd) {
+static struct file *file_from_fd(int fd) {
     ASSERT(fd > STDOUT_FILENO);
 
     struct list_elem *e;
@@ -323,10 +323,7 @@ static void seek(struct intr_frame *f) {
 static void tell(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
-
-    // Temp
-    (void)fd;
-    thread_exit();
+    f->eax = file_tell(file_from_fd(fd));
 }
 
 
