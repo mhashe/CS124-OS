@@ -469,7 +469,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
         arg_index--;
         spp--;
         // printf("Putting %p into %p\n", arg_ptrs[arg_index], spp);
-        *(char **) spp = arg_ptrs[arg_index];
+        *(char **) spp = (char *) arg_ptrs[arg_index];
     }
     spp--; *(char ***)spp = (spp + 1);
 
