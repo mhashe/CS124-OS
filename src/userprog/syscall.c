@@ -8,28 +8,30 @@
 #include "threads/vaddr.h"
 #include "threads/thread.h"
 
+#include "devices/shutdown.h" /* For halt. */
+
 static void syscall_handler(struct intr_frame *);
 
 /* Handlers for Project 4. */
-static void halt(struct intr_frame *f);
-static void exit(struct intr_frame *f);
-static void exec(struct intr_frame *f);
-static void wait(struct intr_frame *f);
-static void create(struct intr_frame *f);
-static void remove(struct intr_frame *f);
-static void open(struct intr_frame *f);
+static void     halt(struct intr_frame *f);
+static void     exit(struct intr_frame *f);
+static void     exec(struct intr_frame *f);
+static void     wait(struct intr_frame *f);
+static void   create(struct intr_frame *f);
+static void   remove(struct intr_frame *f);
+static void     open(struct intr_frame *f);
 static void filesize(struct intr_frame *f);
-static void read(struct intr_frame *f);
-static void write(struct intr_frame *f);
-static void seek(struct intr_frame *f);
-static void tell(struct intr_frame *f);
-static void close(struct intr_frame *f);
+static void     read(struct intr_frame *f);
+static void    write(struct intr_frame *f);
+static void     seek(struct intr_frame *f);
+static void     tell(struct intr_frame *f);
+static void    close(struct intr_frame *f);
 
 void syscall_init(void) {
     intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-static uint32_t* verify_pointer(int* p) {
+static uint32_t* verify_pointer(uint32_t* p) {
     if (!is_user_vaddr(p))
         return NULL;
     uint32_t* vp = (uint32_t*)pagedir_get_page(thread_current()->pagedir, p);
@@ -42,7 +44,7 @@ static uint32_t* verify_pointer(int* p) {
 
 static void syscall_handler(struct intr_frame *f) {
     printf("system call!\n");
-    uint32_t *caller_stack = verify_pointer((int*)f->esp);
+    uint32_t *caller_stack = verify_pointer((uint32_t*)f->esp);
     // TODO Handle
     if (caller_stack == NULL) 
         thread_exit();
@@ -80,13 +82,13 @@ static void syscall_handler(struct intr_frame *f) {
 
 
 static void halt(struct intr_frame *f) {
-    // Temp
-    thread_exit();
+    /* Terminate Pintos. */
+    shutdown_power_off();
 }
 
 
 static void exit(struct intr_frame *f) {
-    // Temp
+    /* Status code set as first argument. */
     thread_exit();
 }
 
