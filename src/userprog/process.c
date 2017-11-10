@@ -208,8 +208,8 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     bool success = false;
     int i;
 
-    printf("LOAD: %s\n", t->name);
-    printf("LOAD_full: %s\n", file_name);
+    // printf("LOAD: %s\n", t->name);
+    // printf("LOAD_full: %s\n", file_name);
 
     /* Allocate and activate page directory. */
     t->pagedir = pagedir_create();
@@ -414,7 +414,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
     uint8_t *kpage;
     bool success = false;
 
-    printf("SETUP STACK: %s\n", cmdline);
+    // printf("SETUP STACK: %s\n", cmdline);
 
     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
     if (kpage != NULL) {
@@ -483,7 +483,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
 
     // printf("CMDLINE copy: %s, %d, %s\n", cmdline, cmdline_len, cmdline_copy);
 
-    printf("POINT: %p, %p, dp: %d\n", *esp, spp, *esp - (void *)spp);
+    // printf("POINT: %p, %p, dp: %d\n", *esp, spp, *esp - (void *)spp);
     // hex_dump(0, (void *) spp, *esp - (void *)spp + 1, 1);
     // printf("POINT: %p\n", *esp);
     *esp = (void *)spp;

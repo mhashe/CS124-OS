@@ -315,10 +315,6 @@ static void seek(struct intr_frame *f) {
 
     file_seek(file_from_fd(fd), position);
 
-    // Temp
-    (void)fd;
-    (void)position;
-    thread_exit();
 }
 
 
