@@ -293,18 +293,15 @@ static void write(struct intr_frame *f) {
     const char* buffer = (char *) get_arg(f, 2);
     uint32_t size = get_arg(f, 3);
 
-    
     ASSERT(fd != STDIN_FILENO);
+    
     // printf("fd: %u, size: %d\n", fd, size);
-    if (fd == STDOUT_FILENO)
+    if (fd == STDOUT_FILENO) {
         putbuf(buffer, size);
-    // printf("DONE\n");
-
-    // Temp
-    (void)fd;
-    (void)buffer;
-    (void)size;
-    // thread_exit();
+        f->eax = size;
+    }
+    else 
+        f->eax = file_write(file_from_fd(fd), buffer, size);
 }
 
 
