@@ -120,6 +120,7 @@ static uint32_t get_arg(struct intr_frame *f, int offset) {
     /* We only handle syscalls with <= 3 arguments. */
     ASSERT(offset <= 3);
     ASSERT(offset >= 0);
+    ASSERT(f);
 
     /* Obtain stack pointer. */
     uint32_t *stack = (uint32_t*)f->esp;
@@ -176,8 +177,8 @@ static void create(struct intr_frame *f) {
 
     (void)initial_size;
     if (file) {
-        // TODO : Return argument
-        filesys_create(file, initial_size);
+        /* Create file, return boolean value. */
+        f->eax = filesys_create(file, initial_size);
     } else {
         /* Invalid file name. */
         thread_exit();
