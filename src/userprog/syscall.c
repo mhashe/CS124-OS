@@ -194,9 +194,8 @@ static void remove(struct intr_frame *f) {
     /* Parse arguments. */
     const char* file = (const char*) verify_pointer((uint32_t*)get_arg(f, 1));
 
-    // Temp
-    (void)file;
-    thread_exit();
+    /* File is NULL if invalid; results in failure or remove function. */
+    f->eax = filesys_remove(file);
 }
 
 
