@@ -13,6 +13,8 @@
 #include "devices/shutdown.h" /* For halt. */
 #include "filesys/filesys.h"  /* For filesys ops. */
 #include "threads/malloc.h"    /* For malloc. */
+#include "filesys/off_t.h" /* For off_t. */
+#include "filesys/file.h" /* For file_length, seek, tell. */
 
 /* Handler function. */
 static void syscall_handler(struct intr_frame *);
@@ -264,10 +266,10 @@ static void open(struct intr_frame *f) {
 static void filesize(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
+    struct file* file = file_from_fd(fd);
 
-    // Temp
-    (void)fd;
-    thread_exit();
+    off_t file_size = file_length(file);
+    f->eax = file_size;
 }
 
 
