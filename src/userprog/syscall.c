@@ -14,7 +14,7 @@
 static void syscall_handler(struct intr_frame *);
 
 /* Helper functions. */
-static void get_args(uint32_t arg1, uint32_t arg2, uint32_t arg3, 
+static void get_args(uint32_t* arg1, uint32_t* arg2, uint32_t* arg3, 
     uint32_t num_args, struct intr_frame *f);
 
 /* Handlers for Project 4. */
@@ -87,24 +87,48 @@ static void syscall_handler(struct intr_frame *f) {
 }
 
 
-static void get_args(uint32_t arg1, uint32_t arg2, uint32_t arg3, 
+static void get_args(uint32_t* arg1, uint32_t* arg2, uint32_t* arg3, 
     uint32_t num_args, struct intr_frame *f) {
 
     /* We only handle syscalls with >= 0, <= 3 arguments. */
     ASSERT(num_args >= 0);
-    ASSERT(num_args <= 4);
+    ASSERT(num_args <= 3);
+
+    /* Stack pointer has already been verified. */
+    uint32_t *stack = (uint32_t*)f->esp;
+
+    if (num_args >= 3) {
+        /* We need the third argument. */
+        ASSERT(arg3);
+        arg3 = stack + 3;
+    }
+    if (num_args >= 2) {
+        /* We need the second argument. */
+        ASSERT(arg2);
+        arg2 = stack + 2;
+    }
+    if (num_args >= 1) {
+        ASSERT(arg1);
+        arg1 = stack + 1;
+    }
 }
 
 
 static void halt(struct intr_frame *f) {
+    /* Parse aguments. */
+    get_args(NULL, NULL, NULL, 0, f);
+
     /* Terminate Pintos. */
     shutdown_power_off();
 }
 
 
 static void exit(struct intr_frame *f) {
+    /* Parse arguments. */
+    uint32_t status;
+    get_args(&status, NULL, NULL, 1, f);
+
     /* Status code set as first argument. */
-    uint32_t status = ((uint32_t)f)+1;
     f->eax = status;
     thread_exit();
 }
