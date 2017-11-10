@@ -99,7 +99,7 @@ static uint32_t* get_arg(struct intr_frame *f, int offset) {
 }
 
 
-static void halt(struct intr_frame *f) {
+static void halt(struct intr_frame *f UNUSED) {
     /* Terminate Pintos. */
     shutdown_power_off();
 }
@@ -136,7 +136,7 @@ static void wait(struct intr_frame *f) {
 static void create(struct intr_frame *f) {
     /* Parse arguments. */
     const char* file = (const char*) get_arg(f, 1);
-    uint32_t initial_size = *(get_arg(f,2));
+    uint32_t initial_size = *(uint32_t *) get_arg(f,2);
 
     // Temp
     thread_exit();
@@ -173,7 +173,7 @@ static void read(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = *(int *) get_arg(f, 1);
     void* buffer = (void *) get_arg(f, 2);
-    uint32_t size = *(get_arg(f,3));
+    uint32_t size = *(uint32_t *) get_arg(f,3);
 
     // Temp
     thread_exit();
@@ -184,7 +184,7 @@ static void write(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = *(int *) get_arg(f, 1);
     const void* buffer = (void *) get_arg(f, 2);
-    uint32_t size = *(get_arg(f,3));
+    uint32_t size = *(uint32_t *) get_arg(f,3);
 
     // Temp
     thread_exit();
@@ -194,7 +194,7 @@ static void write(struct intr_frame *f) {
 static void seek(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = *(int *) get_arg(f, 1);
-    uint32_t = *(get_arg(f, 2));
+    uint32_t position = *(uint32_t *) get_arg(f, 2);
 
     // Temp
     thread_exit();
@@ -204,7 +204,7 @@ static void seek(struct intr_frame *f) {
 static void tell(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = *(int *) get_arg(f, 1);
-    
+
     // Temp
     thread_exit();
 }
