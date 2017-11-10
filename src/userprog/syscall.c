@@ -3,6 +3,7 @@
 #include <syscall-nr.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
+#include "threads/vaddr.h"
 
 #include "devices/shutdown.h" /* For halt. */
 
@@ -27,37 +28,43 @@ void syscall_init(void) {
     intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
+static int verify_pointer(int* p) {
+    if (p < PHYS_BASE)
+        return 0;
+}
+
+
 static void syscall_handler(struct intr_frame *f) {
     printf("system call!\n");
-
-    int syscall_num = SYS_HALT;
+    int *caller_stack = (int*)f->esp;
+    int syscall_num =  *(caller_stack);
 
     switch(syscall_num) {
-        case 'SYS_HALT' :
+        case SYS_HALT :
             halt(f);
-        case 'SYS_EXIT' :
+        case SYS_EXIT :
             exit(f);
-        case 'SYS_EXEC' :
+        case SYS_EXEC :
             exec(f);
-        case 'SYS_WAIT' :
+        case SYS_WAIT :
             wait(f);
-        case 'SYS_CREATE' :
+        case SYS_CREATE :
             create(f);
-        case 'SYS_REMOVE' :
+        case SYS_REMOVE :
             remove(f);
-        case 'SYS_OPEN' :
+        case SYS_OPEN :
             open(f);
-        case 'SYS_FILESIZE' :
+        case SYS_FILESIZE :
             filesize(f);
-        case 'SYS_READ' :
+        case SYS_READ :
             read(f);
-        case 'SYS_WRITE' :
+        case SYS_WRITE :
             write(f);
-        case 'SYS_SEEK' :
+        case SYS_SEEK :
             seek(f);
-        case 'SYS_TELL' :
+        case SYS_TELL :
             tell(f);
-        case 'SYS_CLOSE' :
+        case SYS_CLOSE :
             close(f);
     }
 }
