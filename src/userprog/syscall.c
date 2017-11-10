@@ -36,8 +36,8 @@ static int verify_pointer(int* p) {
 
 static void syscall_handler(struct intr_frame *f) {
     printf("system call!\n");
-    int *caller_stack = (int*)f->esp;
-    int syscall_num =  *(caller_stack);
+    uint32_t *caller_stack = (uint32_t*)f->esp;
+    uint32_t syscall_num =  *(caller_stack);
 
     switch(syscall_num) {
         case SYS_HALT :
@@ -77,7 +77,7 @@ static void halt(struct intr_frame *f) {
 
 
 static void exit(struct intr_frame *f) {
-    // Temp
+    /* Status code set as first argument. */
     thread_exit();
 }
 
