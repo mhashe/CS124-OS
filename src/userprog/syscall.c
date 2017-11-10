@@ -16,7 +16,7 @@
 static void syscall_handler(struct intr_frame *);
 
 /* Helper functions. */
-static uint32_t* get_arg(struct intr_frame *f, int offset);
+static uint32_t get_arg(struct intr_frame *f, int offset);
 static void ret_arg(struct intr_frame *f, uint32_t retval);
 
 /* Handlers for Project 4. */
@@ -42,22 +42,22 @@ void syscall_init(void) {
 uint32_t* verify_pointer(uint32_t* p) {
     if (!is_user_vaddr(p))
         return NULL;
-    uint32_t* vp = (uint32_t*)pagedir_get_page(thread_current()->pagedir, p);
-    if (vp == NULL)
-        return NULL;
-    return vp;
+    // uint32_t* vp = (uint32_t*)pagedir_get_page(thread_current()->pagedir, p);
+    // if (vp == NULL)
+    //     return NULL;
+    return p;
 
 }
 
 
 static void syscall_handler(struct intr_frame *f) {
-    printf("system call1!\n");
     uint32_t *stack = verify_pointer((uint32_t*)f->esp);
     // TODO Handle
     if (stack == NULL) 
         thread_exit();
     int syscall_num =  *(stack);
-    printf("%d!\n", syscall_num);
+    printf("system call %d!\n", syscall_num);
+    // hex_dump(0, stack-128, 256, true);
 
     switch(syscall_num) {
         case SYS_HALT :
@@ -116,7 +116,7 @@ static void syscall_handler(struct intr_frame *f) {
 }
 
 
-static uint32_t* get_arg(struct intr_frame *f, int offset) {
+static uint32_t get_arg(struct intr_frame *f, int offset) {
     /* We only handle syscalls with <= 3 arguments. */
     ASSERT(offset <= 3);
     ASSERT(offset >= 0);
@@ -125,7 +125,7 @@ static uint32_t* get_arg(struct intr_frame *f, int offset) {
     uint32_t *stack = (uint32_t*)f->esp;
 
     /* Move to off set. */
-    return stack + offset;
+    return *(stack + offset);
 }
 
 
@@ -137,16 +137,17 @@ static void halt(struct intr_frame *f UNUSED) {
 
 static void exit(struct intr_frame *f) {
     /* Parse arguments. */
-    int status = *(int *) get_arg(f, 1);
+    int status = get_arg(f, 1);
 
     /* Status code returned to kernel; TODO when writing wait. */
+    (void)status;
     thread_exit();
 }
 
 
 static void exec(struct intr_frame *f) {
     /* Parse arguments. */
-    const char* file = *(const char**) get_arg(f, 1);
+    const char* file = (const char*) get_arg(f, 1);
     
 
     f->eax = process_execute(file);
@@ -160,19 +161,20 @@ static void exec(struct intr_frame *f) {
 
 static void wait(struct intr_frame *f) {
     /* Parse arguments. */
-    pid_t pid = *(pid_t *) get_arg(f, 1);
+    pid_t pid = get_arg(f, 1);
 
     // Temp
-    (void)f;
+    (void)pid;
     thread_exit();
 }
 
 
 static void create(struct intr_frame *f) {
     /* Parse arguments. */
-    const char* file = *(const char**) get_arg(f, 1);
-    unsigned initial_size = *(unsigned *) get_arg(f,2);
+    const char* file = (const char*) get_arg(f, 1);
+    unsigned initial_size = get_arg(f,2);
 
+    (void)initial_size;
     if (file) {
         // TODO : Return argument
         filesys_create(file, initial_size);
@@ -185,87 +187,90 @@ static void create(struct intr_frame *f) {
 
 static void remove(struct intr_frame *f) {
     /* Parse arguments. */
-    const char* file = *(const char**) get_arg(f, 1);
+    const char* file = (const char*) get_arg(f, 1);
 
     // Temp
-    (void)f;
+    (void)file;
     thread_exit();
 }
 
 
 static void open(struct intr_frame *f) {
     /* Parse arguments. */
-    const char* file = *(const char**) get_arg(f, 1);
-
-    printf("%s\n", file);
+    const char* file = (const char*) get_arg(f, 1);
 
     // Temp
-    (void)f;
+    (void)file;
     thread_exit();
 }
 
 
 static void filesize(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = *(int *) get_arg(f, 1);
+    int fd = get_arg(f, 1);
 
     // Temp
-    (void)f;
+    (void)fd;
     thread_exit();
 }
 
 
 static void read(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = *(int *) get_arg(f, 1);
+    int fd = get_arg(f, 1);
     void* buffer = (void *) get_arg(f, 2);
-    unsigned size = *(unsigned *) get_arg(f,3);
+    unsigned size = get_arg(f,3);
 
     // Temp
-    (void)f;
+    (void)fd;
+    (void)buffer;
+    (void)size;
     thread_exit();
 }
 
 
 static void write(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = *(int *) get_arg(f, 1);
+    int fd = get_arg(f, 1);
     const void* buffer = (void *) get_arg(f, 2);
-    unsigned size = *(unsigned *) get_arg(f,3);
+    unsigned size = get_arg(f,3);
 
     // Temp
-    (void)f;
+    (void)fd;
+    (void)buffer;
+    (void)size;
     thread_exit();
 }
 
 
 static void seek(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = *(int *) get_arg(f, 1);
-    unsigned position = *(unsigned *) get_arg(f, 2);
+    int fd = get_arg(f, 1);
+    unsigned position = get_arg(f, 2);
 
     // Temp
-    (void)f;
+    (void)fd;
+    (void)position;
     thread_exit();
 }
 
 
 static void tell(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = *(int *) get_arg(f, 1);
+    int fd = get_arg(f, 1);
 
     // Temp
-    (void)f;
+    (void)fd;
     thread_exit();
 }
 
 
 static void close(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = *(int *) get_arg(f, 1);
+    int fd = get_arg(f, 1);
 
     // Temp
-    (void)f;
+    (void)fd;
     thread_exit();
 }
 
