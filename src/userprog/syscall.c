@@ -12,13 +12,13 @@
 
 #include "devices/shutdown.h" /* For halt. */
 #include "filesys/filesys.h"  /* For filesys ops. */
+#include "threads/malloc.h"    /* For malloc. */
 
 /* Handler function. */
 static void syscall_handler(struct intr_frame *);
 
 /* Helper functions. */
 static uint32_t get_arg(struct intr_frame *f, int offset);
-static void ret_arg(struct intr_frame *f, uint32_t retval);
 
 /* Handlers for Project 4. */
 static void     halt(struct intr_frame *f);
@@ -34,6 +34,8 @@ static void    write(struct intr_frame *f);
 static void     seek(struct intr_frame *f);
 static void     tell(struct intr_frame *f);
 static void    close(struct intr_frame *f);
+
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
 
 
 void syscall_init(void) {
@@ -200,29 +202,44 @@ static void remove(struct intr_frame *f) {
 
 static void open(struct intr_frame *f) {
     /* Parse arguments. */
-    // const char* file = (const char*) verify_pointer((uint32_t*)get_arg(f, 1));
-    // hex_dump(0, 0xc0275ec4, 256, true);
-    const char* file = (const char*) get_arg(f, 1);
-    // printf("%s\n", file);
+    const char* file_name = (const char*) get_arg(f, 1);
 
-    struct file* file_s = filesys_open("ls");
-    // printf("%p\n", file_s);
+    if (file_name) {
+        /* Try to open file. */
+        struct file* file = filesys_open(file_name);
 
-    if (file_s == NULL) {
-        printf("404 FILE NOT FOUND\n");
+        if (file) {
+            /* File opened! Create a file descriptor, add to list. */
+            int fd = 2;
+
+            /* If we already have fds, set fd = max(fds) + 1.
+               This ensures unique file descriptors for a thread. */
+            if (!list_empty(&(thread_current()->fds))) {
+
+                struct list_elem* last = list_rbegin(&(thread_current()->fds));
+                struct file_des* last_fd = list_entry(last, struct file_des, elem);
+                fd = MAX(fd, last_fd->fd);
+            }
+
+            /* Add new file descriptor object. */
+            ASSERT(fd != STDIN_FILENO || fd != STDOUT_FILENO);
+            struct file_des* new_fd = malloc(sizeof(struct file_des));
+            new_fd->fd = fd;
+            new_fd->file = file;
+
+            list_push_back(&(thread_current()->fds), &new_fd->elem);
+
+            /* Return file descriptor. */
+            f->eax = fd;
+
+        } else {
+            /* Couldn't open file. */
+            f->eax = -1;
+        }
+    } else {
+        /* Invalid file name. */
         thread_exit();
     }
-
-    /* Use the address of the file object as the fd. */
-    uint32_t fd = (uint32_t) file_s;
-    ASSERT(fd != STDIN_FILENO || fd != STDOUT_FILENO);
-
-    printf("fd: %u\n", fd);
-
-    f->eax = fd;
-
-    // TODO record fd in process
-
 }
 
 
