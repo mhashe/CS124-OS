@@ -26,86 +26,27 @@ static bool load(const char *cmdline, void (**eip)(void), void **esp);
     thread may be scheduled (and may even exit) before process_execute()
     returns.  Returns the new process's thread id, or TID_ERROR if the thread
     cannot be created. */
-tid_t process_execute(const char * filename_and_args) {
+tid_t process_execute(const char * file_name) {
     char *fn_copy;
     tid_t tid;
 
-    const char* file_name = filename_and_args;
-    // // TODO: return if nothing is in string
-
-    // // TODO: reorganize placement of this variables and comment
-    // char *token, *save_ptr;
-    // int arg_size;
-    // int num_args;
-    // int arg_index = 0;
-    // uint8_t *arg_ptrs[128];
-    // // TODO: also remove magic numbers
-
-    // /* First byte pushed will be on a word-aligned next byte from the kernel 
-    // space. */
-    // uint8_t *sp  = PHYS_BASE; 
-    // sp -= (int) sp % 4;
-
-    // /* Parse and push arguments onto stack. */
-    
-    // // TODO: necessary (below)? copying b/c arg is labeled 'const'
-    // int fn_args_len = strnlen(filename_and_args, 128);
-    // char fn_args_copy[fn_args_len];
-    // strlcpy(fn_args_copy, filename_and_args, fn_args_len + 1);
-    // // TODO: also make sure we need to add 1 to ^^ arg
-
-    // /* Extract filename */
-    // char* file_name = strtok_r((char *) fn_args_copy, " ", &save_ptr); 
-
-    // while ((token = strtok_r(NULL, " ", &save_ptr)) != NULL) {
-    //     // TODO: handle edge cases
-    //     // ie. if save_ptr is beyond a certain number of bytes, just stop
-        
-    //     arg_size = strlen(token);
-    //     sp -= arg_size;
-
-    //     // TODO: make sure +1 is correct here
-    //     strlcpy((char *) sp, token, arg_size + 1); 
-
-    //     arg_ptrs[arg_index] = sp;
-    //     arg_index++;
-    // }
-
-
-    // // TODO: Better way of alignment?
-    // /* Word align on 4-byte boundary and decrement to push pointers. */ 
-    // sp -= (((int) sp % 4) + 1);
-
-
-    // /* Copy pointers to arguments onto stack. */
-    // /* Push null pointer first */
-    // *sp = 0; sp--;
-    // num_args = arg_index + 1;
-
-    // while (arg_index >= 0) {
-    //     *(uint8_t **) sp = arg_ptrs[arg_index];
-    //     sp--;
-    //     arg_index--;
-    // }
-
-    // /* Push number of arguments to the stack. */
-    // *sp = num_args; sp--; 
-
-    // /* Push 'fake' return address (since function will never return, only 
-    // exit). */
-    // *sp = 0; sp--;
-
-    // // TODO: Use hex_demp() from stdio to debug if necessary
-
-    /* Make a copy of FILE_NAME.
-       Otherwise there's a race between the caller and load(). */
     fn_copy = palloc_get_page(0);
     if (fn_copy == NULL)
         return TID_ERROR;
     strlcpy(fn_copy, file_name, PGSIZE);
 
+    /* Extract executable name */
+    char* exec_fn = palloc_get_page(0);
+    int exec_fn_len = 0;
+    while ((*fn_copy != '\0') && (*fn_copy != ' ')) {
+        fn_copy++;
+        exec_fn_len++;
+    }
+    fn_copy -= exec_fn_len;
+    strlcpy(exec_fn, fn_copy, exec_fn_len + 1);
+
     /* Create a new thread to execute FILE_NAME. */
-    tid = thread_create(file_name, PRI_DEFAULT, start_process, fn_copy);
+    tid = thread_create(exec_fn, PRI_DEFAULT, start_process, fn_copy);
     if (tid == TID_ERROR)
         palloc_free_page(fn_copy); 
     return tid;
@@ -250,7 +191,7 @@ struct Elf32_Phdr {
 #define PF_R 4          /*!< Readable. */
 /*! @} */
 
-static bool setup_stack(void **esp);
+static bool setup_stack(void **esp, const char *file_name);
 static bool validate_segment(const struct Elf32_Phdr *, struct file *);
 static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
                          uint32_t read_bytes, uint32_t zero_bytes,
@@ -267,6 +208,9 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     bool success = false;
     int i;
 
+    printf("LOAD: %s\n", t->name);
+    printf("LOAD_full: %s\n", file_name);
+
     /* Allocate and activate page directory. */
     t->pagedir = pagedir_create();
     if (t->pagedir == NULL) 
@@ -274,9 +218,9 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     process_activate();
 
     /* Open executable file. */
-    file = filesys_open(file_name);
+    file = filesys_open(t->name);
     if (file == NULL) {
-        printf("load: %s: open failed\n", file_name);
+        printf("load: %s: open failed\n", t->name);
         goto done; 
     }
 
@@ -349,7 +293,7 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     }
 
     /* Set up stack. */
-    if (!setup_stack(esp))
+    if (!setup_stack(esp, file_name))
         goto done;
 
     /* Start address. */
@@ -360,6 +304,7 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
 done:
     /* We arrive here whether the load is successful or not. */
     file_close(file);
+    printf("DONE LOADING!\n");
     return success;
 }
 
@@ -465,9 +410,11 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
 
 /*! Create a minimal stack by mapping a zeroed page at the top of
     user virtual memory. */
-static bool setup_stack(void **esp) {
+static bool setup_stack(void **esp, const char *file_name) {
     uint8_t *kpage;
     bool success = false;
+
+    printf("SETUP STACK: %s\n", file_name);
 
     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
     if (kpage != NULL) {
@@ -478,6 +425,10 @@ static bool setup_stack(void **esp) {
         else
             palloc_free_page(kpage);
     }
+
+    printf("POINT: %p\n", esp);
+    hex_dump(0, *esp, 64, 1);
+
     return success;
 }
 
