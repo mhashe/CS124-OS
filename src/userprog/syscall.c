@@ -7,7 +7,12 @@
 
 #include "devices/shutdown.h" /* For halt. */
 
+/* Handler function. */
 static void syscall_handler(struct intr_frame *);
+
+/* Helper functions. */
+static void get_args(uint32_t arg1, uint32_t arg2, uint32_t arg3, 
+    uint32_t num_args, struct intr_frame *f);
 
 /* Handlers for Project 4. */
 static void     halt(struct intr_frame *f);
@@ -23,6 +28,7 @@ static void    write(struct intr_frame *f);
 static void     seek(struct intr_frame *f);
 static void     tell(struct intr_frame *f);
 static void    close(struct intr_frame *f);
+
 
 void syscall_init(void) {
     intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
@@ -70,6 +76,15 @@ static void syscall_handler(struct intr_frame *f) {
 }
 
 
+static void get_args(uint32_t arg1, uint32_t arg2, uint32_t arg3, 
+    uint32_t num_args, struct intr_frame *f) {
+
+    /* We only handle syscalls with >= 0, <= 3 arguments. */
+    ASSERT(num_args >= 0);
+    ASSERT(num_args <= 4);
+}
+
+
 static void halt(struct intr_frame *f) {
     /* Terminate Pintos. */
     shutdown_power_off();
@@ -78,6 +93,8 @@ static void halt(struct intr_frame *f) {
 
 static void exit(struct intr_frame *f) {
     /* Status code set as first argument. */
+    uint32_t status = ((uint32_t)f)+1;
+    f->eax = status;
     thread_exit();
 }
 
