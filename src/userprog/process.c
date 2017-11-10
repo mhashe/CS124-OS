@@ -484,7 +484,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
     // printf("CMDLINE copy: %s, %d, %s\n", cmdline, cmdline_len, cmdline_copy);
 
     printf("POINT: %p, %p, dp: %d\n", *esp, spp, *esp - (void *)spp);
-    hex_dump(0, (void *) spp, *esp - (void *)spp + 1, 1);
+    // hex_dump(0, (void *) spp, *esp - (void *)spp + 1, 1);
     // printf("POINT: %p\n", *esp);
     *esp = (void *)spp;
 
