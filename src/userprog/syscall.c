@@ -1,9 +1,12 @@
 #include "userprog/syscall.h"
+#include "userprog/pagedir.h"
 #include <stdio.h>
 #include <syscall-nr.h>
+#include <stdbool.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "threads/thread.h"
 
 #include "devices/shutdown.h" /* For halt. */
 
@@ -28,16 +31,24 @@ void syscall_init(void) {
     intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-static int verify_pointer(int* p) {
-    if (p < PHYS_BASE)
-        return 0;
+static uint32_t* verify_pointer(uint32_t* p) {
+    if (!is_user_vaddr(p))
+        return NULL;
+    uint32_t* vp = (uint32_t*)pagedir_get_page(thread_current()->pagedir, p);
+    if (vp == NULL)
+        return NULL;
+    return vp;
+
 }
 
 
 static void syscall_handler(struct intr_frame *f) {
     printf("system call!\n");
-    uint32_t *caller_stack = (uint32_t*)f->esp;
-    uint32_t syscall_num =  *(caller_stack);
+    uint32_t *caller_stack = verify_pointer((uint32_t*)f->esp);
+    // TODO Handle
+    if (caller_stack == NULL) 
+        thread_exit();
+    int syscall_num =  *(caller_stack);
 
     switch(syscall_num) {
         case SYS_HALT :
