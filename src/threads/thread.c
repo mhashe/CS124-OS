@@ -449,10 +449,31 @@ void thread_exit(void) {
        when it calls thread_schedule_tail(). */
     intr_disable();
     list_remove(&thread_current()->allelem);
+    if (!thread_mlfqs) {
+        /* Make sure all locks are released, if they aren't already. */
+        release_all_resources();
+        ASSERT(list_size(&(thread_current()->locks)) == 0);
+    }
     thread_current()->status = THREAD_DYING;
     schedule();
     NOT_REACHED();
 }
+
+/*! Causes current thread to release all locks and semaphores
+    it posses. */
+void release_all_resources(void) {
+    /* Release all locks. */
+    struct list_elem *e;
+
+    e = list_begin(&(thread_current()->locks));
+    while (e != list_end(&(thread_current()->locks))) {
+        struct lock *l = list_entry(e, struct lock, elem);
+        e = list_next(e);
+        lock_release(l);
+    }
+
+}
+
 
 /*! Yields the CPU.  The current thread is not put to sleep and
     may be scheduled again immediately at the scheduler's whim. */
