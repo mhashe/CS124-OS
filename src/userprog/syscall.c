@@ -39,7 +39,7 @@ void syscall_init(void) {
     intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-static uint32_t* verify_pointer(uint32_t* p) {
+uint32_t* verify_pointer(uint32_t* p) {
     if (!is_user_vaddr(p))
         return NULL;
     uint32_t* vp = (uint32_t*)pagedir_get_page(thread_current()->pagedir, p);
