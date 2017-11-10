@@ -4,6 +4,8 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
+#include "devices/shutdown.h" /* For halt. */
+
 static void syscall_handler(struct intr_frame *);
 
 /* Handlers for Project 4. */
@@ -62,8 +64,8 @@ static void syscall_handler(struct intr_frame *f) {
 
 
 static void halt(struct intr_frame *f) {
-    // Temp
-    thread_exit();
+    /* Terminate Pintos. */
+    shutdown_power_off();
 }
 
 
