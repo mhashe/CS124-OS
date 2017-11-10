@@ -35,7 +35,7 @@ int putchar(int c) {
     write(STDOUT_FILENO, &c2, 1);
     return c;
 }
-
+
 /*! Auxiliary data for vhprintf_helper(). */
 struct vhprintf_aux {
     char buf[64];       /*!< Character buffer. */
