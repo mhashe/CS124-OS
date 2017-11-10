@@ -17,6 +17,7 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "lib/string.h"
 
 static thread_func start_process NO_RETURN;
 static bool load(const char *cmdline, void (**eip)(void), void **esp);
@@ -25,9 +26,75 @@ static bool load(const char *cmdline, void (**eip)(void), void **esp);
     thread may be scheduled (and may even exit) before process_execute()
     returns.  Returns the new process's thread id, or TID_ERROR if the thread
     cannot be created. */
-tid_t process_execute(const char *file_name) {
+tid_t process_execute(const char * filename_and_args) {
     char *fn_copy;
     tid_t tid;
+
+    // TODO: return if nothing is in string
+
+    // TODO: reorganize placement of this variables and comment
+    char *token, *save_ptr;
+    int arg_size;
+    int num_args;
+    int arg_index = 0;
+    uint8_t *arg_ptrs[128];
+    // TODO: also remove magic numbers
+
+    /* First byte pushed will be on a word-aligned next byte from the kernel 
+    space. */
+    uint8_t *sp  = PHYS_BASE; 
+    sp -= (int) sp % 4;
+
+    /* Parse and push arguments onto stack. */
+    
+    // TODO: necessary (below)? copying b/c arg is labeled 'const'
+    int fn_args_len = strnlen(filename_and_args, 128);
+    char fn_args_copy[fn_args_len];
+    strlcpy(fn_args_copy, filename_and_args, fn_args_len + 1);
+    // TODO: also make sure we need to add 1 to ^^ arg
+
+    /* Extract filename */
+    char* file_name = strtok_r((char *) fn_args_copy, " ", &save_ptr); 
+
+    while ((token = strtok_r(NULL, " ", &save_ptr)) != NULL) {
+        // TODO: handle edge cases
+        // ie. if save_ptr is beyond a certain number of bytes, just stop
+        
+        arg_size = strlen(token);
+        sp -= arg_size;
+
+        // TODO: make sure +1 is correct here
+        strlcpy((char *) sp, token, arg_size + 1); 
+
+        arg_ptrs[arg_index] = sp;
+        arg_index++;
+    }
+
+
+    // TODO: Better way of alignment?
+    /* Word align on 4-byte boundary and decrement to push pointers. */ 
+    sp -= (((int) sp % 4) + 1);
+
+
+    /* Copy pointers to arguments onto stack. */
+    /* Push null pointer first */
+    *sp = 0; sp--;
+    num_args = arg_index + 1;
+
+    while (arg_index >= 0) {
+        *(uint8_t **) sp = arg_ptrs[arg_index];
+        sp--;
+        arg_index--;
+    }
+
+    /* Push number of arguments to the stack. */
+    *sp = num_args; sp--; 
+
+    /* Push 'fake' return address (since function will never return, only 
+    exit). */
+    *sp = 0; sp--;
+
+    // TODO: Use hex_demp() from stdio to debug if necessary
 
     /* Make a copy of FILE_NAME.
        Otherwise there's a race between the caller and load(). */
