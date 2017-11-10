@@ -1,5 +1,6 @@
 #include "userprog/syscall.h"
 #include "userprog/pagedir.h"
+#include "userprog/process.h"
 #include <stdio.h>
 #include <syscall-nr.h>
 #include <stdbool.h>
@@ -48,12 +49,13 @@ static uint32_t* verify_pointer(uint32_t* p) {
 
 
 static void syscall_handler(struct intr_frame *f) {
-    printf("system call!\n");
+    printf("system call1!\n");
     uint32_t *stack = verify_pointer((uint32_t*)f->esp);
     // TODO Handle
     if (stack == NULL) 
         thread_exit();
     int syscall_num =  *(stack);
+    printf("%d!\n", syscall_num);
 
     switch(syscall_num) {
         case SYS_HALT :
@@ -118,6 +120,11 @@ static void exit(struct intr_frame *f) {
 static void exec(struct intr_frame *f) {
     /* Parse arguments. */
     const char* file = (const char*) get_arg(f, 1);
+    
+
+    f->eax = process_execute(file);
+
+    process_wait(f->eax);
 
     // Temp
     thread_exit();
@@ -129,6 +136,7 @@ static void wait(struct intr_frame *f) {
     pid_t pid = *(pid_t *) get_arg(f, 1);
 
     // Temp
+    (void)f;
     thread_exit();
 }
 
@@ -139,6 +147,7 @@ static void create(struct intr_frame *f) {
     uint32_t initial_size = *(uint32_t *) get_arg(f,2);
 
     // Temp
+    (void)f;
     thread_exit();
 }
 
@@ -148,6 +157,7 @@ static void remove(struct intr_frame *f) {
     const char* file = (const char*) get_arg(f, 1);
 
     // Temp
+    (void)f;
     thread_exit();
 }
 
@@ -156,6 +166,7 @@ static void open(struct intr_frame *f) {
     /* Parse arguments. */
     const char* file = (const char*) get_arg(f, 1);
     // Temp
+    (void)f;
     thread_exit();
 }
 
@@ -165,6 +176,7 @@ static void filesize(struct intr_frame *f) {
     int fd = *(int *) get_arg(f, 1);
 
     // Temp
+    (void)f;
     thread_exit();
 }
 
@@ -176,6 +188,7 @@ static void read(struct intr_frame *f) {
     uint32_t size = *(uint32_t *) get_arg(f,3);
 
     // Temp
+    (void)f;
     thread_exit();
 }
 
@@ -187,6 +200,7 @@ static void write(struct intr_frame *f) {
     uint32_t size = *(uint32_t *) get_arg(f,3);
 
     // Temp
+    (void)f;
     thread_exit();
 }
 
@@ -197,6 +211,7 @@ static void seek(struct intr_frame *f) {
     uint32_t position = *(uint32_t *) get_arg(f, 2);
 
     // Temp
+    (void)f;
     thread_exit();
 }
 
@@ -206,6 +221,7 @@ static void tell(struct intr_frame *f) {
     int fd = *(int *) get_arg(f, 1);
 
     // Temp
+    (void)f;
     thread_exit();
 }
 
@@ -215,6 +231,7 @@ static void close(struct intr_frame *f) {
     int fd = *(int *) get_arg(f, 1);
 
     // Temp
+    (void)f;
     thread_exit();
 }
 
