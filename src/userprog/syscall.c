@@ -56,7 +56,6 @@ static void syscall_handler(struct intr_frame *f) {
     // TODO Handle
     if (stack == NULL) 
         thread_exit();
-    printf("%p\n", stack);
     int syscall_num =  *(stack);
     // hex_dump(0, stack-128, 256, true);
     printf("system call %d!\n", syscall_num);
@@ -144,7 +143,7 @@ static void exit(struct intr_frame *f) {
     int status = get_arg(f, 1);
 
     /* Status code returned to kernel; TODO when writing wait. */
-    (void)status;
+    f->eax = status;
     thread_exit();
 }
 
@@ -216,7 +215,7 @@ static void open(struct intr_frame *f) {
 
     /* Use the address of the file object as the fd. */
     uint32_t fd = (uint32_t) file_s;
-    ASSERT(fd != 0 || fd != 1);
+    ASSERT(fd != STDIN_FILENO || fd != STDOUT_FILENO);
 
     printf("fd: %u\n", fd);
 
@@ -241,7 +240,7 @@ static void read(struct intr_frame *f) {
     /* Parse arguments. */
     uint32_t fd = get_arg(f, 1);
     void* buffer = (void *) get_arg(f, 2);
-    unsigned size = get_arg(f,3);
+    unsigned size = get_arg(f, 3);
 
     // Temp
     (void)fd;
@@ -258,9 +257,9 @@ static void write(struct intr_frame *f) {
     uint32_t size = get_arg(f, 3);
 
     
-    ASSERT(fd != 0);
+    ASSERT(fd != STDIN_FILENO);
     // printf("fd: %u, size: %d\n", fd, size);
-    if (fd == 1)
+    if (fd == STDOUT_FILENO)
         putbuf(buffer, size);
     // printf("DONE\n");
 
