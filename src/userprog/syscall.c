@@ -8,6 +8,7 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/thread.h"
+#include "filesys/filesys.h"
 
 #include "devices/shutdown.h" /* For halt. */
 #include "filesys/filesys.h"  /* For filesys ops. */
@@ -58,8 +59,8 @@ static void syscall_handler(struct intr_frame *f) {
     if (stack == NULL) 
         thread_exit();
     int syscall_num =  *(stack);
-    printf("system call %d!\n", syscall_num);
     // hex_dump(0, stack-128, 256, true);
+    printf("system call %d!\n", syscall_num);
 
     switch(syscall_num) {
         case SYS_HALT :
@@ -126,8 +127,9 @@ static uint32_t get_arg(struct intr_frame *f, int offset) {
 
     /* Obtain stack pointer. */
     uint32_t *stack = (uint32_t*)f->esp;
+    // hex_dump(0, stack, 100, true);
 
-    /* Move to off set. */
+    /* Move to offset. */
     return *(stack + offset);
 }
 
@@ -143,7 +145,7 @@ static void exit(struct intr_frame *f) {
     int status = get_arg(f, 1);
 
     /* Status code returned to kernel; TODO when writing wait. */
-    (void)status;
+    f->eax = status;
     thread_exit();
 }
 
@@ -158,7 +160,7 @@ static void exec(struct intr_frame *f) {
     process_wait(f->eax);
 
     // Temp
-    thread_exit();
+    // thread_exit();
 }
 
 
@@ -184,12 +186,13 @@ static void create(struct intr_frame *f) {
         /* Invalid file name. */
         thread_exit();
     }
+
 }
 
 
 static void remove(struct intr_frame *f) {
     /* Parse arguments. */
-    const char* file = (const char*) get_arg(f, 1);
+    const char* file = (const char*) verify_pointer((uint32_t*)get_arg(f, 1));
 
     // Temp
     (void)file;
@@ -219,6 +222,7 @@ static void open(struct intr_frame *f) {
             }
 
             /* Add new file descriptor object. */
+            ASSERT(fd != STDIN_FILENO || fd != STDOUT_FILENO);
             struct file_des* new_fd = malloc(sizeof(struct file_des));
             new_fd->fd = fd;
             new_fd->file = file;
@@ -241,7 +245,7 @@ static void open(struct intr_frame *f) {
 
 static void filesize(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = get_arg(f, 1);
+    uint32_t fd = get_arg(f, 1);
 
     // Temp
     (void)fd;
@@ -251,9 +255,9 @@ static void filesize(struct intr_frame *f) {
 
 static void read(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = get_arg(f, 1);
+    uint32_t fd = get_arg(f, 1);
     void* buffer = (void *) get_arg(f, 2);
-    unsigned size = get_arg(f,3);
+    unsigned size = get_arg(f, 3);
 
     // Temp
     (void)fd;
@@ -265,21 +269,28 @@ static void read(struct intr_frame *f) {
 
 static void write(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = get_arg(f, 1);
-    const void* buffer = (void *) get_arg(f, 2);
-    unsigned size = get_arg(f,3);
+    uint32_t fd = get_arg(f, 1);
+    const char* buffer = (char *) get_arg(f, 2);
+    uint32_t size = get_arg(f, 3);
+
+    
+    ASSERT(fd != STDIN_FILENO);
+    // printf("fd: %u, size: %d\n", fd, size);
+    if (fd == STDOUT_FILENO)
+        putbuf(buffer, size);
+    // printf("DONE\n");
 
     // Temp
     (void)fd;
     (void)buffer;
     (void)size;
-    thread_exit();
+    // thread_exit();
 }
 
 
 static void seek(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = get_arg(f, 1);
+    uint32_t fd = get_arg(f, 1);
     unsigned position = get_arg(f, 2);
 
     // Temp
@@ -291,7 +302,7 @@ static void seek(struct intr_frame *f) {
 
 static void tell(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = get_arg(f, 1);
+    uint32_t fd = get_arg(f, 1);
 
     // Temp
     (void)fd;
@@ -301,7 +312,7 @@ static void tell(struct intr_frame *f) {
 
 static void close(struct intr_frame *f) {
     /* Parse arguments. */
-    int fd = get_arg(f, 1);
+    uint32_t fd = get_arg(f, 1);
 
     // Temp
     (void)fd;
