@@ -191,7 +191,7 @@ struct Elf32_Phdr {
 #define PF_R 4          /*!< Readable. */
 /*! @} */
 
-static bool setup_stack(void **esp, const char *file_name);
+static bool setup_stack(void **esp, const char *cmdline);
 static bool validate_segment(const struct Elf32_Phdr *, struct file *);
 static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
                          uint32_t read_bytes, uint32_t zero_bytes,
@@ -410,24 +410,83 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
 
 /*! Create a minimal stack by mapping a zeroed page at the top of
     user virtual memory. */
-static bool setup_stack(void **esp, const char *file_name) {
+static bool setup_stack(void **esp, const char *cmdline) {
     uint8_t *kpage;
     bool success = false;
 
-    printf("SETUP STACK: %s\n", file_name);
+    printf("SETUP STACK: %s\n", cmdline);
 
     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
     if (kpage != NULL) {
         success = install_page(((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
         // TODO: Temporary for minimum viable solution
         if (success)
-            *esp = PHYS_BASE - 12;
-        else
+            *esp = (void *) ((unsigned int) PHYS_BASE & 0xfffffffc);
+        else {
             palloc_free_page(kpage);
+            return success;
+        }
     }
 
-    printf("POINT: %p\n", esp);
-    hex_dump(0, *esp, 64, 1);
+    uint8_t *sp  = (uint8_t *) *esp;
+
+    // make copy
+    int cmdline_len = strnlen(cmdline, 128); // remove magic number
+    char cmdline_copy[cmdline_len];
+    strlcpy(cmdline_copy, cmdline, cmdline_len + 1);
+
+    // do tokenization
+    char *token, *save_ptr;
+    int arg_size;
+    int num_args;
+    int arg_index = 0;
+    uint8_t *arg_ptrs[128];
+
+    for (token = strtok_r(cmdline_copy, " ", &save_ptr); token != NULL;
+         token = strtok_r(NULL, " ", &save_ptr)) {
+        arg_size = strlen(token) + 1;
+        sp -= arg_size;
+
+        // printf("Putting %s into %p with length %d\n", token, sp, arg_size);
+        strlcpy((char *) sp, token, arg_size); 
+        arg_ptrs[arg_index] = sp;
+        arg_index++;
+    }
+
+    // TODO: Better way of alignment?
+    /* Word align on 4-byte boundary and convert to char** for convenience. */
+    // printf("Before align: %p\n", sp); 
+    char **spp = (char **) ((unsigned int) sp & 0xfffffffc);
+    // printf("After align: %p\n", spp); 
+
+
+    /* Copy pointers to arguments onto stack. */
+    /* Push null pointer first */
+    spp--; *(char **) spp = NULL;
+    num_args = arg_index;
+
+    while (arg_index > 0) {
+        arg_index--;
+        spp--;
+        // printf("Putting %p into %p\n", arg_ptrs[arg_index], spp);
+        *(char **) spp = arg_ptrs[arg_index];
+    }
+    spp--; *(char ***)spp = (spp + 1);
+
+    /* Push number of arguments to the stack. */
+    // printf("Pushing num args: %d\n", num_args);
+    spp--; *(int *)spp = num_args;
+
+    /* Push 'fake' return address (since function will never return, only 
+    exit). */
+    spp--; *spp = NULL;
+
+    // printf("CMDLINE copy: %s, %d, %s\n", cmdline, cmdline_len, cmdline_copy);
+
+    printf("POINT: %p, %p, dp: %d\n", *esp, spp, *esp - (void *)spp);
+    hex_dump(0, (void *) spp, *esp - (void *)spp + 1, 1);
+    // printf("POINT: %p\n", *esp);
+    *esp = (void *)spp;
 
     return success;
 }
