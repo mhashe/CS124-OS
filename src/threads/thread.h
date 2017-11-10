@@ -55,6 +55,7 @@ fixedp_from_int(LOAD_AVG_PERIOD - TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 /*! File descriptor. */
 struct file_des {
     int fd;                /*!< Numeric file descriptor. */
+    struct file* file;     /*!< File struct pointer. */
 
     struct list_elem elem; /*!< Pointers to previous, next file descriptors. */
 };
