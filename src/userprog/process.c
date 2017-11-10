@@ -440,7 +440,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
     int arg_size;
     int num_args;
     int arg_index = 0;
-    uint8_t *arg_ptrs[128];
+    uint8_t *arg_ptrs[cmdline_len];
 
     for (token = strtok_r(cmdline_copy, " ", &save_ptr); token != NULL;
          token = strtok_r(NULL, " ", &save_ptr)) {
