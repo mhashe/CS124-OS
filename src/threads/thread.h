@@ -52,6 +52,13 @@ fixedp_from_int(LOAD_AVG_PERIOD - TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 #define LOAD_AVG_DECAY    \
   fixedp_divide(fixedp_from_int(TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 
+/*! File descriptor. */
+struct file_des {
+    int fd;                /*!< Numeric file descriptor. */
+
+    struct list_elem elem; /*!< Pointers to previous, next file descriptors. */
+};
+
 /*! A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -121,7 +128,7 @@ struct thread {
     char name[16];                      /*!< Name (for debugging purposes). */
     uint8_t *stack;                     /*!< Saved stack pointer. */
     int priority;                       /*!< Priority. */
-    struct list_elem allelem;         /*!< List element for all threads list. */
+    struct list_elem allelem;        /*!< List element for all threads list. */
     /**@}*/
 
     /* User-added stuff. */
@@ -132,7 +139,7 @@ struct thread {
     int priority_org;                   /*!< Stores original priority when
                                              when elevated. */
     struct list locks;                  /*!< Locks which thread owns. */
-    struct lock *blocked_lock;           /*!< Lock which thread wants. */
+    struct lock *blocked_lock;          /*!< Lock which thread wants. */
 
     /*! Shared between thread.c and synch.c. */
     /**@{*/
@@ -143,6 +150,7 @@ struct thread {
     /*! Owned by userprog/process.c. */
     /**@{*/
     uint32_t *pagedir;                  /*!< Page directory. */
+    struct list fds;                    /*!< File descriptors. */
     /**@{*/
 #endif
 

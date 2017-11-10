@@ -175,7 +175,6 @@ static void create(struct intr_frame *f) {
     const char* file = (const char*) get_arg(f, 1);
     unsigned initial_size = get_arg(f,2);
 
-    (void)initial_size;
     if (file) {
         /* Create file, return boolean value. */
         f->eax = filesys_create(file, initial_size);

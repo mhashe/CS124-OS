@@ -462,6 +462,8 @@ void thread_exit(void) {
 /*! Causes current thread to release all locks and semaphores
     it posses. */
 void release_all_resources(void) {
+    ASSERT(intr_get_level() == INTR_OFF);
+
     /* Release all locks. */
     struct list_elem *e;
 
@@ -733,6 +735,9 @@ static void init_thread(struct thread *t, const char *name, int priority) {
         t->priority_org = priority;
         list_init(&t->locks);
         t->blocked_lock = NULL;
+#ifdef USERPROG
+        list_init(&t->fds);
+#endif
     }
 
     /* Initially, a thread does not need to be woken up at some time. */
