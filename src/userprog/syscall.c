@@ -313,6 +313,8 @@ static void seek(struct intr_frame *f) {
     int fd = get_arg(f, 1);
     unsigned position = get_arg(f, 2);
 
+    file_seek(file_from_fd(fd), position);
+
     // Temp
     (void)fd;
     (void)position;
