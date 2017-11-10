@@ -50,11 +50,11 @@ static uint32_t* verify_pointer(uint32_t* p) {
 
 static void syscall_handler(struct intr_frame *f) {
     printf("system call!\n");
-    uint32_t *caller_stack = verify_pointer((uint32_t*)f->esp);
+    uint32_t *stack = verify_pointer((uint32_t*)f->esp);
     // TODO Handle
-    if (caller_stack == NULL) 
+    if (stack == NULL) 
         thread_exit();
-    int syscall_num =  *(caller_stack);
+    int syscall_num =  *(stack);
 
     switch(syscall_num) {
         case SYS_HALT :
@@ -95,7 +95,7 @@ static void get_args(uint32_t* arg1, uint32_t* arg2, uint32_t* arg3,
     ASSERT(num_args <= 3);
 
     /* Stack pointer has already been verified. */
-    uint32_t *stack = (uint32_t*)f->esp;
+    uint32_t *stack = verify_pointer((uint32_t*)f->esp);
 
     if (num_args >= 3) {
         /* We need the third argument. */
