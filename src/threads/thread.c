@@ -469,7 +469,7 @@ void thread_exit(void) {
     if (!thread_mlfqs) {
         /* Make sure all locks are released, if they aren't already. */
         release_all_resources();
-        ASSERT(list_size(&(thread_current()->locks)) == 0);
+        ASSERT(list_empty(&(thread_current()->locks)));
     }
     thread_current()->status = THREAD_DYING;
     schedule();
