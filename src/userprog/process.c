@@ -38,6 +38,9 @@ tid_t process_execute(const char * file_name) {
 
     /* Extract executable name */
     char* exec_fn = palloc_get_page(0);
+    if (exec_fn == NULL)
+        return TID_ERROR;
+
     int exec_fn_len = 0;
     while ((*fn_copy != '\0') && (*fn_copy != ' ')) {
         fn_copy++;
