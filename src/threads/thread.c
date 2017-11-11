@@ -529,15 +529,14 @@ void release_all_resources(void) {
         list_remove(e_prev);
     }
 
-    // /* Close all file descriptors. */
-    // e = list_begin(&thread_current()->fds);
-    // while (e != list_end(&thread_current()->fds)) {
-    //     struct file_des *fdes = list_entry(e, struct file_des, elem);
-    //     e_prev = e;
-    //     e = list_next(e);
-    //     free(fdes);
-    //     list_remove(e_prev);
-    // }
+    /* Close all file descriptors. */
+    e = list_begin(&thread_current()->fds);
+    while (e != list_end(&thread_current()->fds)) {
+        struct file_des *fdes = list_entry(e, struct file_des, elem);
+
+        e = list_next(e);
+        free(fdes);
+    }
 }
 
 
