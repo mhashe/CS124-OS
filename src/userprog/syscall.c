@@ -54,20 +54,13 @@ void syscall_init(void) {
 }
 
 uint32_t* verify_pointer(uint32_t* p) {
-    // printf("%s: %d\n", thread_current()->name, thread_current()->exit_code);
-    // printf("%p\n", p);
     if (is_user_vaddr(p) && pagedir_get_page(thread_current()->pagedir, p)) {
-        // printf("why\n");
         /* Valid pointer, continue. */
         return p;
     } else {
         /* Invalid pointer, exit. */
-        // printf("EXITING\n");
         thread_exit();
     }
-    // uint32_t* vp = (uint32_t*)pagedir_get_page(thread_current()->pagedir, p);
-    // if (vp == NULL)
-    //     return NULL;
 }
 
 
@@ -78,9 +71,6 @@ static void syscall_handler(struct intr_frame *f) {
     if (stack == NULL) 
         thread_exit();
     int syscall_num =  *(stack);
-    // printf("%s(%d) <- %d\n", thread_current()->name, thread_current()->tid, thread_current()->parent_tid);
-    // printf("system call %d!\n", syscall_num);
-    // hex_dump(0, stack-128, 256, true);
     if (syscall_num != 9) {
         // printf("system call %d!\n", syscall_num);
     }
@@ -169,9 +159,6 @@ static struct file_des *file_from_fd(int fd) {
     struct thread *cur = thread_current();
     struct file_des* fd_s;
 
-    // printf("LOOP start: %p\n",  list_begin (&cur->fds));
-    // printf("LOOP end: %p\n",  list_end (&cur->fds));
-
     for (e = list_begin (&cur->fds); e != list_end (&cur->fds); e = list_next(e)) {
         fd_s = list_entry(e, struct file_des, elem);
         // printf("%p\n", e);
@@ -221,22 +208,10 @@ static void exec(struct intr_frame *f) {
 
     /* Verify arguments. */
     verify_pointer((uint32_t *) cmd_line);
-    
-    // /* Deny writes. */
-    // open(f);
-    // lock_acquire(&filesys_io);
-    // struct file* file = filesys_open(cmd_line);
-    // lock_release(&filesys_io);
-    // file_deny_write(file);
 
+    /* Exec program. */
     f->eax = process_execute(cmd_line);
     process_wait(f->eax);
-
-    // /* Re-enable write. */
-    // file_allow_write(file);
-
-    // Temp
-    // thread_exit();
 }
 
 

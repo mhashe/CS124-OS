@@ -536,6 +536,9 @@ void release_all_resources(void) {
         e_prev = e;
         e = list_next(e);
         list_remove(e_prev);
+
+        /* Free memory. */
+        free(fdes->file);
         free(fdes);
     }
 
@@ -546,6 +549,8 @@ void release_all_resources(void) {
         e_prev = e;
         e = list_next(e);
         list_remove(e_prev);
+
+        /* Free memory. */
         free(cld);
     }
 }
