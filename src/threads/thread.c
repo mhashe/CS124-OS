@@ -452,7 +452,8 @@ void thread_exit(void) {
     if (!thread_mlfqs) {
         /* Make sure all locks are released, if they aren't already. */
         release_all_resources();
-        ASSERT(list_empty(&(thread_current()->locks)));
+        ASSERT(list_empty(&thread_current()->locks));
+        ASSERT(list_empty(&thread_current()->fds));
     }
     thread_current()->status = THREAD_DYING;
     schedule();
@@ -463,17 +464,23 @@ void thread_exit(void) {
     it posses. */
 void release_all_resources(void) {
     ASSERT(intr_get_level() == INTR_OFF);
-
-    /* Release all locks. */
     struct list_elem *e;
 
-    e = list_begin(&(thread_current()->locks));
-    while (e != list_end(&(thread_current()->locks))) {
+    /* Release all locks. */
+    e = list_begin(&thread_current()->locks);
+    while (e != list_end(&thread_current()->locks)) {
         struct lock *l = list_entry(e, struct lock, elem);
         e = list_next(e);
         lock_release(l);
     }
 
+    /* Close all file descriptors. */
+    e = list_begin(&thread_current()->fds);
+    while (e != list_end(&thread_current()->fds)) {
+        struct file_des *fdes = list_entry(e, struct file_des, elem);
+        e = list_next(e);
+        free(fdes);
+    }
 }
 
 

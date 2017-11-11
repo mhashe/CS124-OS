@@ -17,7 +17,6 @@
 #include "filesys/file.h" /* For file_length, seek, tell. */
 #include "threads/synch.h" /* For locks. */
 
-//TODO : Interrupt context for file I/O
 //TODO : Close all fds in thread_exit.
 //TODO : Possible remove once filecount goes to zero?
 
@@ -183,7 +182,7 @@ static void exit(struct intr_frame *f) {
 
     /* Status code returned to kernel; TODO when writing wait. */
     f->eax = status;
-    shutdown_power_off(); // TODO
+    // shutdown_power_off(); // TODO
     thread_exit();
 }
 
