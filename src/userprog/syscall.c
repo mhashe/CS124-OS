@@ -21,7 +21,7 @@ static void syscall_handler(struct intr_frame *);
 
 /* Helper functions. */
 static uint32_t get_arg(struct intr_frame *f, int offset);
-static struct file *file_from_fd(int fd);
+static struct file_des *file_from_fd(int fd);
 
 /* Handlers for Project 4. */
 static void     halt(struct intr_frame *f);
@@ -142,7 +142,7 @@ static uint32_t get_arg(struct intr_frame *f, int offset) {
 }
 
 
-static struct file *file_from_fd(int fd) {
+static struct file_des *file_from_fd(int fd) {
     ASSERT(fd > STDOUT_FILENO);
 
     struct list_elem *e;
@@ -153,7 +153,7 @@ static struct file *file_from_fd(int fd) {
          e != list_end (&fds); e = list_next (e)) {
         fd_s = list_entry(e, struct file_des, elem);
         if (fd_s->fd == fd)
-            return fd_s->file;
+            return fd_s;
     }
 
     return NULL;
@@ -179,6 +179,7 @@ static void exit(struct intr_frame *f) {
 
 static void exec(struct intr_frame *f) {
     /* Parse arguments. */
+    //TODO
     const char* file = (const char*) get_arg(f, 1);
     
 
@@ -278,7 +279,7 @@ static void filesize(struct intr_frame *f) {
     }
 
     /* Return file size. */
-    struct file* file = file_from_fd(fd);
+    struct file* file = file_from_fd(fd)->file;
     if (file) {
         f->eax = file_length(file);
     } else {
@@ -310,7 +311,7 @@ static void read(struct intr_frame *f) {
     }
 
     /* Return number of bytes read. */
-    struct file* file = file_from_fd(fd);
+    struct file* file = file_from_fd(fd)->file;
     if (file) {
         /* Valid file. */
         f->eax = file_read(file, buffer, size);
@@ -345,7 +346,7 @@ static void write(struct intr_frame *f) {
     }
 
     /* Return number of bytes written. */
-    struct file* file = file_from_fd(fd);
+    struct file* file = file_from_fd(fd)->file;
     if (file) {
         /* Valid file. */
         f->eax = file_write(file, buffer, size);
@@ -367,7 +368,7 @@ static void seek(struct intr_frame *f) {
     }
 
     /* Seek file. */
-    struct file* file = file_from_fd(fd);
+    struct file* file = file_from_fd(fd)->file;
     if (file) {
         /* Valid file. */
         file_seek(file, position);
@@ -388,7 +389,7 @@ static void tell(struct intr_frame *f) {
     }
 
     /* Tell file. */
-    struct file* file = file_from_fd(fd);
+    struct file* file = file_from_fd(fd)->file;
     if (file) {
         /* Valid file. */
         f->eax = file_tell(file);
@@ -409,10 +410,15 @@ static void close(struct intr_frame *f) {
     }
 
     /* Tell file. */
-    struct file* file = file_from_fd(fd);
-    if (file) {
+    struct file_des* file_des = file_from_fd(fd);
+    if (file_des) {
         /* Valid file. */
-        file_close(file);
+        file_close(file_des->file);
+
+        /* Free memory, remove from list. */
+        list_remove(&file_des->elem);
+        free(file_des);
+
     } else {
         /* Can't close invalid file. */
         thread_exit();
