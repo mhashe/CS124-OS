@@ -31,9 +31,15 @@ Michael Hashe <mhashe@caltech.edu>
 >> If you have any preliminary comments on your submission, notes for the
 >> TAs, or extra credit, please give them here.
 
+We get different behavior depending on whether the VM has 1 processor or
+multiple processors. This is unusual since pintos is a single threaded emulator.
+Please run with 1 processor.
+
 >> Please cite any offline or online sources you consulted while
 >> preparing your submission, other than the Pintos documentation, course
 >> text, lecture notes, and course instructors.
+
+Stack overflow. man pages.
 
 			   USER PROGRAMS
 			   =============
@@ -47,8 +53,8 @@ which parts.
 >> L1: How many hours did each team member spend on this assignment?
    Make sure that each member's total time is listed.
 
-Vaibhav: 25 hours
-Nikhil : 25 hours
+Vaibhav: 28 hours
+Nikhil : 28 hours
 Michael: 25 hours
 
 
@@ -229,9 +235,8 @@ In the case that the child_tid passed was invalid, we return -1, and if
 the child already exited, we stored the exit status codes of the children 
 in parent->children.
 
-Say something else?                                                             TODO
 
->> B6: Any access to user program memory at a user-specified address            TODO
+>> B6: Any access to user program memory at a user-specified address
 >> can fail due to a bad pointer value.  Such accesses must cause the
 >> process to be terminated.  System calls are fraught with such
 >> accesses, e.g. a "write" system call requires reading the system
@@ -245,13 +250,26 @@ Say something else?                                                             
 >> paragraphs, describe the strategy or strategies you adopted for
 >> managing these issues.  Give an example.
 
-We functionalized a good portion of error handling, particularly with regards
-to argument parsing. This makes the actual syscalls somewhat easier to deal
-with. If an error is detected, thread_exit() is called. During thread exit, we 
+We functionalized a good portion of error handling, particularly with regards to
+argument parsing. This makes the actual syscalls somewhat easier to deal with.
+Any changes that need to be made can be made in just one position, which is
+propagated. 
+
+If an error is detected, thread_exit() is called. During thread exit, we 
 loop over all resource lists maintained by the thread (locks, children, files)
 and free everything. This also occurs during the normal course of thread_exit,
 as a check against processes simply neglecting to free their locks.
 
+The general idea was to functionalize as much as possible so making changes was
+easier. Additionally, we had threads manage most of the objects in the kernel so
+that when a thread exited, it knew exactly what it had created, so it could free
+it properly.
+
+For instance, there is a function to read an argument off the stack.
+This function also calls verify_pointer which verifies that that argument is in
+valid memory.
+
+A thread opens a few files. It puts these in a list of file descriptors. 
 
 ---- SYNCHRONIZATION ----
 
@@ -260,6 +278,12 @@ as a check against processes simply neglecting to free their locks.
 >> loading.  How does your code ensure this?  How is the load
 >> success/failure status passed back to the thread that calls "exec"?
 
+We ensure this by using a semaphore. The parent thread calls sema down so blocks
+and the child thread calls sema up on finishing loading. The status is passed
+back through the parent thread. The child thread knows who its parent is so can
+access its parent and then set the load status in the parent. We have just one
+field for this because the parent can only be waiting for one child to load.
+
 >> B8: Consider parent process P with child process C.  How do you
 >> ensure proper synchronization and avoid race conditions when P
 >> calls wait(C) before C exits?  After C exits?  How do you ensure
@@ -267,16 +291,43 @@ as a check against processes simply neglecting to free their locks.
 >> terminates without waiting, before C exits?  After C exits?  Are
 >> there any special cases?
 
+Before C exits: The parent process blocks itself and sets a flag to let the
+child know it is waiting on it. On exit, the child checks this flag to see if
+the parent is waiting on it. If so, it unblocks the parent using the parent's
+ID.
+
+After C exits: The parent keeps a list of all its past children. This works
+because thread IDs are not reused so it can uniquely identity a child. Given the
+ID, the parent checks if that ID has ever been a child. If it has, it can return
+the childs exit status. It then overwrites that exit code to -1 for subsequent
+calls. The malloc'ed memory is then freed on thread exit.
+
+If P has terminated, on exit, the child sees if its parent is still alive. If it
+isn't, then it doesn't bother setting any of the status flags that the parent
+owns.
+
 ---- RATIONALE ----
 
 >> B9: Why did you choose to implement access to user memory from the
 >> kernel in the way that you did?
 
+It is a nice functional implementation so that if one change needs to be made,
+it is propagated everywhere. We chose to deal with everything from the kernel as
+opposed to deal with page fault exceptions because it seemed like a more
+straightforward way to do it.
+
 >> B10: What advantages or disadvantages can you see to your design
 >> for file descriptors?
 
+The design for file descriptors lets every thread know exactly which file
+descriptors is owns. In addition, there is a one to one mapping of fd and file
+objects, to reduce completexity. At the same time, this might add a little
+overhead.
+
 >> B11: The default tid_t to pid_t mapping is the identity mapping.
 >> If you changed it, what advantages are there to your approach?
+
+We did not change it.
 
 			  SURVEY QUESTIONS
 			  ================
