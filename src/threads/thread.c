@@ -15,6 +15,7 @@
 #include "../devices/timer.h"
 #ifdef USERPROG
 #include "userprog/process.h"
+#include "filesys/file.h"
 #endif
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
@@ -494,12 +495,6 @@ void thread_exit(void) {
 
 #ifdef USERPROG
     process_exit();
-
-    /* Make sure all locks are released, if they aren't already. */
-    release_all_resources();
-    ASSERT(list_empty(&thread_current()->locks));
-    ASSERT(list_empty(&thread_current()->fds));
-    ASSERT(list_empty(&thread_current()->children));
 #endif
 
     /* Remove thread from all threads list, set our status to dying,
@@ -507,6 +502,14 @@ void thread_exit(void) {
        when it calls thread_schedule_tail(). */
     intr_disable();
     list_remove(&thread_current()->allelem);
+
+#ifdef USERPROG
+    /* Make sure all locks are released, if they aren't already. */
+    release_all_resources();
+    ASSERT(list_empty(&thread_current()->locks));
+    ASSERT(list_empty(&thread_current()->fds));
+    ASSERT(list_empty(&thread_current()->children));
+#endif
 
     thread_current()->status = THREAD_DYING;
     schedule();
@@ -540,7 +543,7 @@ void release_all_resources(void) {
         list_remove(e_prev);
 
         /* Free memory. */
-        free(fdes->file);
+        file_close(fdes->file);
         free(fdes);
     }
 
