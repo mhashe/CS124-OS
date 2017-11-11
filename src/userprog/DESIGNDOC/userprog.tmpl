@@ -25,6 +25,7 @@ Michael Hashe <mhashe@caltech.edu>
    Repository URL:  https://github.com/MichaelHashe/CS124-OS
    commit        :  
 
+
 ---- PRELIMINARIES ----
 
 >> If you have any preliminary comments on your submission, notes for the
@@ -46,16 +47,18 @@ which parts.
 >> L1: How many hours did each team member spend on this assignment?
    Make sure that each member's total time is listed.
 
-Vaibhav: X hours
-Nikhil : 20 hours
-Michael: Z hours
+Vaibhav: 25 hours
+Nikhil : 25 hours
+Michael: 25 hours
+
 
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
 
 Vaibhav: argument passing, syscall wait()
 Nikhil:  wait, deny writes, user memory access, file descriptor, status passing
-Michael: [other syscalls..., deny writes?]
+Michael: syscalls, file descriptor, struct architecture
+
 
                            ARGUMENT PASSING
                            ================
@@ -68,15 +71,16 @@ Michael: [other syscalls..., deny writes?]
 
 No structs were added or modified for this section.
 
+
 ---- ALGORITHMS ----
 
 >> A2: Briefly describe how you implemented argument parsing.  How do
 >> you arrange for the elements of argv[] to be in the right order?
 >> How do you avoid overflowing the stack page?
 
-The requirement is that the pointers are pushed representing args from right 
-to left. To make this easier, since parsing is left to right, a temporary 
-array of pointers was kept.
+Calling conventions dictate that the pointers are pushed representing args from 
+right to left. Since parsing is left to right, a temporary array of pointers 
+was kept.
 
 The command was parsed and pushed to the stack from left to right, 
 while the pointers were added to the array. Then, the array was iterated in 
@@ -84,27 +88,25 @@ reverse while its pointers were pushed to the stack such that pointers were
 pushed representing args from right to left.
 
 To avoid overflowing, the length of the commandline was limited to 128 
-characters/bytes since this is the maximum limit that Pintos will accept.
+characters/bytes since this is the maximum that Pintos will accept.
+
 
 ---- RATIONALE ----
 
 >> A3: Why does Pintos implement strtok_r() but not strtok()?
 
-The strtok_r() function is a reentrant version of strtok(). This means that 
-its extra argument is used to store state of the splitting the string rather 
-than returning a local variable of it. The retantrant version can be not 
-only simpler in this manner, but also allow multiple states of splitting 
-strings to be maintained and manipulated at once.
+The strtok_r() function is reentrant and maintains state when called by 
+multiple processes, whereas strtok() is not.
+
 
 >> A4: In Pintos, the kernel separates commands into a executable name
 >> and arguments.  In Unix-like systems, the shell does this
 >> separation.  Identify at least two advantages of the Unix approach.
 
-By parsing the commands in the shell rather than kernel, it allows the parsing
-to be done differently based on the application (shell) and it makes the kernel
-lighter (faster). Additionally, it also allows for the shell to setup file
-redirection instead of having the core system do it for a mostly user space
-application.
+By parsing the commands in the shell rather than kernel, parsing can
+be handled differently by different shell programs. Additionally, the kernel
+lighter (=> faster). It also allows for the shell to setup file redirection, 
+which is a mostly user space application.
 
 
                              SYSTEM CALLS
@@ -118,7 +120,7 @@ application.
 
 We added the following fields to the thread struct:
     1. tid_t parent_tid;  
-    The thread id of the parent of self
+    The thread id of the parent of self. 
     
     2. bool parent_waiting; 
     Whether parent of self is waiting for self to finish 
@@ -138,11 +140,50 @@ We added the following fields to the thread struct:
     File object for file which this thread was started from.
 
 
->> B2: Describe how file descriptors are associated with open files.            TODO
+Additionally, we defined the following structs: 
+
+
+/*! File descriptor. */
+struct file_des {
+    int fd;                /*!< Numeric file descriptor. */
+    struct file* file;     /*!< File struct pointer. */
+
+    struct list_elem elem; /*!< Pointers to previous, next file descriptors. */
+};
+
+The file descriptor struct is used to keep track of files opened by a given
+process. They are stored in the fds list noted above.
+
+
+/*! Child of a thread. */
+struct child {
+    tid_t tid;                /*!< tid of child. */
+    int exit_code;            /*!< Exit code. */
+    bool load_success;        /*!< Success of load. */
+
+    struct list_elem elem;    /*!< Pointers to previous, next child. */
+};
+
+The child struct holds references to each child of a process. It allows a parent
+to monitor the progress of any of its child processes.
+
+
+In syscall.h, we define "typedef int pid_t"; this is simply to mimic the 
+conventions used in calling syscalls.
+
+We also define a global lock "static struct lock filesys_io"; this lock is 
+obtained whenever a process attempts a filesystem operation, and is used to
+prevent I/O related race conditions.
+
+
+>> B2: Describe how file descriptors are associated with open files.            
 >> Are file descriptors unique within the entire OS or just within a
 >> single process?
 
-File descriptors are unique with a single process.
+File descriptors are unique within a single process. Specifically, any process
+asigns file descriptors in a strictly increasing order. Multiple processes
+can (and do) have files with the same descriptor (i.e., STDIN and STDIO have
+the same value across all processes).
 
 
 ---- ALGORITHMS ----
@@ -150,12 +191,13 @@ File descriptors are unique with a single process.
 >> B3: Describe your code for reading and writing user data from the
 >> kernel.
 
-After verifying the stack, both grab all the arguments off the stack. The buffer
-and the file descriptor are verified. The special file descriptors are handled.
-Each thread maintains a list of all the file descriptors it has open. As such,
-given a certain file descriptor, we can see if the thread owns it. If so, we can
-access the file object associated with it, and use that for the filesystem read
-and write calls.
+After verifying the stack, both calls parse arguments off the stack. The buffer
+and the file descriptor are verified. STDIN and STDOUT are handled according
+to the Pintos guidelines. Each thread maintains a list of all the file 
+descriptors it has open. As such, given a certain file descriptor, we can see 
+if the thread owns it. If so, we can access the file object associated with it, 
+and use that for the filesystem read and write calls. If a file is invalid, we
+return errors codes (-1 for read, 0 for write).
 
 
 >> B4: Suppose a system call causes a full page (4,096 bytes) of data
