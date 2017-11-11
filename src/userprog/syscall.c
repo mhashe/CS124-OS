@@ -56,7 +56,7 @@ void syscall_init(void) {
 uint32_t* verify_pointer(uint32_t* p) {
     // printf("%s: %d\n", thread_current()->name, thread_current()->exit_code);
     // printf("%p\n", p);
-    if (is_user_vaddr(p)) {
+    if (is_user_vaddr(p) && pagedir_get_page(thread_current()->pagedir, p)) {
         // printf("why\n");
         /* Valid pointer, continue. */
         return p;
@@ -78,6 +78,7 @@ static void syscall_handler(struct intr_frame *f) {
     if (stack == NULL) 
         thread_exit();
     int syscall_num =  *(stack);
+    // printf("%s(%d) <- %d\n", thread_current()->name, thread_current()->tid, thread_current()->parent_tid);
     // printf("system call %d!\n", syscall_num);
     // hex_dump(0, stack-128, 256, true);
     if (syscall_num != 9) {
@@ -165,12 +166,15 @@ static struct file_des *file_from_fd(int fd) {
     ASSERT(fd > STDOUT_FILENO);
 
     struct list_elem *e;
-    struct list fds = thread_current()->fds;
+    struct thread *cur = thread_current();
     struct file_des* fd_s;
 
-    for (e = list_begin (&fds); 
-         e != list_end (&fds); e = list_next (e)) {
+    // printf("LOOP start: %p\n",  list_begin (&cur->fds));
+    // printf("LOOP end: %p\n",  list_end (&cur->fds));
+
+    for (e = list_begin (&cur->fds); e != list_end (&cur->fds); e = list_next(e)) {
         fd_s = list_entry(e, struct file_des, elem);
+        // printf("%p\n", e);
         if (fd_s->fd == fd)
             return fd_s;
     }
@@ -199,6 +203,7 @@ static void exit(struct intr_frame *f) {
     struct child *c = thread_get_child_elem(&parent->children, thread_current()->tid);
 
     ASSERT(c != NULL);
+    // printf("%d\n", status);
 
     c->exit_code = status;
     thread_current()->exit_code = status;
@@ -282,7 +287,7 @@ static void open(struct intr_frame *f) {
 
                 struct list_elem* last = list_rbegin(&thread_current()->fds);
                 struct file_des* last_fd = list_entry(last, struct file_des, elem);
-                fd = MAX(fd, last_fd->fd);
+                fd = MAX(fd, last_fd->fd+1);
             }
 
             /* If either of these numbers are assigned, something went horribly wrong. */

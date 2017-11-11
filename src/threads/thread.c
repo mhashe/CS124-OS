@@ -148,6 +148,19 @@ struct child *thread_get_child_elem(struct list *lst, tid_t child_tid) {
     return NULL;
 }
 
+void thread_remove_child_elem(struct list *lst, tid_t child_tid) {
+    /* For added safety, assert tid does not belong to idle or init thread. */
+    // printf("init:%d us:%d, idle:%d\n", initial_thread->tid, tid, idle_thread->tid);
+    
+    struct list_elem *e;
+    for (e = list_begin (lst); 
+         e != list_end (lst); e = list_next (e)) {
+        struct child *c = list_entry(e, struct child, elem);
+        if (c->tid == child_tid) 
+            list_remove(&c->elem);
+    }
+}
+
 
 /* Mimics a "less-than" function*/
 bool thread_queue_compare(const struct list_elem *a,
@@ -492,7 +505,7 @@ void thread_exit(void) {
         /* Make sure all locks are released, if they aren't already. */
         release_all_resources();
         ASSERT(list_empty(&thread_current()->locks));
-        ASSERT(list_empty(&thread_current()->fds));
+        // ASSERT(list_empty(&thread_current()->fds));
     }
     thread_current()->status = THREAD_DYING;
     schedule();
@@ -516,15 +529,15 @@ void release_all_resources(void) {
         list_remove(e_prev);
     }
 
-    /* Close all file descriptors. */
-    e = list_begin(&thread_current()->fds);
-    while (e != list_end(&thread_current()->fds)) {
-        struct file_des *fdes = list_entry(e, struct file_des, elem);
-        e_prev = e;
-        e = list_next(e);
-        free(fdes);
-        list_remove(e_prev);
-    }
+    // /* Close all file descriptors. */
+    // e = list_begin(&thread_current()->fds);
+    // while (e != list_end(&thread_current()->fds)) {
+    //     struct file_des *fdes = list_entry(e, struct file_des, elem);
+    //     e_prev = e;
+    //     e = list_next(e);
+    //     free(fdes);
+    //     list_remove(e_prev);
+    // }
 }
 
 

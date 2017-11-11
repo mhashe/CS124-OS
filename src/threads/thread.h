@@ -227,6 +227,7 @@ void thread_defer_to_max_priority(void);
 
 struct thread *thread_get_from_tid(tid_t tid);
 struct child *thread_get_child_elem(struct list *lst, tid_t child_tid);
+void thread_remove_child_elem(struct list *lst, tid_t child_tid);
 
 #endif /* threads/thread.h */
 

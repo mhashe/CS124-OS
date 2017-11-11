@@ -94,22 +94,29 @@ static void start_process(void *file_name_) {
 int process_wait(tid_t child_tid) {
     // TOOD: if we are already waiting for this child_tid, return -1
 
-    /* If TID is invalid, return -1. */
+    /* Check if the child had the current thread as the parent in the past. */
+    struct thread *parent = thread_current();
+    struct child *c = thread_get_child_elem(&parent->children, child_tid);
+
+    /* Child never belonged to this parent. */
+    if (c == NULL)
+        return -1;
+
+    /* If TID corresponds to a past child. */
     struct thread *child = thread_get_from_tid(child_tid);
-    if (child == NULL)
-        return -1;
-    
-    // If not a child of current_thread(), return -1. 
-    if (child->parent_tid != thread_tid())
-        return -1;
+    if (c && child == NULL) {
+        thread_remove_child_elem(&parent->children, child_tid);
+        return c->exit_code;
+    }
     
 
+    /* Block/wait for sema to be released by child. */
     /* Create semaphore and give it to child. */
     // struct semaphore sema;
     // sema_init(&sema, 0);
     // child->parent_sem = &sema;
 
-    /* Block/wait for sema to be released by child. */
+    /* Child is currently running. */
     // printf("SEMA DOWN: %s, %d\n", thread_current()->name, thread_tid());
     child->parent_waiting = true;
     enum intr_level old_level;
@@ -117,8 +124,11 @@ int process_wait(tid_t child_tid) {
     thread_block();
     intr_set_level(old_level);
 
-    struct thread *parent = thread_current();
-    struct child *c = thread_get_child_elem(&parent->children, child_tid);
+    /* Once here, child has finished executing and has an exit code. */
+
+    parent = thread_current();
+    c = thread_get_child_elem(&parent->children, child_tid);
+    thread_remove_child_elem(&parent->children, child_tid);
     return c->exit_code;
 
     // printf("Finished waiting\n");
