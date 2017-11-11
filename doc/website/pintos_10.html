@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
                       "http://www.w3.org/TR/html40/loose.dtd">
 <HTML>
-<!-- Created on October, 4 2017 by texi2html 1.66 -->
+<!-- Created on November, 5 2017 by texi2html 1.66 -->
 <!--
 Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
             Karl Berry  <karl@freefriends.org>
@@ -12,10 +12,10 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 
 -->
 <HEAD>
-<TITLE>Pintos Projects: Installing Pintos</TITLE>
+<TITLE>Pintos Projects: Project Documentation</TITLE>
 
-<META NAME="description" CONTENT="Pintos Projects: Installing Pintos">
-<META NAME="keywords" CONTENT="Pintos Projects: Installing Pintos">
+<META NAME="description" CONTENT="Pintos Projects: Project Documentation">
+<META NAME="keywords" CONTENT="Pintos Projects: Project Documentation">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
 <META NAME="Generator" CONTENT="texi2html 1.66">
@@ -24,10 +24,10 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 
 <BODY >
 
-<A NAME="SEC135"></A>
+<A NAME="SEC169"></A>
 <TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
-<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_9.html#SEC125"> &lt;&lt; </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_10.html#SEC136"> &gt;&gt; </A>]</TD>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_9.html#SEC165"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_11.html#SEC172"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
@@ -35,306 +35,193 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 </TR></TABLE>
 
 <HR SIZE=2>
-<H1> G. Installing Pintos </H1>
-<!--docid::SEC135::-->
+<H1> D. Project Documentation </H1>
+<!--docid::SEC169::-->
 <P>
 
-This chapter explains how to install a Pintos development environment on
-your own machine.  If you are using a Pintos development environment
-that has been set up by someone else, you do not need to read this
-chapter or follow these instructions.
+This chapter presents a sample assignment and a filled-in design
+document for one possible implementation.  Its purpose is to give you an
+idea of what we expect to see in your own design documents.
 </P>
 <P>
 
-Students are strongly advised to develop Pintos on a 32-bit Linux platform.
-Pintos has been most extensively tested on GNU/Linux, in particular the Debian
-and Ubuntu distributions.  It is not designed to install under any form of
-Windows, including with Cygwin.  Similarly, Mac OS X has enough differences
-that it is extremely difficult to get Pintos working on it; therefore
-Mac OS X is not supported as a platform for Pintos.
-</P>
-<P>
-
-Because many students do not have direct access to a 32-bit Linux platform,
-a virtual machine image will be made available for use.  For details,
-see section <A HREF="pintos_9.html#SEC134">F.4 Virtual Machine</A>.
-</P>
-<P>
-
-Prerequisites for installing a Pintos development environment include
-the following, on top of standard Unix utilities:
-</P>
-<P>
-
-<UL>
-<LI>
-Required: <A HREF="http://gcc.gnu.org/">GCC</A>.  Version 4.0 or later is
-preferred.  Version 3.3 or later should work.  If the host machine has
-an 80<VAR>x</VAR>86 processor, then GCC should be available as <CODE>gcc</CODE>;
-otherwise, an 80<VAR>x</VAR>86 cross-compiler should be available as
-<CODE>i386-elf-gcc</CODE>.  A sample set of commands for installing GCC
-3.3.6 as a cross-compiler are included in
-<Q><TT>src/misc/gcc-3.3.6-cross-howto</TT></Q>.
-<P>
-
-</P>
-<LI>
-Required: <A HREF="http://www.gnu.org/software/binutils/">GNU binutils</A>.
-Pintos uses <CODE>addr2line</CODE>, <CODE>ar</CODE>, <CODE>ld</CODE>,
-<CODE>objcopy</CODE>, and <CODE>ranlib</CODE>.  If the host machine is not an
-80<VAR>x</VAR>86, versions targeting 80<VAR>x</VAR>86 should be available with an
-<Q><SAMP>i386-elf-</SAMP></Q> prefix.
-<P>
-
-</P>
-<LI>
-Required: <A HREF="http://www.perl.org">Perl</A>.  Version 5.8.0 or later is
-preferred.  Version 5.6.1 or later should work.
-<P>
-
-</P>
-<LI>
-Required: <A HREF="http://www.gnu.org/software/make/">GNU make</A>, version
-3.80 or later.
-<P>
-
-</P>
-<LI>
-Recommended: <A HREF="http://fabrice.bellard.free.fr/qemu/">QEMU</A>, version
-0.11.0 or later.  If QEMU is not available, Bochs can be used, but its
-slowness is frustrating.
-<P>
-
-</P>
-<LI>
-Recommended: <A HREF="http://www.gnu.org/software/gdb/">GDB</A>.  GDB is
-helpful in debugging (see section <A HREF="pintos_8.html#SEC118">E.5 GDB</A>).  If the host machine is not an
-80<VAR>x</VAR>86, a version of GDB targeting 80<VAR>x</VAR>86 should be available
-as <Q><SAMP>i386-elf-gdb</SAMP></Q>.
-<P>
-
-</P>
-<LI>
-Recommended: <A HREF="http://www.x.org/">X</A>.  Being able to use an X server
-makes the virtual machine feel more like a physical machine, but it is
-not strictly necessary.
-<P>
-
-</P>
-<LI>
-Optional: <A HREF="http://www.gnu.org/software/texinfo/">Texinfo</A>, version
-4.5 or later.  Texinfo is required to build the PDF version of the
-documentation.
-<P>
-
-</P>
-<LI>
-Optional: <A HREF="http://www.tug.org/">TeX</A>.  Also required to build
-the PDF version of the documentation.
-<P>
-
-</P>
-<LI>
-Optional: <A HREF="http://www.vmware.com/">VMware Player</A>.  This is a
-third platform that can also be used to test Pintos.
-</UL>
-<P>
-
-Once these prerequisites are available, follow these instructions to
-install Pintos:
-</P>
-<P>
-
-<OL>
-<LI>
-Install <A HREF="http://bochs.sourceforge.net/">Bochs</A>, version 2.2.6, as
-described below (see section <A HREF="pintos_10.html#SEC136">G.1 Building Bochs for Pintos</A>).
-<P>
-
-</P>
-<LI>
-Install scripts from <Q><TT>src/utils</TT></Q>.  Copy <Q><TT>backtrace</TT></Q>,
-<Q><TT>pintos</TT></Q>, <Q><TT>pintos-gdb</TT></Q>, <Q><TT>pintos-mkdisk</TT></Q>,
-<Q><TT>pintos-set-cmdline</TT></Q>, and <Q><TT>Pintos.pm</TT></Q> into the default
-<CODE>PATH</CODE>.
-<P>
-
-</P>
-<LI>
-Install <Q><TT>src/misc/gdb-macros</TT></Q> in a public location.  Then use a
-text editor to edit the installed copy of <Q><TT>pintos-gdb</TT></Q>, changing
-the definition of <CODE>GDBMACROS</CODE> to point to where you installed
-<Q><TT>gdb-macros</TT></Q>.  Test the installation by running
-<CODE>pintos-gdb</CODE> without any arguments.  If it does not complain
-about missing <Q><TT>gdb-macros</TT></Q>, it is installed correctly.
-<P>
-
-</P>
-<LI>
-Compile the remaining Pintos utilities by typing <CODE>make</CODE> in
-<Q><TT>src/utils</TT></Q>.  Install <Q><TT>squish-pty</TT></Q> somewhere in <CODE>PATH</CODE>.
-To support VMware Player, install <Q><TT>squish-unix</TT></Q>.
-If your Perl is older than version 5.8.0, also install
-<Q><TT>setitimer-helper</TT></Q>; otherwise, it is unneeded.
-<P>
-
-</P>
-<LI>
-Pintos should now be ready for use.  If you have the Pintos reference
-solutions, which are provided only to faculty and their teaching
-assistants, then you may test your installation by running <CODE>make
-check</CODE> in the top-level <Q><TT>tests</TT></Q> directory.  The tests take between
-20 minutes and 1 hour to run, depending on the speed of your hardware.
-<P>
-
-</P>
-<LI>
-Optional: Build the documentation, by running <CODE>make dist</CODE> in the
-top-level <Q><TT>doc</TT></Q> directory.  This creates a <Q><TT>WWW</TT></Q> subdirectory
-within <Q><TT>doc</TT></Q> that contains HTML and PDF versions of the
-documentation, plus the design document templates and various hardware
-specifications referenced by the documentation.  Building the PDF
-version of the manual requires Texinfo and TeX (see above).  You may
-install <Q><TT>WWW</TT></Q> wherever you find most useful.
-<P>
-
-The <Q><TT>doc</TT></Q> directory is not included in the <Q><TT>.tar.gz</TT></Q>
-distributed for Pintos.  It is in the Pintos CVS tree available via
-<CODE>:pserver:anonymous@footstool.stanford.edu:/var/lib/cvs</CODE>, in the
-<CODE>pintos</CODE> module.  The CVS tree is <EM>not</EM> the authoritative
-source for Stanford course materials, which should be obtained from the
-course website.
-</OL>
-<P>
-
-<A NAME="Building Bochs for Pintos"></A>
+<A NAME="Sample Assignment"></A>
 <HR SIZE="6">
-<A NAME="SEC136"></A>
-<H2> G.1 Building Bochs for Pintos </H2>
-<!--docid::SEC136::-->
+<A NAME="SEC170"></A>
+<H2> D.1 Sample Assignment </H2>
+<!--docid::SEC170::-->
 <P>
 
-Upstream Bochs has bugs and warts that should be fixed when used with
-Pintos.  Thus, Bochs should be installed manually for use with Pintos,
-instead of using the packaged version of Bochs included with an
-operating system distribution.
+Implement <CODE>thread_join()</CODE>.
 </P>
 <P>
 
-Two different Bochs binaries should be installed.  One, named simply
-<CODE>bochs</CODE>, should have the GDB stub enabled, by passing
-<Q><SAMP>--enable-gdb-stub</SAMP></Q> to the Bochs <CODE>configure</CODE> script.  The
-other, named <CODE>bochs-dbg</CODE>, should have the internal debugger
-enabled, by passing <Q><SAMP>--enable-debugger</SAMP></Q> to <CODE>configure</CODE>.
-(The <CODE>pintos</CODE> script selects a binary based on the options
-passed to it.)  In each case, the X, terminal, and &quot;no GUI&quot; interfaces
-should be configured, by passing <Q><SAMP>--with-x --with-x11 --with-term
---with-nogui</SAMP></Q> to <CODE>configure</CODE>.
+<A NAME="IDX179"></A>
+</P>
+<DL>
+<DT><U>Function:</U> void <B>thread_join</B> (tid_t <VAR>tid</VAR>)
+<DD>Blocks the current thread until thread <VAR>tid</VAR> exits.  If <VAR>A</VAR> is
+the running thread and <VAR>B</VAR> is the argument, then we say that
+&quot;<VAR>A</VAR> joins <VAR>B</VAR>.&quot;
+<P>
+
+Incidentally, the argument is a thread id, instead of a thread pointer,
+because a thread pointer is not unique over time.  That is, when a
+thread dies, its memory may be, whether immediately or much later,
+reused for another thread.  If thread <VAR>A</VAR> over time had two children
+<VAR>B</VAR> and <VAR>C</VAR> that were stored at the same address, then
+<CODE>thread_join(<VAR>B</VAR>)</CODE> and <CODE>thread_join(<VAR>C</VAR>)</CODE> would be
+ambiguous.
 </P>
 <P>
 
-This version of Pintos is designed for use with Bochs 2.2.6.  A number
-of patches for this version of Bochs are included in <Q><TT>src/misc</TT></Q>:
+A thread may only join its immediate children.  Calling
+<CODE>thread_join()</CODE> on a thread that is not the caller's child should
+cause the caller to return immediately.  Children are not &quot;inherited,&quot;
+that is, if <VAR>A</VAR> has child <VAR>B</VAR> and <VAR>B</VAR> has child <VAR>C</VAR>,
+then <VAR>A</VAR> always returns immediately should it try to join <VAR>C</VAR>,
+even if <VAR>B</VAR> is dead.
 </P>
 <P>
 
-</P>
-<DL COMPACT>
-<DT><Q><TT>bochs-2.2.6-big-endian.patch</TT></Q>
-<DD><P>
-
-Makes the GDB stubs work on big-endian systems such as Solaris/Sparc, by
-doing proper byteswapping.  It should be harmless elsewhere.
+A thread need not ever be joined.  Your solution should properly free
+all of a thread's resources, including its <CODE>struct thread</CODE>,
+whether it is ever joined or not, and regardless of whether the child
+exits before or after its parent.  That is, a thread should be freed
+exactly once in all cases.
 </P>
 <P>
 
-</P>
-<DT><Q><TT>bochs-2.2.6-jitter.patch</TT></Q>
-<DD><P>
-
-Adds the &quot;jitter&quot; feature, in which timer interrupts are delivered at
-random intervals (see section <A HREF="pintos_1.html#SEC6">1.1.4 Debugging versus Testing</A>).
+Joining a given thread is idempotent.  That is, joining a thread
+multiple times is equivalent to joining it once, because it has already
+exited at the time of the later joins.  Thus, joins on a given thread
+after the first should return immediately.
 </P>
 <P>
 
+You must handle all the ways a join can occur: nested joins (<VAR>A</VAR>
+joins <VAR>B</VAR>, then <VAR>B</VAR> joins <VAR>C</VAR>), multiple joins (<VAR>A</VAR>
+joins <VAR>B</VAR>, then <VAR>A</VAR> joins <VAR>C</VAR>), and so on.
 </P>
-<DT><Q><TT>bochs-2.2.6-triple-fault.patch</TT></Q>
-<DD><P>
-
-Causes Bochs to break to GDB when a triple fault occurs and
-the GDB stub is active (see section <A HREF="pintos_8.html#SEC122">E.6 Triple Faults</A>).
-</P>
-<P>
-
-</P>
-<DT><Q><TT>bochs-2.2.6-ms-extensions.patch</TT></Q>
-<DD><P>
-
-Needed for Bochs to compile with GCC on some hosts.  Probably
-harmless elsewhere.
-</P>
-<P>
-
-</P>
-<DT><Q><TT>bochs-2.2.6-solaris-tty.patch</TT></Q>
-<DD><P>
-
-Needed for Bochs to compile in terminal support on Solaris
-hosts.  Probably harmless elsewhere.
-</P>
-<P>
-
-</P>
-<DT><Q><TT>bochs-2.2.6-page-fault-segv.patch</TT></Q>
-<DD><P>
-
-Makes the GDB stub report a SIGSEGV to the debugger when a page-fault
-exception occurs, instead of &quot;signal 0.&quot;  The former can be ignored
-with <CODE>handle SIGSEGV nostop</CODE> but the latter cannot.
-</P>
-<P>
-
-</P>
-<DT><Q><TT>bochs-2.2.6-paranoia.patch</TT></Q>
-<DD><P>
-
-Fixes compile error with modern versions of GCC.
-</P>
-<P>
-
-</P>
-<DT><Q><TT>bochs-2.2.6-solaris-link.patch</TT></Q>
-<DD><P>
-
-Needed on Solaris hosts.  Do not apply it elsewhere.
 </DL>
 <P>
 
-To apply all the patches, <CODE>cd</CODE> into the Bochs directory, then
-type:
-<TABLE><tr><td>&nbsp;</td><td class=example><pre>patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-big-endian.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-jitter.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-triple-fault.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-ms-extensions.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-solaris-tty.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-page-fault-segv.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-paranoia.patch
-patch -p1 &lt; $PINTOSDIR/src/misc/bochs-2.2.6-solaris-link.patch
-</pre></td></tr></table>You will have to supply the proper <CODE>$PINTOSDIR</CODE>, of course.  You can
-use <CODE>patch</CODE>'s <Q><SAMP>--dry-run</SAMP></Q> option if you want to test
-whether the patches would apply cleanly before trying to apply them.
+<A NAME="Sample Design Document"></A>
+<HR SIZE="6">
+<A NAME="SEC171"></A>
+<H2> D.2 Sample Design Document </H2>
+<!--docid::SEC171::-->
 <P>
 
-Sample commands to build and install Bochs for Pintos are supplied in
-<Q><TT>src/misc/bochs-2.2.6-build.sh</TT></Q>.
-</P>
-<P>
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>
+                         +-----------------+
+                         |      CS 140     |
+                         |  SAMPLE PROJECT |
+                         | DESIGN DOCUMENT |
+                         +-----------------+
 
-<A NAME="Bibliography"></A>
+---- GROUP ----
+
+Ben Pfaff &lt;blp@stanford.edu&gt;
+
+---- PRELIMINARIES ----
+
+&gt;&gt; If you have any preliminary comments on your submission, notes for
+&gt;&gt; the TAs, or extra credit, please give them here.
+
+(This is a sample design document.)
+
+&gt;&gt; Please cite any offline or online sources you consulted while
+&gt;&gt; preparing your submission, other than the Pintos documentation,
+&gt;&gt; course text, and lecture notes.
+
+None.
+
+                                 JOIN
+                                 ====
+
+---- DATA STRUCTURES ----
+
+&gt;&gt; Copy here the declaration of each new or changed `struct' or `struct'
+&gt;&gt; member, global or static variable, `typedef', or enumeration.
+&gt;&gt; Identify the purpose of each in 25 words or less.
+
+A &quot;latch&quot; is a new synchronization primitive.  Acquires block
+until the first release.  Afterward, all ongoing and future
+acquires pass immediately.
+
+    /* Latch. */
+    struct latch 
+      {
+        bool released;              /* Released yet? */
+        struct lock monitor_lock;   /* Monitor lock. */
+        struct condition rel_cond;  /* Signaled when released. */
+      };
+
+Added to struct thread:
+
+    /* Members for implementing thread_join(). */
+    struct latch ready_to_die;   /* Release when thread about to die. */
+    struct semaphore can_die;    /* Up when thread allowed to die. */
+    struct list children;        /* List of child threads. */
+    list_elem children_elem;     /* Element of `children' list. */
+
+---- ALGORITHMS ----
+
+&gt;&gt; Briefly describe your implementation of thread_join() and how it
+&gt;&gt; interacts with thread termination.
+
+thread_join() finds the joined child on the thread's list of
+children and waits for the child to exit by acquiring the child's
+ready_to_die latch.  When thread_exit() is called, the thread
+releases its ready_to_die latch, allowing the parent to continue.
+
+---- SYNCHRONIZATION ----
+
+&gt;&gt; Consider parent thread P with child thread C.  How do you ensure
+&gt;&gt; proper synchronization and avoid race conditions when P calls wait(C)
+&gt;&gt; before C exits?  After C exits?  How do you ensure that all resources
+&gt;&gt; are freed in each case?  How about when P terminates without waiting,
+&gt;&gt; before C exits?  After C exits?  Are there any special cases?
+
+C waits in thread_exit() for P to die before it finishes its own
+exit, using the can_die semaphore &quot;down&quot;ed by C and &quot;up&quot;ed by P as
+it exits.  Regardless of whether whether C has terminated, there
+is no race on wait(C), because C waits for P's permission before
+it frees itself.
+
+Regardless of whether P waits for C, P still &quot;up&quot;s C's can_die
+semaphore when P dies, so C will always be freed.  (However,
+freeing C's resources is delayed until P's death.)
+
+The initial thread is a special case because it has no parent to
+wait for it or to &quot;up&quot; its can_die semaphore.  Therefore, its
+can_die semaphore is initialized to 1.
+
+---- RATIONALE ----
+
+&gt;&gt; Critique your design, pointing out advantages and disadvantages in
+&gt;&gt; your design choices.
+
+This design has the advantage of simplicity.  Encapsulating most
+of the synchronization logic into a new &quot;latch&quot; structure
+abstracts what little complexity there is into a separate layer,
+making the design easier to reason about.  Also, all the new data
+members are in `struct thread', with no need for any extra dynamic
+allocation, etc., that would require extra management code.
+
+On the other hand, this design is wasteful in that a child thread
+cannot free itself before its parent has terminated.  A parent
+thread that creates a large number of short-lived child threads
+could unnecessarily exhaust kernel memory.  This is probably
+acceptable for implementing kernel threads, but it may be a bad
+idea for use with user processes because of the larger number of
+resources that user processes tend to own.
+</pre></td></tr></table><A NAME="Debugging Tools"></A>
 <HR SIZE="6">
 <TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
-<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_10.html#SEC135"> &lt;&lt; </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_11.html#SEC137"> &gt;&gt; </A>]</TD>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_10.html#SEC169"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_11.html#SEC172"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
@@ -343,7 +230,7 @@ Sample commands to build and install Bochs for Pintos are supplied in
 <BR>
 <FONT SIZE="-1">
 This document was generated
-by <I>Donnie Pinkston</I> on <I>October, 4 2017</I>
+by <I>Donnie Pinkston</I> on <I>November, 5 2017</I>
 using <A HREF="http://texi2html.cvshome.org"><I>texi2html</I></A>
 </FONT>
 

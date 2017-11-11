@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
                       "http://www.w3.org/TR/html40/loose.dtd">
 <HTML>
-<!-- Created on October, 4 2017 by texi2html 1.66 -->
+<!-- Created on November, 5 2017 by texi2html 1.66 -->
 <!--
 Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
             Karl Berry  <karl@freefriends.org>
@@ -12,10 +12,10 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 
 -->
 <HEAD>
-<TITLE>Pintos Projects: Development Tools</TITLE>
+<TITLE>Pintos Projects: Coding Standards</TITLE>
 
-<META NAME="description" CONTENT="Pintos Projects: Development Tools">
-<META NAME="keywords" CONTENT="Pintos Projects: Development Tools">
+<META NAME="description" CONTENT="Pintos Projects: Coding Standards">
+<META NAME="keywords" CONTENT="Pintos Projects: Coding Standards">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
 <META NAME="Generator" CONTENT="texi2html 1.66">
@@ -24,10 +24,10 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 
 <BODY >
 
-<A NAME="SEC125"></A>
+<A NAME="SEC165"></A>
 <TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
-<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_8.html#SEC112"> &lt;&lt; </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_10.html#SEC135"> &gt;&gt; </A>]</TD>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_8.html#SEC158"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_10.html#SEC169"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
@@ -35,486 +35,270 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 </TR></TABLE>
 
 <HR SIZE=2>
-<H1> F. Development Tools </H1>
-<!--docid::SEC125::-->
+<H1> C. Coding Standards </H1>
+<!--docid::SEC165::-->
 <P>
 
-Here are some tools that you might find useful while developing code.
+The codebase for this course follows a coding style like the CS11 C++ track
+coding style, described here:
+<A HREF="http://courses.cms.caltech.edu/cs11/material/cpp/donnie/cppstyle.html">http://courses.cms.caltech.edu/cs11/material/cpp/donnie/cppstyle.html</A>.
+Pintos uses only spaces for indentation, <STRONG>no tabs</STRONG>, and 4 spaces per
+indentation level.  Opening curly-braces are placed on the same line as the
+statement that begins the block; closing curly-braces are placed on a
+separate line.
 </P>
 <P>
 
-<A NAME="Tags"></A>
+Our standards for coding are most important for grading.  We want to
+stress that aside from the fact that we are explicitly basing part of
+your grade on these things, good coding practices will improve the
+quality of your code.  This makes it easier for your partners to
+interact with it, and ultimately, will improve your chances of having a
+good working program.  That said once, the rest of this document will
+discuss only the ways in which our coding standards will affect our
+grading.
+</P>
+<P>
+
+<A NAME="Coding Style"></A>
 <HR SIZE="6">
-<A NAME="SEC126"></A>
-<H2> F.1 Tags </H2>
-<!--docid::SEC126::-->
+<A NAME="SEC166"></A>
+<H2> C.1 Style </H2>
+<!--docid::SEC166::-->
 <P>
 
-Tags are an index to the functions and global variables declared in a
-program.  Many editors, including Emacs and <CODE>vi</CODE>, can use
-them.  The <Q><TT>Makefile</TT></Q> in <Q><TT>pintos/src</TT></Q> produces Emacs-style
-tags with the command <CODE>make TAGS</CODE> or <CODE>vi</CODE>-style tags with
-<CODE>make tags</CODE>.
+Style, for the purposes of our grading, refers to how readable your
+code is.  At minimum, this means that your code is well formatted, your
+variable names are descriptive and your functions are decomposed and
+well commented.  Any other factors which make it hard (or easy) for us
+to read or use your code will be reflected in your style grade.
 </P>
 <P>
 
-In Emacs, use <KBD>M-.</KBD> to follow a tag in the current window,
-<KBD>C-x 4 .</KBD> in a new window, or <KBD>C-x 5 .</KBD> in a new frame.  If
-your cursor is on a symbol name for any of those commands, it becomes
-the default target.  If a tag name has multiple definitions, <KBD>M-0
-M-.</KBD> jumps to the next one.  To jump back to where you were before
-you followed the last tag, use <KBD>M-*</KBD>.
+The existing Pintos code is written in the GNU style and largely
+follows the <A HREF="http://www.gnu.org/prep/standards_toc.html">GNU
+Coding Standards</A>.  We encourage you to follow the applicable parts of
+them too, especially chapter 5, &quot;Making the Best Use of C.&quot;  Using a
+different style won't cause actual problems, but it's ugly to see
+gratuitous differences in style from one function to another.  If your
+code is too ugly, it will cost you points.
 </P>
 <P>
 
-<A NAME="cscope"></A>
+Please limit C source file lines to at most 79 characters long.
+</P>
+<P>
+
+Pintos comments sometimes refer to external standards or
+specifications by writing a name inside square brackets, like this:
+<CODE>[IA32-v3a]</CODE>.  These names refer to the reference names used in
+this documentation (see section <A HREF="pintos_14.html#SEC197">Bibliography</A>).
+</P>
+<P>
+
+If you remove existing Pintos code, please delete it from your source
+file entirely.  Don't just put it into a comment or a conditional
+compilation directive, because that makes the resulting code hard to
+read.
+</P>
+<P>
+
+We're only going to do a compile in the directory for the project being
+submitted.  You don't need to make sure that the previous projects also
+compile.
+</P>
+<P>
+
+Project code should be written so that all of the subproblems for the
+project function together, that is, without the need to rebuild with
+different macros defined, etc.  If you do extra credit work that
+changes normal Pintos behavior so as to interfere with grading, then
+you must implement it so that it only acts that way when given a
+special command-line option of the form <Q><SAMP>-<VAR>name</VAR></SAMP></Q>, where
+<VAR>name</VAR> is a name of your choice.  You can add such an option by
+modifying <CODE>parse_options()</CODE> in <Q><TT>threads/init.c</TT></Q>.
+</P>
+<P>
+
+The introduction describes additional coding style requirements
+(see section <A HREF="pintos_1.html#SEC9">1.2.2 Design</A>).
+</P>
+<P>
+
+<A NAME="C99"></A>
 <HR SIZE="6">
-<A NAME="SEC127"></A>
-<H2> F.2 cscope </H2>
-<!--docid::SEC127::-->
+<A NAME="SEC167"></A>
+<H2> C.2 C99 </H2>
+<!--docid::SEC167::-->
 <P>
 
-The <CODE>cscope</CODE> program also provides an index to functions and
-variables declared in a program.  It has some features that tag
-facilities lack.  Most notably, it can find all the points in a
-program at which a given function is called.
+The Pintos source code uses a few features of the &quot;C99&quot; standard
+library that were not in the original 1989 standard for C.  Many
+programmers are unaware of these feature, so we will describe them.  The
+new features used in Pintos are
+mostly in new headers:
 </P>
 <P>
 
-The <Q><TT>Makefile</TT></Q> in <Q><TT>pintos/src</TT></Q> produces <CODE>cscope</CODE>
-indexes when it is invoked as <CODE>make cscope</CODE>.  Once the index has
-been generated, run <CODE>cscope</CODE> from a shell command line; no
-command-line arguments are normally necessary.  Then use the arrow
-keys to choose one of the search criteria listed near the bottom of
-the terminal, type in an identifier, and hit <KBD>Enter</KBD>.
-<CODE>cscope</CODE> will then display the matches in the upper part of
-the terminal.  You may use the arrow keys to choose a particular
-match; if you then hit <KBD>Enter</KBD>, <CODE>cscope</CODE> will invoke the
-default system editor<A NAME="DOCF6" HREF="pintos_fot.html#FOOT6">(6)</A> and position the
-cursor on that match.  To start a new search, type <KBD>Tab</KBD>.  To exit
-<CODE>cscope</CODE>, type <KBD>Ctrl-d</KBD>.
+</P>
+<DL COMPACT>
+<DT><Q><TT>&lt;stdbool.h&gt;</TT></Q>
+<DD>Defines macros <CODE>bool</CODE>, a 1-bit type that takes on only the values
+0 and 1, <CODE>true</CODE>, which expands to 1, and <CODE>false</CODE>, which
+expands to 0.
+<P>
+
+</P>
+<DT><Q><TT>&lt;stdint.h&gt;</TT></Q>
+<DD>On systems that support them, this header defines types
+<CODE>int<VAR>n</VAR>_t</CODE> and <CODE>uint<VAR>n</VAR>_t</CODE> for <VAR>n</VAR> = 8, 16, 32,
+64, and possibly other values.  These are 2's complement signed and unsigned
+types, respectively, with the given number of bits.  
+<P>
+
+On systems where it is possible, this header also defines types
+<CODE>intptr_t</CODE> and <CODE>uintptr_t</CODE>, which are integer types big
+enough to hold a pointer.
 </P>
 <P>
 
-Emacs and some versions of <CODE>vi</CODE> have their own interfaces to
-<CODE>cscope</CODE>.  For information on how to use these interface,
-visit <A HREF="http://cscope.sourceforge.net, the &lt;CODE&gt;cscope&lt;/CODE&gt; home
-page">http://cscope.sourceforge.net, the <CODE>cscope</CODE> home
-page</A>.
+On all systems, this header defines types <CODE>intmax_t</CODE> and
+<CODE>uintmax_t</CODE>, which are the system's signed and unsigned integer
+types with the widest ranges.
 </P>
 <P>
 
-<A NAME="Version Control"></A>
+For every signed integer type <CODE><VAR>type</VAR>_t</CODE> defined here, as well
+as for <CODE>ptrdiff_t</CODE> defined in <Q><TT>&lt;stddef.h&gt;</TT></Q>, this header also
+defines macros <CODE><VAR>TYPE</VAR>_MAX</CODE> and <CODE><VAR>TYPE</VAR>_MIN</CODE> that
+give the type's range.  Similarly, for every unsigned integer type
+<CODE><VAR>type</VAR>_t</CODE> defined here, as well as for <CODE>size_t</CODE> defined
+in <Q><TT>&lt;stddef.h&gt;</TT></Q>, this header defines a <CODE><VAR>TYPE</VAR>_MAX</CODE>
+macro giving its maximum value.
+</P>
+<P>
+
+</P>
+<DT><Q><TT>&lt;inttypes.h&gt;</TT></Q>
+<DD><Q><TT>&lt;stdint.h&gt;</TT></Q> provides no straightforward way to format
+the types it defines with <CODE>printf()</CODE> and related functions.  This
+header provides macros to help with that.  For every
+<CODE>int<VAR>n</VAR>_t</CODE> defined by <Q><TT>&lt;stdint.h&gt;</TT></Q>, it provides macros
+<CODE>PRId<VAR>n</VAR></CODE> and <CODE>PRIi<VAR>n</VAR></CODE> for formatting values of
+that type with <CODE>&quot;%d&quot;</CODE> and <CODE>&quot;%i&quot;</CODE>.  Similarly, for every
+<CODE>uint<VAR>n</VAR>_t</CODE>, it provides <CODE>PRIo<VAR>n</VAR></CODE>,
+<CODE>PRIu<VAR>n</VAR></CODE>, <CODE>PRIu<VAR>x</VAR></CODE>, and <CODE>PRIu<VAR>X</VAR></CODE>.
+<P>
+
+You use these something like this, taking advantage of the fact that
+the C compiler concatenates adjacent string literals:
+<TABLE><tr><td>&nbsp;</td><td class=example><pre>#include &lt;inttypes.h&gt;
+<small>...</small>
+int32_t value = <small>...</small>;
+printf (&quot;value=%08&quot;PRId32&quot;\n&quot;, value);
+</pre></td></tr></table>The <Q><SAMP>%</SAMP></Q> is not supplied by the <CODE>PRI</CODE> macros.  As shown
+above, you supply it yourself and follow it by any flags, field
+width, etc.
+<P>
+
+</P>
+<DT><Q><TT>&lt;stdio.h&gt;</TT></Q>
+<DD>The <CODE>printf()</CODE> function has some new type modifiers for printing
+standard types:
+<P>
+
+</P>
+<DL COMPACT>
+<DT><Q><SAMP>j</SAMP></Q>
+<DD>For <CODE>intmax_t</CODE> (e.g. <Q><SAMP>%jd</SAMP></Q>) or <CODE>uintmax_t</CODE> (e.g.
+<Q><SAMP>%ju</SAMP></Q>).
+<P>
+
+</P>
+<DT><Q><SAMP>z</SAMP></Q>
+<DD>For <CODE>size_t</CODE> (e.g. <Q><SAMP>%zu</SAMP></Q>).
+<P>
+
+</P>
+<DT><Q><SAMP>t</SAMP></Q>
+<DD>For <CODE>ptrdiff_t</CODE> (e.g. <Q><SAMP>%td</SAMP></Q>).
+</DL>
+<P>
+
+Pintos <CODE>printf()</CODE> also implements a nonstandard <Q><SAMP>'</SAMP></Q> flag that
+groups large numbers with commas to make them easier to read.
+</DL>
+<P>
+
+<A NAME="Unsafe String Functions"></A>
 <HR SIZE="6">
-<A NAME="SEC128"></A>
-<H2> F.3 Version Control </H2>
-<!--docid::SEC128::-->
+<A NAME="SEC168"></A>
+<H2> C.3 Unsafe String Functions </H2>
+<!--docid::SEC168::-->
 <P>
 
-<A NAME="Setting Up Git"></A>
-<HR SIZE="6">
-<A NAME="SEC129"></A>
-<H3> F.3.1 Setting Up Git </H3>
-<!--docid::SEC129::-->
-<P>
-
-The Pintos codebase is rather substantial, and you will be working in teams
-to develop some complex features on the project.  In situations like this,
-a version control system is absolutely essential so that you can coordinate
-your interactions with the codebase, and so you can record checkpoints of
-your work as you go.  Additionally, you will submit your work using the
-version-control system so that we can retrieve and grade what you have done.
-</P>
-<P>
-
-We will be using the Git distributed version control system for
-CS124.  You can install Git onto your local machine from the
-following website:  <A HREF="http://git-scm.com/">http://git-scm.com/</A>.  (It is already installed on the
-CMS cluster if you decide to work there.)  There are installers for all
-major operating systems.  Once Git is installed, you can follow the
-instructions below to get started on Pintos.
-</P>
-<P>
-
-<STRONG>NOTE:  A CMS cluster account is required to access the Git repositories
-on the CMS cluster!</STRONG>  If you don't have an account, or your account is suspended
-etc., you need to get this resolved ASAP.  Ask Donnie if you have any questions
-about this.
-</P>
-<P>
-
-<OL>
-
-<LI>Once you have installed Git on your computer, configure it with your
-      user information.  The double-quotes in these commands are necessary if
-      you have spaces in the values you specify.
-<P>
-
-      <CODE>git config --global user.name &quot;Your Name&quot;</CODE>
-</P>
-<P>
-
-      <CODE>git config --global user.email &quot;your@email.tld&quot;</CODE>
-</P>
-<P>
-
-      You will probably also find it helpful to turn on colorful output:
-</P>
-<P>
-
-      <CODE>git config --global color.ui true</CODE>
+A few of the string functions declared in the standard
+<Q><TT>&lt;string.h&gt;</TT></Q> and <Q><TT>&lt;stdio.h&gt;</TT></Q> headers are notoriously unsafe.
+The worst offenders are intentionally not included in the Pintos C
+library:
 </P>
 <P>
 
 </P>
-<LI>You have a choice between using a Git respository hosted on the CMS
-      cluster (a.k.a. &quot;the CS cluster&quot;), or using another Git repository that
-      is accessible to Donnie and the TAs (e.g. on GitHub or Bitbucket).
-<P>
-
-      If you intend to use the CMS cluster for your Git repository, please
-      email Donnie ASAP with your team's name so that he can create an empty
-      repository for you.  If you use this approach, all teammates must have
-      working cluster accounts.
-</P>
-<P>
-
-      If you intend to use a Git repository hosted somewhere else, please
-      make sure it is a private repository that is only accessible by the
-      people who need to access it.  Feel free to email Donnie and/or the
-      TAs for their GitHub/Bitbucket account names, if you decide to go
-      this route.
-</P>
-<P>
-
-      <STRONG>The subsequent steps assume you will be using the CMS cluster
-      to host your repository.</STRONG>  However, you can use similar steps if you
-      host the repository elsewhere; simply update the below commands
-      appropriately.
-</P>
+<DL COMPACT>
+<DT><CODE>strcpy</CODE>
+<DD>When used carelessly this function can overflow the buffer reserved
+for its output string.  Use <CODE>strlcpy()</CODE> instead.  Refer to
+comments in its source code in <CODE>lib/string.c</CODE> for documentation.
 <P>
 
 </P>
-<LI>Your team's repository will initially be empty, so for you to be able to
-      do any work on Pintos you must retrieve the codebase and add it to your
-      repository.  The starting code is stored in another Git repository so
-      that if there are any bugfixes that must be passed along, you can easily
-      retrieve them.  To get the code from this repository, <STRONG>one</STRONG> team
-      member should do the following:
-<P>
-
-<UL>
-
-<LI>Clone your team's empty repository to a local computer:
-<P>
-
-            <CODE>git clone <VAR>username</VAR>@login.cms.caltech.edu:/cs/courses/cs124/teams/<VAR>teamname</VAR></CODE>
-</P>
-<P>
-
-            (This command would change if you host your repository elsewhere.)
-</P>
-<P>
-
-            Since the repository is initially empty, this won't be very
-            exciting yet.
-</P>
+<DT><CODE>strncpy</CODE>
+<DD>This function can leave its destination buffer without a null string
+terminator.  It also has performance problems.  Again, use
+<CODE>strlcpy()</CODE>.
 <P>
 
 </P>
-<LI>Execute the following command to retrieve the Pintos codebase into
-            your local clone of the team's repository:
-<P>
-
-            <CODE>git pull <VAR>username</VAR>@login.cms.caltech.edu:/cs/courses/cs124/pintos-cit master</CODE>
-</P>
-<P>
-
-            (This command will be the same regardless of where you host your
-            Git repository.)
-</P>
+<DT><CODE>strcat</CODE>
+<DD>Same issue as <CODE>strcpy()</CODE>.  Use <CODE>strlcat()</CODE> instead.
+Again, refer to comments in its source code in <CODE>lib/string.c</CODE> for
+documentation.
 <P>
 
 </P>
-<LI>Push the Pintos code back up to the team repository with this
-            command:
-<P>
-
-            <CODE>git push --all</CODE>
-</P>
-<P>
-
-            (The <CODE>--all</CODE> argument is necessary for the first push,
-            since the team repository is empty.  It will be unnecessary once
-            the repository is initialized.)
-</P>
-<P>
-
-</UL>
-<P>
-
-      When changes are made to the Pintos sources in the future, one teammate
-      can again perform the above procedure, with the following differences:
-</P>
-<P>
-
-<UL>
-<LI>Obviously the team repository won't be empty at that point.
-<LI>The <CODE>git push</CODE> command will not require the <CODE>--all</CODE>
-            argument.
-</UL>
+<DT><CODE>strncat</CODE>
+<DD>The meaning of its buffer size argument is surprising.
+Again, use <CODE>strlcat()</CODE>.
 <P>
 
 </P>
-<LI>Now that the team repository is set up, team members will need to
-      figure out a location to work.  You can work on your local computer,
-      on the CMS cluster, or wherever you feel comfortable doing so.
-      I usually work within a <Q><TT>projects/pintos</TT></Q> directory on my laptop,
-      but perhaps you will want to create a <Q><TT>CS124</TT></Q>
-      directory for yourself to work in.
+<DT><CODE>strtok</CODE>
+<DD>Uses global data, so it is unsafe in threaded programs such as
+kernels.  Use <CODE>strtok_r()</CODE> instead, and see its source code in
+<CODE>lib/string.c</CODE> for documentation and an example.
 <P>
 
 </P>
-<LI>Once you have a location figured out, clone your team's repository to
-      that location.  You will actually be making a complete local copy of the
-      team repository (which Git calls &quot;origin&quot;) for yourself to work against.
-      You will be able to make whatever changes you want to this repository
-      without affecting the team repository until you are ready to do so.
-<P>
-
-      <CODE>git clone <VAR>username</VAR>@login.cms.caltech.edu:/cs/courses/cs124/teams/<VAR>teamname</VAR></CODE>
-</P>
-<P>
-
-      (Again, this command will change if you host your repository elsewhere.)
-</P>
-<P>
-
-      Once you have done this, you can run &quot;<CODE>git remote -v</CODE>&quot; to see
-      that this repository is now nicknamed &quot;origin&quot;, as stated earlier.
-</P>
-<P>
-
-</OL>
-<P>
-
-<A NAME="Git Repository Details"></A>
-<HR SIZE="6">
-<A NAME="SEC130"></A>
-<H3> F.3.2 Git Repository Details </H3>
-<!--docid::SEC130::-->
-<P>
-
-You should be aware that your local repository actually contains two
-components in one.  First, you will see directories and files like <Q><TT>src</TT></Q>,
-etc.  (For the first two projects, you will only have a <Q><TT>src</TT></Q> directory,
-but other directories will be added as the course progresses.)  These are
-actually not part of the Git repository itself; they are a working copy that
-you can edit separately.  If you decide you don't like the changes you have
-made in your working copy, you can always revert back to the repository
-version with no problems.
-</P>
-<P>
-
-When you are completely satisfied with your changes, then you can commit these
-changes to your own local repository.  The repository itself is stored in a
-subdirectory named <Q><TT>.git</TT></Q>, which you can see if you type
-&quot;<CODE>ls -al</CODE>&quot;.  (Feel free to look in this directory, but don't muck
-with anything in there unless you absolutely know what you are doing.)
-</P>
-<P>
-
-<A NAME="Using Git for Local Edits"></A>
-<HR SIZE="6">
-<A NAME="SEC131"></A>
-<H3> F.3.3 Using Git for Local Edits </H3>
-<!--docid::SEC131::-->
-<P>
-
-As you work on your projects, you may want to commit your changes as you get
-various parts of the project working.  In fact, you are encouraged to do this!
-Nothing is more frustrating than completing a complicated feature, and then
-immediately mangling it as you start working on the next task.  <STRONG>Commit
-your work every time you complete anything that you don't feel like doing
-again.</STRONG>  At any point in your work, you can run the command
-&quot;<CODE>git status</CODE>&quot; to see what files have been modified in your working
-directory.
-</P>
-<P>
-
-The command you use to commit changes to your local repository is
-&quot;<CODE>git commit</CODE>&quot;.  However, it is important to understand Git's
-workflow for committing changes to the repository.  Changes you make in your
-working directory will not immediately be included when you commit to your
-repository; rather, Git maintains a &quot;staging area&quot; of changes that will be
-included in the next commit.  In other words, you can make some changes that
-will be included in the commit, and other changes that will not be included
-in the commit.  A file whose changes will be included in the next commit is
-described as being &quot;staged&quot; (i.e. its changes are included in the staging
-area).  A file whose changes will not be included in the next commit is
-&quot;unstaged,&quot; or &quot;modified but not staged.&quot;
-</P>
-<P>
-
-To complicate this somewhat, files also fall into two categories:  &quot;tracked&quot;
-files, which have been added to the repository and Git is managing them; and
-&quot;untracked&quot; files, which have not yet been added to the repository.
-</P>
-<P>
-
-The upshot of all this is that if you want to add a new file to your
-repository, or you want to include changes of an existing file into your
-repository, you must run &quot;<CODE>git add filename</CODE>&quot; to include the file
-in the staging area.  Then, these changes will be included in the next commit.
-There is a simplification for when you haven't added any new files:  you can
-run &quot;<CODE>git commit -a</CODE>&quot;, which will perform the staging step as well as
-the commit step.  However, if you create a brand new file, you still need to
-run &quot;<CODE>git add filename</CODE>&quot; on that new file before it will be committed.
-</P>
-<P>
-
-<A NAME="Sharing Work with Your Team"></A>
-<HR SIZE="6">
-<A NAME="SEC132"></A>
-<H3> F.3.4 Sharing Work with Your Team </H3>
-<!--docid::SEC132::-->
-<P>
-
-When you are ready to share your local work with the rest of your team, you can
-run this command to push all of your changes back to the team's Git repository:
-</P>
-<P>
-
-<CODE>git push</CODE>
-</P>
-<P>
-
-That's really all it takes!  Of course, the rest of the team must then pull
-your changes into their local repositories by running &quot;<CODE>git pull</CODE>&quot;.
-This will bring all changes in the team repository down to the local
-repository.
-</P>
-<P>
-
-There are two important rules that you must always follow:
-</P>
-<P>
-
-<UL>
-
-<LI><STRONG>Never break the code in the team repository, unless you have
-      first coordinated your changes with the rest of your team!</STRONG>  It is
-      extremely frustrating to pull changes from the team's repository and then
-      discover that it broke everything, and now you can't make any progress!
-<P>
-
-      The corrolary is that if you are going to break the code in the team
-      repository, make sure your team knows first.  That way they can avoid
-      pulling the changes if they are in the middle of other work.
-</P>
+<DT><CODE>sprintf</CODE>
+<DD>Same issue as <CODE>strcpy()</CODE>.  Use <CODE>snprintf()</CODE> instead.  Refer
+to comments in <CODE>lib/stdio.h</CODE> for documentation.
 <P>
 
 </P>
-<LI><STRONG>Make sure to pull changes from your team repository frequently!</STRONG>
-      It may be tempting to avoid retrieving changes from the team repository
-      so that you can work uninterrupted, but if you do this then your local
-      repository will become more and more different from the team repository,
-      and it will become more and more painful to get back in sync.  However,
-      if you synchronize with the team repository frequently, the pain of
-      keeping in sync will be minimized.
+<DT><CODE>vsprintf</CODE>
+<DD>Same issue as <CODE>strcpy()</CODE>.  Use <CODE>vsnprintf()</CODE> instead.
+</DL>
 <P>
 
-</UL>
-<P>
-
-<A NAME="Submitting Assignments"></A>
-<HR SIZE="6">
-<A NAME="SEC133"></A>
-<H3> F.3.5 Submitting Assignments </H3>
-<!--docid::SEC133::-->
-<P>
-
-When your team has completed a project to the team's satisfaction, these are
-the steps to submit it for grading:
-</P>
-<P>
-
-<OL>
-
-<LI>Make sure that all changes for the project are pushed to the team
-      repository.  Also, make sure that you have completed your design
-      document, and that it is in your repository at the specified location.
-<P>
-
-</P>
-<LI>Create a tag to identify your submission.  One team meber should execute
-      this command:  &quot;<CODE>git tag project<VAR>n</VAR>-<VAR>version</VAR></CODE>&quot;
-<P>
-
-      For example, after completing the command shell, one teammate could do
-      the following:
-</P>
-<P>
-
-      <CODE>git tag project1-1</CODE>
-</P>
-<P>
-
-      This tag will only be in the local repository, so once it is tagged,
-      the tag also needs to be pushed to the team repository:
-</P>
-<P>
-
-      <CODE>git push --tags</CODE>
-</P>
-<P>
-
-      If you discover a bug in your work and you want to fix it, feel free to
-      do so and then retag your work, but increment the version, e.g.
-      &quot;<CODE>project1-2</CODE>&quot;.  If you try to reuse the same tag you will run
-      into some trouble with Git, so make sure each tag is unique.
-</P>
-<P>
-
-      Also, if multiple teammates create the same tag name on different
-      commits in their local repositories, and then try to push them to the
-      team repository, this will cause some serious problems.
-</P>
-<P>
-
-</P>
-<LI>Finally, one teammate should submit the team's design document on Moodle.
-      (Again, if you discover bugs and want to fix them, just resubmit a new
-      design document with the new commit hash-value.)
-<P>
-
-</OL>
-<P>
-
-<A NAME="Virtual Machine"></A>
-<HR SIZE="6">
-<A NAME="SEC134"></A>
-<H2> F.4 Virtual Machine </H2>
-<!--docid::SEC134::-->
-<P>
-
-To ensure uniformity of development platforms, it is strongly recommended
-that students develop Pintos on a 32-bit Linux platform.  For students
-that don't have access to such a platform, a virtual machine image will
-be provided for use with Oracle Virtual Box.  Virtual Box is freely
-available at <A HREF="http://www.virtualbox.org">http://www.virtualbox.org</A>.
-</P>
-<P>
-
-More details will be coming soon...
-</P>
-<P>
-
-<A NAME="Installing Pintos"></A>
+If you try to use any of these functions, the error message will give
+you a hint by referring to an identifier like
+<CODE>dont_use_sprintf_use_snprintf</CODE>.
+<A NAME="Project Documentation"></A>
 <HR SIZE="6">
 <TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
-<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_9.html#SEC125"> &lt;&lt; </A>]</TD>
-<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_10.html#SEC135"> &gt;&gt; </A>]</TD>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_9.html#SEC165"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos_10.html#SEC169"> &gt;&gt; </A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Top">Top</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="pintos.html#SEC_Contents">Contents</A>]</TD>
 <TD VALIGN="MIDDLE" ALIGN="LEFT">[Index]</TD>
@@ -523,7 +307,7 @@ More details will be coming soon...
 <BR>
 <FONT SIZE="-1">
 This document was generated
-by <I>Donnie Pinkston</I> on <I>October, 4 2017</I>
+by <I>Donnie Pinkston</I> on <I>November, 5 2017</I>
 using <A HREF="http://texi2html.cvshome.org"><I>texi2html</I></A>
 </FONT>
 
