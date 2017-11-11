@@ -393,6 +393,7 @@ static void read(struct intr_frame *f) {
 
     /* Verify arguments. */
     verify_pointer((uint32_t *) buffer);
+    verify_pointer((uint32_t *) (buffer + size));
 
     /* Special cases. */
     if (fd == STDIN_FILENO) {
@@ -436,7 +437,7 @@ static void read(struct intr_frame *f) {
    all of buffer in one call to putbuf(), at least as long as size is not bigger
    than a few hundred bytes. (It is reasonable to break up larger buffers.)
    Otherwise, lines of text output by different processes may end up interleaved
-   on the console, confusing both human readers and our grading scripts */
+   on the console, confusing both human readers and our grading scripts. */
 static void write(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
@@ -445,6 +446,7 @@ static void write(struct intr_frame *f) {
 
     /* Verify arguments. */
     verify_pointer((uint32_t *) buffer);
+    verify_pointer((uint32_t *) (buffer + size));
 
     /* Special cases. */
     if (fd == STDIN_FILENO) {
