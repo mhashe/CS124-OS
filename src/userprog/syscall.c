@@ -188,15 +188,7 @@ static void exec(struct intr_frame *f) {
 static void wait(struct intr_frame *f) {
     /* Parse arguments. */
     pid_t pid = get_arg(f, 1);
-
-    int res = process_wait(pid);
-
-    /* TODO: 
-        1. What do we do with the result. Do we handle it? Print it?
-        2. What does pintos mean when it says?:
-            Your design should consider all the ways in which waits can occur. All of a process's resources, including its struct thread, must be freed whether its parent ever waits for it or not, and regardless of whether the child exits before or after its parent.
-        I don't see how this affects the implementation....
-    */
+    f->eax = process_wait(pid);
 }
 
 
