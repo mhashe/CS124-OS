@@ -47,14 +47,14 @@ which parts.
    Make sure that each member's total time is listed.
 
 Vaibhav: X hours
-Nikhil : Y hours
+Nikhil : 20 hours
 Michael: Z hours
 
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
 
 Vaibhav: argument passing, syscall wait()
-Nikhil:  syscall wait(), [other syscalls..., deny writes?]
+Nikhil:  wait, deny writes, user memory access, file descriptor, status passing
 Michael: [other syscalls..., deny writes?]
 
                            ARGUMENT PASSING
@@ -100,9 +100,11 @@ strings to be maintained and manipulated at once.
 >> and arguments.  In Unix-like systems, the shell does this
 >> separation.  Identify at least two advantages of the Unix approach.
 
-By parsing the commands in the shell rather than kernel, it allows the 
-parsing to be done differently based on the application (shell) and it 
-makes the kernel lighter (faster).
+By parsing the commands in the shell rather than kernel, it allows the parsing
+to be done differently based on the application (shell) and it makes the kernel
+lighter (faster). Additionally, it also allows for the shell to setup file
+redirection instead of having the core system do it for a mostly user space
+application.
 
 
                              SYSTEM CALLS
@@ -122,17 +124,39 @@ We added the following fields to the thread struct:
     Whether parent of self is waiting for self to finish 
 
     3. struct list children;
-    The a linked list of threads that are children of self. Contains 
+    Linked list of thread IDs that are children of self. Contains 
     process id info as well as status code if it has exited. 
 
->> B2: Describe how file descriptors are associated with open files.
+    4. int exit_code;
+    A child knows its own exit code so that it can print it 
+    properly as it exits.
+
+    5. struct list fds;
+    A linked list of file descriptors this thread holds.
+
+    6. struct file *binary;
+    File object for file which this thread was started from.
+
+
+>> B2: Describe how file descriptors are associated with open files.            TODO
 >> Are file descriptors unique within the entire OS or just within a
 >> single process?
+
+File descriptors are unique with a single process.
+
 
 ---- ALGORITHMS ----
 
 >> B3: Describe your code for reading and writing user data from the
 >> kernel.
+
+After verifying the stack, both grab all the arguments off the stack. The buffer
+and the file descriptor are verified. The special file descriptors are handled.
+Each thread maintains a list of all the file descriptors it has open. As such,
+given a certain file descriptor, we can see if the thread owns it. If so, we can
+access the file object associated with it, and use that for the filesystem read
+and write calls.
+
 
 >> B4: Suppose a system call causes a full page (4,096 bytes) of data
 >> to be copied from user space into the kernel.  What is the least
@@ -154,7 +178,7 @@ in parent->children.
 
 Say something else?                                                             TODO
 
->> B6: Any access to user program memory at a user-specified address
+>> B6: Any access to user program memory at a user-specified address            TODO
 >> can fail due to a bad pointer value.  Such accesses must cause the
 >> process to be terminated.  System calls are fraught with such
 >> accesses, e.g. a "write" system call requires reading the system
@@ -167,6 +191,10 @@ Say something else?                                                             
 >> allocated resources (locks, buffers, etc.) are freed?  In a few
 >> paragraphs, describe the strategy or strategies you adopted for
 >> managing these issues.  Give an example.
+
+When an error is detected, thread_exit() is called. During thread exit, a
+function is called that releases all the resources that the thread holds. This
+includes locks, file descriptors, and a list of children.
 
 ---- SYNCHRONIZATION ----
 
