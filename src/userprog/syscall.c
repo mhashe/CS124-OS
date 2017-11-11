@@ -15,6 +15,11 @@
 #include "threads/malloc.h"    /* For malloc. */
 #include "filesys/off_t.h" /* For off_t. */
 #include "filesys/file.h" /* For file_length, seek, tell. */
+#include "threads/synch.h" /* For locks. */
+
+//TODO : Interrupt context for file I/O
+//TODO : Close all fds in thread_exit.
+//TODO : Possible remove once filecount goes to zero?
 
 /* Handler function. */
 static void syscall_handler(struct intr_frame *);
@@ -40,9 +45,13 @@ static void    close(struct intr_frame *f);
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 
+/*! Lock for performing filesystems operations. */
+static struct lock filesys_io;
 
 void syscall_init(void) {
     intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
+
+    lock_init(&filesys_io);
 }
 
 uint32_t* verify_pointer(uint32_t* p) {
@@ -65,8 +74,10 @@ static void syscall_handler(struct intr_frame *f) {
 
     int syscall_num = *(stack);
     // hex_dump(0, stack-128, 256, true);
-    printf("system call %d!\n", syscall_num);
-
+    if (syscall_num != 9) {
+        printf("system call %d!\n", syscall_num);
+    }
+    
     switch(syscall_num) {
         case SYS_HALT :
             halt(f);
@@ -172,18 +183,21 @@ static void exit(struct intr_frame *f) {
 
     /* Status code returned to kernel; TODO when writing wait. */
     f->eax = status;
-    shutdown_power_off();
+    shutdown_power_off(); // TODO
     thread_exit();
 }
 
 
 static void exec(struct intr_frame *f) {
-    /* Parse arguments. */
     //TODO
-    const char* file = (const char*) get_arg(f, 1);
+    /* Parse arguments. */
+    const char* cmd_line = (const char*) get_arg(f, 1);
+
+    /* Verify arguments. */
+    verify_pointer((uint32_t *) cmd_line);
     
 
-    f->eax = process_execute(file);
+    f->eax = process_execute(cmd_line);
 
     process_wait(f->eax);
 
@@ -228,9 +242,14 @@ static void open(struct intr_frame *f) {
     /* Parse arguments. */
     const char* file_name = (const char*) get_arg(f, 1);
 
+    /* Count of file descriptors for error checking. */
+    size_t count_start = list_size(&thread_current()->fds);
+
     if (file_name) {
         /* Try to open file. */
+        lock_acquire(&filesys_io);
         struct file* file = filesys_open(file_name);
+        lock_release(&filesys_io);
 
         if (file) {
             /* File opened! Create a file descriptor, add to list. */
@@ -238,9 +257,9 @@ static void open(struct intr_frame *f) {
 
             /* If we already have fds, set fd = max(fds) + 1.
                This ensures unique file descriptors for a thread. */
-            if (!list_empty(&(thread_current()->fds))) {
+            if (!list_empty(&thread_current()->fds)) {
 
-                struct list_elem* last = list_rbegin(&(thread_current()->fds));
+                struct list_elem* last = list_rbegin(&thread_current()->fds);
                 struct file_des* last_fd = list_entry(last, struct file_des, elem);
                 fd = MAX(fd, last_fd->fd);
             }
@@ -253,10 +272,13 @@ static void open(struct intr_frame *f) {
             new_fd->fd = fd;
             new_fd->file = file;
 
-            list_push_back(&(thread_current()->fds), &new_fd->elem);
+            list_push_back(&thread_current()->fds, &new_fd->elem);
 
             /* Return file descriptor. */
             f->eax = fd;
+
+            /* List should have increased in size. */
+            ASSERT(list_size(&thread_current()->fds) > count_start);
 
         } else {
             /* Couldn't open file. */
@@ -266,6 +288,9 @@ static void open(struct intr_frame *f) {
         /* Invalid file name. */
         thread_exit();
     }
+
+    /* List should have increased, or at least stayed the same size. */
+    ASSERT(list_size(&thread_current()->fds) >= count_start);
 }
 
 
@@ -281,7 +306,9 @@ static void filesize(struct intr_frame *f) {
     /* Return file size. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
+        lock_acquire(&filesys_io);
         f->eax = file_length(file);
+        lock_release(&filesys_io);
     } else {
         /* Invalid file has no size. */
         thread_exit();
@@ -313,8 +340,9 @@ static void read(struct intr_frame *f) {
     /* Return number of bytes read. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-        /* Valid file. */
+        lock_acquire(&filesys_io);
         f->eax = file_read(file, buffer, size);
+        lock_release(&filesys_io);
     } else {
         /* Can't read invalid file. */
         f->eax = -1;
@@ -348,8 +376,9 @@ static void write(struct intr_frame *f) {
     /* Return number of bytes written. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-        /* Valid file. */
+        lock_acquire(&filesys_io);
         f->eax = file_write(file, buffer, size);
+        lock_release(&filesys_io);
     } else {
         /* Can't write to file. */
         f->eax = 0;
@@ -370,8 +399,9 @@ static void seek(struct intr_frame *f) {
     /* Seek file. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-        /* Valid file. */
+        lock_acquire(&filesys_io);
         file_seek(file, position);
+        lock_release(&filesys_io);
     } else {
         /* Can't seek invalid file. */
         thread_exit();
@@ -391,8 +421,9 @@ static void tell(struct intr_frame *f) {
     /* Tell file. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-        /* Valid file. */
+        lock_acquire(&filesys_io);
         f->eax = file_tell(file);
+        lock_release(&filesys_io);
     } else {
         /* Can't tell invalid file. */
         thread_exit();
@@ -412,8 +443,9 @@ static void close(struct intr_frame *f) {
     /* Tell file. */
     struct file_des* file_des = file_from_fd(fd);
     if (file_des) {
-        /* Valid file. */
+        lock_acquire(&filesys_io);
         file_close(file_des->file);
+        lock_release(&filesys_io);
 
         /* Free memory, remove from list. */
         list_remove(&file_des->elem);
