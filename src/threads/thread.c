@@ -8,6 +8,7 @@
 #include "threads/interrupt.h"
 #include "threads/intr-stubs.h"
 #include "threads/palloc.h"
+#include "threads/malloc.h"    /* For malloc. */
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
@@ -128,6 +129,21 @@ struct thread *thread_get_from_tid(tid_t tid) {
         struct thread *t = list_entry(e, struct thread, allelem);
         if (t->tid == tid)
             return t;
+    }
+    return NULL;
+}
+
+
+struct child *thread_get_child_elem(struct list *lst, tid_t child_tid) {
+    /* For added safety, assert tid does not belong to idle or init thread. */
+    // printf("init:%d us:%d, idle:%d\n", initial_thread->tid, tid, idle_thread->tid);
+    
+    struct list_elem *e;
+    for (e = list_begin (lst); 
+         e != list_end (lst); e = list_next (e)) {
+        struct child *c = list_entry(e, struct child, elem);
+        if (c->tid == child_tid)
+            return c;
     }
     return NULL;
 }
@@ -358,6 +374,12 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     init_thread(t, name, priority);
     tid = t->tid = allocate_tid();
     t->parent_tid = thread_current()->tid;
+
+    struct child* new_child = malloc(sizeof(struct child));
+    new_child->tid = tid;
+    new_child->exit_code = -1;
+
+    list_push_back(&thread_current()->children, &new_child->elem);
 
     /* A threaded created (outside of the init thread) inherits its nice and 
     recent_cpu values from its parent, and sets its priority from them. */
@@ -759,6 +781,8 @@ static void init_thread(struct thread *t, const char *name, int priority) {
         t->priority_org = priority;
         list_init(&t->locks);
         t->blocked_lock = NULL;
+        list_init(&t->children);
+
 #ifdef USERPROG
         list_init(&t->fds);
 

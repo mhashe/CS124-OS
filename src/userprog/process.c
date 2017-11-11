@@ -116,12 +116,17 @@ int process_wait(tid_t child_tid) {
     old_level = intr_disable();
     thread_block();
     intr_set_level(old_level);
+
+    struct thread *parent = thread_current();
+    struct child *c = thread_get_child_elem(&parent->children, child_tid);
+    return c->exit_code;
+
     // printf("Finished waiting\n");
 
     // when child returns, get response code.
     // if child terminated due to an expection, return -1
     // else, return exit status
-    return 0;
+    // return 0;
 }
 
 /*! Free the current process's resources. */
@@ -145,10 +150,6 @@ void process_exit(void) {
         pagedir_activate(NULL);
         pagedir_destroy(pd);
     }
-
-    /* Wake parent up if it is waiting for self to exit, and give exit code. */
-    
-    printf("%s: exit(%d)\n", cur->name, 0);
 
     // printf("TRY SEMA UP\n");
     if (cur->parent_waiting) {

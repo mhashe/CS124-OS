@@ -76,7 +76,7 @@ static void syscall_handler(struct intr_frame *f) {
     // hex_dump(0, stack-128, 256, true);
     // printf("system call %d!\n", syscall_num);
     if (syscall_num != 9) {
-        printf("system call %d!\n", syscall_num);
+        // printf("system call %d!\n", syscall_num);
     }
     
     switch(syscall_num) {
@@ -182,10 +182,22 @@ static void exit(struct intr_frame *f) {
     /* Parse arguments. */
     int status = get_arg(f, 1);
 
+    struct thread *parent = thread_get_from_tid(thread_current()->parent_tid);
+
+    if (parent == NULL) {
+        f->eax = status;
+        thread_exit();
+    }
+
+    struct child *c = thread_get_child_elem(&parent->children, thread_current()->tid);
+
+    ASSERT(c != NULL);
+
+    c->exit_code = status;
+    printf("%s: exit(%d)\n", thread_current()->name, status);
+
     /* Status code returned to kernel; TODO when writing wait. */
     f->eax = status;
-    // shutdown_power_off(); // TODO
-
     thread_exit();
 }
 

@@ -60,6 +60,14 @@ struct file_des {
     struct list_elem elem; /*!< Pointers to previous, next file descriptors. */
 };
 
+/*! Child of a thread. */
+struct child {
+    tid_t tid;                /*!< tid of child. */
+    int exit_code;            /*!< Exit code. */
+
+    struct list_elem elem;    /*!< Pointers to previous, next child. */
+};
+
 /*! A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The
@@ -144,7 +152,7 @@ struct thread {
     
     tid_t parent_tid;                   /*!< Parent thread id. */
     bool parent_waiting;                /*!< Parent's is waiting. */
-    int child_exit_code;                /*!< Exit code of child thread. */
+    struct list children;               /*!< List of children. */
 
     /*! Shared between thread.c and synch.c. */
     /**@{*/
@@ -217,6 +225,7 @@ bool thread_queue_compare(const struct list_elem *a,
 void thread_defer_to_max_priority(void);
 
 struct thread *thread_get_from_tid(tid_t tid);
+struct child *thread_get_child_elem(struct list *lst, tid_t child_tid);
 
 #endif /* threads/thread.h */
 
