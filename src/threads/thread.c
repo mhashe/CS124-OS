@@ -111,7 +111,7 @@ void print_all_priorities(void) {
          e != list_end (&all_list); e = list_next (e)) {
         struct thread *t = list_entry(e, struct thread, allelem);
         if (t != idle_thread)
-            printf("n%s-p%d-i%d  ", t->name, t->priority, t->tid);
+            printf("%s-p%d-i%d  ", t->name, t->priority, t->tid);
     }
     printf("\n");
 }
@@ -120,9 +120,8 @@ void print_all_priorities(void) {
 // TODO: Comment
 struct thread *thread_get_from_tid(tid_t tid) {
     /* For added safety, assert tid does not belong to idle or init thread. */
-    ASSERT(initial_thread->tid != tid);
-    ASSERT(idle_thread->tid != tid);
-
+    // printf("init:%d us:%d, idle:%d\n", initial_thread->tid, tid, idle_thread->tid);
+    
     struct list_elem *e;
     for (e = list_begin (&all_list); 
          e != list_end (&all_list); e = list_next (e)) {
@@ -262,11 +261,6 @@ void thread_tick(void) {
     /* Recalculate (priority, recent_cpu, and load_avg) used in mlfqs mode. */
     if (thread_mlfqs) {
         thread_update_mlfqs_state();
-    }
-
-    if (timer_ticks() % TIMER_FREQ == 0) {
-        printf("Current: %d vs. idle:%d\n", thread_tid(), idle_thread->tid);
-        print_all_priorities();
     }
 
     /* Add threads to ready queue that have been blocked and are due to be 
@@ -764,7 +758,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
         // TOOD: move this out of user-prog? for kernel threads too?
         /* Initialize variables for parent-child interaction */
         t->parent_tid = 1;
-        t->parent_sem = NULL;
+        t->parent_waiting = false;
 #endif
     }
 

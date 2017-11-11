@@ -47,7 +47,9 @@ tid_t process_execute(const char * file_name) {
     strlcpy(exec_fn, fn_copy, exec_fn_len + 1);
 
     /* Create a new thread to execute FILE_NAME. */
+    // printf("EXCUTING: %s\n", exec_fn);
     tid = thread_create(exec_fn, PRI_DEFAULT, start_process, fn_copy);
+    // printf("EXCUTED: %s\n", exec_fn);
     if (tid == TID_ERROR)
         palloc_free_page(fn_copy); 
     return tid;
@@ -103,25 +105,29 @@ int process_wait(tid_t child_tid) {
     
 
     /* Create semaphore and give it to child. */
-    struct semaphore sema;
-    sema_init(&sema, 0);
-    child->parent_sem = &sema;
+    // struct semaphore sema;
+    // sema_init(&sema, 0);
+    // child->parent_sem = &sema;
 
     /* Block/wait for sema to be released by child. */
-    printf("SEMA DOWN: %s\n", thread_current()->name);
-    sema_down(&sema);
-    printf("Finished waiting\n");
+    // printf("SEMA DOWN: %s, %d\n", thread_current()->name, thread_tid());
+    child->parent_waiting = true;
+    enum intr_level old_level;
+    old_level = intr_disable();
+    thread_block();
+    intr_set_level(old_level);
+    // printf("Finished waiting\n");
 
     // when child returns, get response code.
     // if child terminated due to an expection, return -1
     // else, return exit status
-    while(1);
-    return -1;
+    return 0;
 }
 
 /*! Free the current process's resources. */
 void process_exit(void) {
     struct thread *cur = thread_current();
+    // printf("EXITING: %s\n", cur->name);
     uint32_t *pd;
 
     /* Destroy the current process's page directory and switch back
@@ -142,12 +148,13 @@ void process_exit(void) {
 
     /* Wake parent up if it is waiting for self to exit, and give exit code. */
     
-    printf("TRY SEMA UP\n");
-    if (cur->parent_sem != NULL) {
-        printf("SEMA UP\n");
-        sema_up(cur->parent_sem);
+    printf("%s: exit(%d)\n", cur->name, 0);
+
+    // printf("TRY SEMA UP\n");
+    if (cur->parent_waiting) {
+        // printf("SEMA UP\n");
         // TODO: get exit code set in exit() (sys call)
-        thread_get_from_tid(cur->parent_tid)->child_exit_code = 0;  
+        thread_unblock(thread_get_from_tid(cur->parent_tid));  
     }
     
 
@@ -343,7 +350,7 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
 done:
     /* We arrive here whether the load is successful or not. */
     file_close(file);
-    printf("DONE LOADING!\n");
+    // printf("DONE LOADING!\n");
     return success;
 }
 

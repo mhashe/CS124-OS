@@ -66,7 +66,7 @@ static void syscall_handler(struct intr_frame *f) {
         thread_exit();
     int syscall_num =  *(stack);
     // hex_dump(0, stack-128, 256, true);
-    printf("system call %d!\n", syscall_num);
+    // printf("system call %d!\n", syscall_num);
 
     switch(syscall_num) {
         case SYS_HALT :
