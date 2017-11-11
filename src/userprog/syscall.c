@@ -8,10 +8,10 @@
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/thread.h"
-#include "filesys/filesys.h"
 
 #include "devices/shutdown.h" /* For halt. */
 #include "filesys/filesys.h"  /* For filesys ops. */
+#include "filesys/file.h"     /* For file ops. */
 #include "threads/malloc.h"    /* For malloc. */
 #include "filesys/off_t.h" /* For off_t. */
 #include "filesys/file.h" /* For file_length, seek, tell. */
@@ -21,7 +21,7 @@ static void syscall_handler(struct intr_frame *);
 
 /* Helper functions. */
 static uint32_t get_arg(struct intr_frame *f, int offset);
-static struct file* file_from_fd(int fd);
+static struct file *file_from_fd(int fd);
 
 /* Handlers for Project 4. */
 static void     halt(struct intr_frame *f);
@@ -136,7 +136,7 @@ static uint32_t get_arg(struct intr_frame *f, int offset) {
     return *(stack + offset);
 }
 
-static struct file* file_from_fd(int fd) {
+static struct file *file_from_fd(int fd) {
     ASSERT(fd > STDOUT_FILENO);
 
     struct list_elem *e;
@@ -189,9 +189,14 @@ static void wait(struct intr_frame *f) {
     /* Parse arguments. */
     pid_t pid = get_arg(f, 1);
 
-    // Temp
-    (void)pid;
-    thread_exit();
+    int res = process_wait(pid);
+
+    /* TODO: 
+        1. What do we do with the result. Do we handle it? Print it?
+        2. What does pintos mean when it says?:
+            Your design should consider all the ways in which waits can occur. All of a process's resources, including its struct thread, must be freed whether its parent ever waits for it or not, and regardless of whether the child exits before or after its parent.
+        I don't see how this affects the implementation....
+    */
 }
 
 
@@ -298,18 +303,15 @@ static void write(struct intr_frame *f) {
     const char* buffer = (char *) get_arg(f, 2);
     uint32_t size = get_arg(f, 3);
 
-    
     ASSERT(fd != STDIN_FILENO);
+    
     // printf("fd: %u, size: %d\n", fd, size);
-    if (fd == STDOUT_FILENO)
+    if (fd == STDOUT_FILENO) {
         putbuf(buffer, size);
-    // printf("DONE\n");
-
-    // Temp
-    (void)fd;
-    (void)buffer;
-    (void)size;
-    // thread_exit();
+        f->eax = size;
+    }
+    else 
+        f->eax = file_write(file_from_fd(fd), buffer, size);
 }
 
 
@@ -318,20 +320,15 @@ static void seek(struct intr_frame *f) {
     int fd = get_arg(f, 1);
     unsigned position = get_arg(f, 2);
 
-    // Temp
-    (void)fd;
-    (void)position;
-    thread_exit();
+    file_seek(file_from_fd(fd), position);
+
 }
 
 
 static void tell(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
-
-    // Temp
-    (void)fd;
-    thread_exit();
+    f->eax = file_tell(file_from_fd(fd));
 }
 
 

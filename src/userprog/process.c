@@ -89,6 +89,13 @@ static void start_process(void *file_name_) {
     This function will be implemented in problem 2-2.  For now, it does
     nothing. */
 int process_wait(tid_t child_tid UNUSED) {
+    // if TID is invalid, return -1
+    // if not a child of current_thread(), return -1
+    // if we are already waiting for this child_tid, return -1
+
+    // when child returns, get response code.
+    // if child terminated due to an expection, return -1
+    // else, return exit status
     while(1) {}
     return -1;
 }
@@ -208,8 +215,8 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     bool success = false;
     int i;
 
-    printf("LOAD: %s\n", t->name);
-    printf("LOAD_full: %s\n", file_name);
+    // printf("LOAD: %s\n", t->name);
+    // printf("LOAD_full: %s\n", file_name);
 
     /* Allocate and activate page directory. */
     t->pagedir = pagedir_create();
@@ -414,7 +421,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
     uint8_t *kpage;
     bool success = false;
 
-    printf("SETUP STACK: %s\n", cmdline);
+    // printf("SETUP STACK: %s\n", cmdline);
 
     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
     if (kpage != NULL) {
@@ -453,7 +460,6 @@ static bool setup_stack(void **esp, const char *cmdline) {
         arg_index++;
     }
 
-    // TODO: Better way of alignment?
     /* Word align on 4-byte boundary and convert to char** for convenience. */
     // printf("Before align: %p\n", sp); 
     char **spp = (char **) ((unsigned int) sp & 0xfffffffc);
@@ -483,7 +489,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
 
     // printf("CMDLINE copy: %s, %d, %s\n", cmdline, cmdline_len, cmdline_copy);
 
-    printf("POINT: %p, %p, dp: %d\n", *esp, spp, *esp - (void *)spp);
+    // printf("POINT: %p, %p, dp: %d\n", *esp, spp, *esp - (void *)spp);
     // hex_dump(0, (void *) spp, *esp - (void *)spp + 1, 1);
     // printf("POINT: %p\n", *esp);
     *esp = (void *)spp;
