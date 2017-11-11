@@ -269,7 +269,12 @@ For instance, there is a function to read an argument off the stack.
 This function also calls verify_pointer which verifies that that argument is in
 valid memory.
 
-A thread opens a few files. It puts these in a list of file descriptors. 
+A thread opens a few files. It puts these in a list of file descriptors. It
+tries to read from one of the file descriptors using read. It passes in a
+buffer, and a size. If buffer is a valid pointer and the end of the buffer is a
+valid pointer for the user process, the file system call read gets executed. If
+not, the thread is terminated. On the threads exit, all the file descriptors,
+children, and locks are looped through and freed.
 
 ---- SYNCHRONIZATION ----
 
@@ -341,15 +346,27 @@ penalized.  We can't fix things until we know about them.  :-)
 >> In your opinion, was this assignment, or any of the parts of it, too
 >> easy or too hard?  Did it take too long or too little time?
 
+This assignment was not too difficult. There was a lot of time in the beginning
+spent understanding the system, which felt like we weren't making much progress,
+but after this initial debt was fulfilled, quick progress was made.
+
 >> Did you find that working on a particular part of the assignment gave
 >> you greater insight into some aspect of OS design?
+
+Implementing system calls gave us a lot of insight into how it interacts with
+the file system.
 
 >> Were there any parts of the assignment that you felt were unnecessarily
 >> tedious or pointless?
 
+No.
+
 >> Is there some particular fact or hint we should give students in
 >> future quarters to help them solve the problems?  Conversely, did you
 >> find any of our guidance to be misleading?
+
+The test suite is very useful in that it gives you how your system is supposed
+to act on edge cases.
 
 The Pintos documentation recommends to implement argument passing in 
 process_execute(), which is not nearly as convenient as inside setup_stack() 
@@ -358,6 +375,8 @@ process_execute(), which is not nearly as convenient as inside setup_stack()
 >> Do you have any suggestions for the instructor and/or TAs to more
 >> effectively assist students, either for future quarters or the remaining
 >> projects?
+
+No.
 
 >> Any other comments?
 
