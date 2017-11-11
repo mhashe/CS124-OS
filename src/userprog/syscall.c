@@ -62,9 +62,8 @@ uint32_t* verify_pointer(uint32_t* p) {
 static void syscall_handler(struct intr_frame *f) {
     uint32_t *stack = verify_pointer((uint32_t*)f->esp);
     // TODO Handle
-    if (stack == NULL) 
-        thread_exit();
-    int syscall_num =  *(stack);
+
+    int syscall_num = *(stack);
     // hex_dump(0, stack-128, 256, true);
     printf("system call %d!\n", syscall_num);
 
@@ -121,6 +120,9 @@ static void syscall_handler(struct intr_frame *f) {
             close(f);
             break;
 
+        default :
+            /* Invalid syscall. */
+            thread_exit();
     }
 }
 
