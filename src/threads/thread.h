@@ -10,6 +10,7 @@
 #include <list.h>
 #include <fixedp.h>
 #include <stdint.h>
+#include "synch.h"
 
 /*! States in a thread's life cycle. */
 enum thread_status {
@@ -64,6 +65,7 @@ struct file_des {
 struct child {
     tid_t tid;                /*!< tid of child. */
     int exit_code;            /*!< Exit code. */
+    bool load_success;        /*!< Success of load. */
 
     struct list_elem elem;    /*!< Pointers to previous, next child. */
 };
@@ -166,6 +168,7 @@ struct thread {
     uint32_t *pagedir;                  /*!< Page directory. */
     struct list fds;                    /*!< File descriptors. */
     struct file *binary;                /*!< File thread was started from. */
+    struct semaphore success_sema;
     /**@{*/
 #endif
 

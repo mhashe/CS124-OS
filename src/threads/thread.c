@@ -825,6 +825,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
 
 #ifdef USERPROG
         list_init(&t->fds);
+        sema_init(&t->success_sema, 0);
 
         // TOOD: move this out of user-prog? for kernel threads too?
         /* Initialize variables for parent-child interaction */

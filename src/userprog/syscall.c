@@ -213,6 +213,12 @@ static void exec(struct intr_frame *f) {
     /* Exec program. */
     f->eax = process_execute(cmd_line);
     process_wait(f->eax);
+
+    sema_down(&thread_current()->success_sema);
+    struct child *c = thread_get_child_elem(&thread_current()->children, f->eax);
+    if (!c->load_success)
+        f->eax = -1;
+
 }
 
 

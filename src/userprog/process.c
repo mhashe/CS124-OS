@@ -270,6 +270,8 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     off_t file_ofs;
     bool success = false;
     int i;
+    struct thread *parent;
+    struct child *c;
 
     // printf("LOAD: %s\n", t->name);
     // printf("LOAD_full: %s\n", file_name);
@@ -369,6 +371,10 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     success = true;
 
 done:
+    parent = thread_get_from_tid(t->parent_tid);
+    c = thread_get_child_elem(&parent->children, t->tid);
+    c->load_success = success;
+    sema_up(&parent->success_sema);
     /* We arrive here whether the load is successful or not. */
     // file_close(file);
     // printf("DONE LOADING!\n");
