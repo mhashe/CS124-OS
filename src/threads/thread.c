@@ -503,24 +503,8 @@ void thread_exit(void) {
     intr_disable();
     list_remove(&thread_current()->allelem);
 
-#ifdef USERPROG
-    /* Make sure all locks are released, if they aren't already. */
-    release_all_resources();
-    ASSERT(list_empty(&thread_current()->locks));
-    ASSERT(list_empty(&thread_current()->fds));
-    ASSERT(list_empty(&thread_current()->children));
-#endif
-
-    thread_current()->status = THREAD_DYING;
-    schedule();
-    NOT_REACHED();
-}
-
-#ifdef USERPROG
-/*! Causes current thread to release all locks and semaphores
-    it posses. */
-void release_all_resources(void) {
-    ASSERT(intr_get_level() == INTR_OFF);
+    /* Now, release all thread resources (locks, file descriptors, 
+       children). */
     struct list_elem *e;
     struct list_elem *e_prev;
 
@@ -533,7 +517,9 @@ void release_all_resources(void) {
         lock_release(l);
         list_remove(e_prev);
     }
+    ASSERT(list_empty(&thread_current()->locks));
 
+#ifdef USERPROG
     /* Close all file descriptors. */
     e = list_begin(&thread_current()->fds);
     while (e != list_end(&thread_current()->fds)) {
@@ -546,6 +532,7 @@ void release_all_resources(void) {
         file_close(fdes->file);
         free(fdes);
     }
+    ASSERT(list_empty(&thread_current()->fds));
 
     /* Close all children. */
     e = list_begin(&thread_current()->children);
@@ -558,8 +545,13 @@ void release_all_resources(void) {
         /* Free memory. */
         free(cld);
     }
-}
+    ASSERT(list_empty(&thread_current()->children));
 #endif
+
+    thread_current()->status = THREAD_DYING;
+    schedule();
+    NOT_REACHED();
+}
 
 
 /*! Yields the CPU.  The current thread is not put to sleep and
