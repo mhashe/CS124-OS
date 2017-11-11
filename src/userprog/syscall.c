@@ -269,10 +269,20 @@ static void open(struct intr_frame *f) {
 static void filesize(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
-    struct file* file = file_from_fd(fd);
+
+    /* Special cases. */
+    if (fd == STDIN_FILENO || fd == STDOUT_FILENO) {
+        thread_exit();
+    }
 
     /* Return file size. */
-    f->eax = file_length(file);
+    struct file* file = file_from_fd(fd);
+    if (file) {
+        f->eax = file_length(file);
+    } else {
+        /* Invalid file has no size. */
+        thread_exit();
+    }
 }
 
 
@@ -375,7 +385,7 @@ static void tell(struct intr_frame *f) {
         thread_exit();
     }
 
-    /* Seek file. */
+    /* Tell file. */
     struct file* file = file_from_fd(fd);
     if (file) {
         /* Valid file. */
@@ -391,8 +401,19 @@ static void close(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
 
-    // Temp
-    (void)fd;
-    thread_exit();
+    /* Special cases. */
+    if (fd == STDIN_FILENO || fd == STDOUT_FILENO) {
+        thread_exit();
+    }
+
+    /* Tell file. */
+    struct file* file = file_from_fd(fd);
+    if (file) {
+        /* Valid file. */
+        file_close(file);
+    } else {
+        /* Can't close invalid file. */
+        thread_exit();
+    }
 }
 
