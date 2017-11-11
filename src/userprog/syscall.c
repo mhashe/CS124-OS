@@ -71,9 +71,11 @@ uint32_t* verify_pointer(uint32_t* p) {
 static void syscall_handler(struct intr_frame *f) {
     uint32_t *stack = verify_pointer((uint32_t*)f->esp);
     // TODO Handle
-
-    int syscall_num = *(stack);
+    if (stack == NULL) 
+        thread_exit();
+    int syscall_num =  *(stack);
     // hex_dump(0, stack-128, 256, true);
+    // printf("system call %d!\n", syscall_num);
     if (syscall_num != 9) {
         printf("system call %d!\n", syscall_num);
     }
@@ -183,7 +185,7 @@ static void exit(struct intr_frame *f) {
 
     /* Status code returned to kernel; TODO when writing wait. */
     f->eax = status;
-    shutdown_power_off(); // TODO
+    // shutdown_power_off();
     thread_exit();
 }
 

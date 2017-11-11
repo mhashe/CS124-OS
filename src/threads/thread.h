@@ -143,7 +143,7 @@ struct thread {
     struct lock *blocked_lock;          /*!< Lock which thread wants. */
     
     tid_t parent_tid;                   /*!< Parent thread id. */
-    struct semaphore *parent_sem;       /*!< Parent's semaphore if waiting. */
+    bool parent_waiting;                /*!< Parent's is waiting. */
     int child_exit_code;                /*!< Exit code of child thread. */
 
     /*! Shared between thread.c and synch.c. */
