@@ -152,8 +152,9 @@ void thread_remove_child_elem(struct list *lst, tid_t child_tid) {
     for (e = list_begin (lst); 
          e != list_end (lst); e = list_next (e)) {
         struct child *c = list_entry(e, struct child, elem);
-        if (c->tid == child_tid) 
+        if (c->tid == child_tid) {
             list_remove(&c->elem);
+        }
     }
 }
 

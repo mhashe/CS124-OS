@@ -101,8 +101,6 @@ static void start_process(void *file_name_) {
     This function will be implemented in problem 2-2.  For now, it does
     nothing. */
 int process_wait(tid_t child_tid) {
-    // TODO: if we are already waiting for this child_tid, return -1
-
     /* Check if the child had the current thread as the parent in the past. */
     struct thread *parent = thread_current();
     struct child *c = thread_get_child_elem(&parent->children, child_tid);
@@ -115,8 +113,9 @@ int process_wait(tid_t child_tid) {
     struct thread *child = thread_get_from_tid(child_tid);
     /* If TID corresponds to a past child. */
     if (c && child == NULL) {
-        thread_remove_child_elem(&parent->children, child_tid);
-        return c->exit_code;
+        int exit_code = c->exit_code;
+        c->exit_code = -1;
+        return exit_code;
     }
 
 
@@ -128,8 +127,10 @@ int process_wait(tid_t child_tid) {
     intr_set_level(old_level);
 
     parent = thread_current();
-    c = thread_get_child_elem(&parent->children, child_tid);
-    return c->exit_code;
+    int exit_code = thread_get_child_elem(&parent->children, 
+                                          child_tid)->exit_code;
+    thread_get_child_elem(&parent->children, child_tid)->exit_code = -1;
+    return exit_code;
 }
 
 /*! Free the current process's resources. */

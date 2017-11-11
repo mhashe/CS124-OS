@@ -199,8 +199,8 @@ static void exec(struct intr_frame *f) {
     /* Exec program. */
     f->eax = process_execute(cmd_line);
 
-    /* Wait until program finishes. */
-    process_wait(f->eax); // TODO
+    // Very unusual behavior...
+    // process_wait(f->eax); // Comment in if VM has multiple processors.
 
     /* Check load_success flag. */
     sema_down(&thread_current()->success_sema);
