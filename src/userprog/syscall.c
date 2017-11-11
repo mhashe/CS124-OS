@@ -179,7 +179,7 @@ static struct file_des *file_from_fd(int fd) {
             return fd_s;
     }
 
-    return NULL;
+    thread_exit();
 }
 
 
