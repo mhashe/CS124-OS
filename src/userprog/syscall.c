@@ -46,13 +46,16 @@ void syscall_init(void) {
 }
 
 uint32_t* verify_pointer(uint32_t* p) {
-    if (!is_user_vaddr(p))
-        return NULL;
+    if (is_user_vaddr(p)) {
+        /* Valid pointer, continue. */
+        return p;
+    } else {
+        /* Invalid pointer, exit. */
+        thread_exit();
+    }
     // uint32_t* vp = (uint32_t*)pagedir_get_page(thread_current()->pagedir, p);
     // if (vp == NULL)
     //     return NULL;
-    return p;
-
 }
 
 
@@ -136,6 +139,7 @@ static uint32_t get_arg(struct intr_frame *f, int offset) {
     return *(stack + offset);
 }
 
+
 static struct file *file_from_fd(int fd) {
     ASSERT(fd > STDOUT_FILENO);
 
@@ -193,26 +197,26 @@ static void wait(struct intr_frame *f) {
 
 
 static void create(struct intr_frame *f) {
-    /* Parse arguments. */
+    /* Parse arguments, ensure valid pointer. */
     const char* file = (const char*) get_arg(f, 1);
     unsigned initial_size = get_arg(f,2);
 
-    if (file) {
-        /* Create file, return boolean value. */
-        f->eax = filesys_create(file, initial_size);
-    } else {
-        /* Invalid file name. */
-        thread_exit();
-    }
+    /* Verify arguments. */
+    verify_pointer((uint32_t *) file);
 
+    /* Create file, return boolean value. */
+    f->eax = filesys_create(file, initial_size);
 }
 
 
 static void remove(struct intr_frame *f) {
     /* Parse arguments. */
-    const char* file = (const char*) verify_pointer((uint32_t*)get_arg(f, 1));
+    const char* file = (const char*) get_arg(f, 1);
 
-    /* File is NULL if invalid; results in failure or remove function. */
+    /* Verify arguments. */
+    verify_pointer((uint32_t *) file);
+
+    /* Remove file. */
     f->eax = filesys_remove(file);
 }
 
@@ -238,8 +242,10 @@ static void open(struct intr_frame *f) {
                 fd = MAX(fd, last_fd->fd);
             }
 
-            /* Add new file descriptor object. */
+            /* If either of these numbers are assigned, something went horribly wrong. */
             ASSERT(fd != STDIN_FILENO || fd != STDOUT_FILENO);
+
+            /* Add new file descriptor object. */
             struct file_des* new_fd = malloc(sizeof(struct file_des));
             new_fd->fd = fd;
             new_fd->file = file;
@@ -265,8 +271,8 @@ static void filesize(struct intr_frame *f) {
     int fd = get_arg(f, 1);
     struct file* file = file_from_fd(fd);
 
-    off_t file_size = file_length(file);
-    f->eax = file_size;
+    /* Return file size. */
+    f->eax = file_length(file);
 }
 
 
@@ -275,13 +281,27 @@ static void read(struct intr_frame *f) {
     int fd = get_arg(f, 1);
     void* buffer = (void *) get_arg(f, 2);
     unsigned size = get_arg(f, 3);
+
+    /* Verify arguments. */
+    verify_pointer((uint32_t *) buffer);
+
+    /* Special cases. */
+    if (fd == STDIN_FILENO) {
+        // TODO
+        f->eax = -1;
+        return;
+    } 
+    if (fd == STDOUT_FILENO) {
+        /* Can't read from stdout... */
+        f->eax = -1;
+        return;
+    }
+
+    /* Return number of bytes read. */
     struct file* file = file_from_fd(fd);
-
-    // TODO : I/O for FD 0, 1
-
     if (file) {
-        /* Return number of bytes read. */
-        f->eax = file_read(struct file *file, void *buffer, off_t size);
+        /* Valid file. */
+        f->eax = file_read(file, buffer, size);
     } else {
         /* Can't read invalid file. */
         f->eax = -1;
@@ -292,18 +312,35 @@ static void read(struct intr_frame *f) {
 static void write(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
-    const char* buffer = (char *) get_arg(f, 2);
+    const void* buffer = (void *) get_arg(f, 2);
     uint32_t size = get_arg(f, 3);
 
-    ASSERT(fd != STDIN_FILENO);
-    
-    // printf("fd: %u, size: %d\n", fd, size);
+    /* Verify arguments. */
+    verify_pointer((uint32_t *) buffer);
+
+    /* Special cases. */
+    if (fd == STDIN_FILENO) {
+        /* Can't write to stdin... */
+        f-> eax = 0;
+        return;
+    }
     if (fd == STDOUT_FILENO) {
+        /* Write to terminal. */
+        // TODO - Break up larger buffers into multiple calls.
         putbuf(buffer, size);
         f->eax = size;
+        return;
     }
-    else 
-        f->eax = file_write(file_from_fd(fd), buffer, size);
+
+    /* Return number of bytes written. */
+    struct file* file = file_from_fd(fd);
+    if (file) {
+        /* Valid file. */
+        f->eax = file_write(file, buffer, size);
+    } else {
+        /* Can't write to file. */
+        f->eax = 0;
+    }
 }
 
 
@@ -312,15 +349,41 @@ static void seek(struct intr_frame *f) {
     int fd = get_arg(f, 1);
     unsigned position = get_arg(f, 2);
 
-    file_seek(file_from_fd(fd), position);
+    /* Special cases. */
+    if (fd == STDIN_FILENO || fd == STDOUT_FILENO) {
+        thread_exit();
+    }
 
+    /* Seek file. */
+    struct file* file = file_from_fd(fd);
+    if (file) {
+        /* Valid file. */
+        file_seek(file, position);
+    } else {
+        /* Can't seek invalid file. */
+        thread_exit();
+    }
 }
 
 
 static void tell(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
-    f->eax = file_tell(file_from_fd(fd));
+
+    /* Special cases. */
+    if (fd == STDIN_FILENO || fd == STDOUT_FILENO) {
+        thread_exit();
+    }
+
+    /* Seek file. */
+    struct file* file = file_from_fd(fd);
+    if (file) {
+        /* Valid file. */
+        f->eax = file_tell(file);
+    } else {
+        /* Can't tell invalid file. */
+        thread_exit();
+    }
 }
 
 
