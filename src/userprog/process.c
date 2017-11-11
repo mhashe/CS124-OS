@@ -89,6 +89,13 @@ static void start_process(void *file_name_) {
     This function will be implemented in problem 2-2.  For now, it does
     nothing. */
 int process_wait(tid_t child_tid UNUSED) {
+    // if TID is invalid, return -1
+    // if not a child of current_thread(), return -1
+    // if we are already waiting for this child_tid, return -1
+
+    // when child returns, get response code.
+    // if child terminated due to an expection, return -1
+    // else, return exit status
     while(1) {}
     return -1;
 }
@@ -453,7 +460,6 @@ static bool setup_stack(void **esp, const char *cmdline) {
         arg_index++;
     }
 
-    // TODO: Better way of alignment?
     /* Word align on 4-byte boundary and convert to char** for convenience. */
     // printf("Before align: %p\n", sp); 
     char **spp = (char **) ((unsigned int) sp & 0xfffffffc);
