@@ -120,11 +120,8 @@ void print_all_priorities(void) {
 }
 
 
-// TODO: Comment
+/* Get a thread from the global thread list via tid. */
 struct thread *thread_get_from_tid(tid_t tid) {
-    /* For added safety, assert tid does not belong to idle or init thread. */
-    // printf("init:%d us:%d, idle:%d\n", initial_thread->tid, tid, idle_thread->tid);
-    
     struct list_elem *e;
     for (e = list_begin (&all_list); 
          e != list_end (&all_list); e = list_next (e)) {
@@ -136,10 +133,8 @@ struct thread *thread_get_from_tid(tid_t tid) {
 }
 
 
+/* Get child thread for given list with tid child_tid. */
 struct child *thread_get_child_elem(struct list *lst, tid_t child_tid) {
-    /* For added safety, assert tid does not belong to idle or init thread. */
-    // printf("init:%d us:%d, idle:%d\n", initial_thread->tid, tid, idle_thread->tid);
-    
     struct list_elem *e;
     for (e = list_begin (lst); 
          e != list_end (lst); e = list_next (e)) {
@@ -150,10 +145,9 @@ struct child *thread_get_child_elem(struct list *lst, tid_t child_tid) {
     return NULL;
 }
 
+
+/* Remove child thread for given list with tid child_tid. */
 void thread_remove_child_elem(struct list *lst, tid_t child_tid) {
-    /* For added safety, assert tid does not belong to idle or init thread. */
-    // printf("init:%d us:%d, idle:%d\n", initial_thread->tid, tid, idle_thread->tid);
-    
     struct list_elem *e;
     for (e = list_begin (lst); 
          e != list_end (lst); e = list_next (e)) {
@@ -393,8 +387,11 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     if (!thread_mlfqs) {
         t->parent_tid = thread_current()->tid;
 
+        /* When creating a child, make it known to the parent. */
         struct child* new_child = malloc(sizeof(struct child));
         new_child->tid = tid;
+        /* Default exit code. If thread exits correctly, it *will* be 
+           overwritten */
         new_child->exit_code = -1;
 
         list_push_back(&thread_current()->children, &new_child->elem);

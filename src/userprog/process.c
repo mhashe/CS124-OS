@@ -55,10 +55,8 @@ tid_t process_execute(const char * file_name) {
     strlcpy(exec_fn, fn_copy, exec_fn_len + 1);
 
     /* Create a new thread to execute FILE_NAME. */
-    // printf("EXCUTING: %s\n", exec_fn);
     tid = thread_create(exec_fn, PRI_DEFAULT, start_process, fn_copy);
 
-    // printf("EXCUTED: %s\n", exec_fn);
     free(exec_fn);
     if (tid == TID_ERROR)
         free(fn_copy);
@@ -103,7 +101,7 @@ static void start_process(void *file_name_) {
     This function will be implemented in problem 2-2.  For now, it does
     nothing. */
 int process_wait(tid_t child_tid) {
-    // TOOD: if we are already waiting for this child_tid, return -1
+    // TODO: if we are already waiting for this child_tid, return -1
 
     /* Check if the child had the current thread as the parent in the past. */
     struct thread *parent = thread_current();
@@ -113,22 +111,16 @@ int process_wait(tid_t child_tid) {
     if (c == NULL)
         return -1;
 
-    /* If TID corresponds to a past child. */
+    
     struct thread *child = thread_get_from_tid(child_tid);
+    /* If TID corresponds to a past child. */
     if (c && child == NULL) {
         thread_remove_child_elem(&parent->children, child_tid);
         return c->exit_code;
     }
-    
 
-    /* Block/wait for sema to be released by child. */
-    /* Create semaphore and give it to child. */
-    // struct semaphore sema;
-    // sema_init(&sema, 0);
-    // child->parent_sem = &sema;
 
     /* Child is currently running. */
-    // printf("SEMA DOWN: %s, %d\n", thread_current()->name, thread_tid());
     child->parent_waiting = true;
     enum intr_level old_level;
     old_level = intr_disable();
@@ -138,13 +130,6 @@ int process_wait(tid_t child_tid) {
     parent = thread_current();
     c = thread_get_child_elem(&parent->children, child_tid);
     return c->exit_code;
-
-    // printf("Finished waiting\n");
-
-    // when child returns, get response code.
-    // if child terminated due to an expection, return -1
-    // else, return exit status
-    // return 0;
 }
 
 /*! Free the current process's resources. */
@@ -170,9 +155,7 @@ void process_exit(void) {
     }
 
     /* Allow writes and close open file. */
-    // file_allow_write(filesys_open(cur->name));
     file_close(cur->binary);
-    // printf("EXIT: %p\n", filesys_open(cur->name));
     printf("%s: exit(%d)\n", cur->name, cur->exit_code);
 
 
@@ -183,7 +166,6 @@ void process_exit(void) {
         thread_unblock(thread_get_from_tid(cur->parent_tid));  
     }
     
-    // TODO: free the cur thread struct....? or is that in thread_exit?
 }
 
 /*! Sets up the CPU for running user code in the current thread.
@@ -281,9 +263,6 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     struct thread *parent;
     struct child *c;
 
-    // printf("LOAD: %s\n", t->name);
-    // printf("LOAD_full: %s\n", file_name);
-
     /* Allocate and activate page directory. */
     t->pagedir = pagedir_create();
     if (t->pagedir == NULL) 
@@ -379,13 +358,14 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     success = true;
 
 done:
+    /* Release the parent who spawned us because they are waiting for our load 
+       status
+     */
     parent = thread_get_from_tid(t->parent_tid);
     c = thread_get_child_elem(&parent->children, t->tid);
     c->load_success = success;
     sema_up(&parent->success_sema);
     /* We arrive here whether the load is successful or not. */
-    // file_close(file);
-    // printf("DONE LOADING!\n");
     return success;
 }
 
@@ -495,12 +475,9 @@ static bool setup_stack(void **esp, const char *cmdline) {
     uint8_t *kpage;
     bool success = false;
 
-    // printf("SETUP STACK: %s\n", cmdline);
-
     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
     if (kpage != NULL) {
         success = install_page(((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-        // TODO: Temporary for minimum viable solution
         if (success)
             *esp = (void *) ((unsigned int) PHYS_BASE & 0xfffffffc);
         else {
@@ -535,9 +512,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
     }
 
     /* Word align on 4-byte boundary and convert to char** for convenience. */
-    // printf("Before align: %p\n", sp); 
     char **spp = (char **) ((unsigned int) sp & 0xfffffffc);
-    // printf("After align: %p\n", spp); 
 
 
     /* Copy pointers to arguments onto stack. */
@@ -548,24 +523,18 @@ static bool setup_stack(void **esp, const char *cmdline) {
     while (arg_index > 0) {
         arg_index--;
         spp--;
-        // printf("Putting %p into %p\n", arg_ptrs[arg_index], spp);
         *(char **) spp = (char *) arg_ptrs[arg_index];
     }
     spp--; *(char ***)spp = (spp + 1);
 
     /* Push number of arguments to the stack. */
-    // printf("Pushing num args: %d\n", num_args);
     spp--; *(int *)spp = num_args;
 
     /* Push 'fake' return address (since function will never return, only 
     exit). */
     spp--; *spp = NULL;
 
-    // printf("CMDLINE copy: %s, %d, %s\n", cmdline, cmdline_len, cmdline_copy);
 
-    // printf("POINT: %p, %p, dp: %d\n", *esp, spp, *esp - (void *)spp);
-    // hex_dump(0, (void *) spp, *esp - (void *)spp + 1, 1);
-    // printf("POINT: %p\n", *esp);
     *esp = (void *)spp;
 
     return success;

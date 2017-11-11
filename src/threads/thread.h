@@ -153,7 +153,7 @@ struct thread {
     struct lock *blocked_lock;          /*!< Lock which thread wants. */
     
     tid_t parent_tid;                   /*!< Parent thread id. */
-    bool parent_waiting;                /*!< Parent's is waiting. */
+    bool parent_waiting;                /*!< Parent is waiting. */
     struct list children;               /*!< List of children. */
     int exit_code;                      /*!< Exit code. */
 
