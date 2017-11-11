@@ -165,6 +165,7 @@ struct thread {
     /**@{*/
     uint32_t *pagedir;                  /*!< Page directory. */
     struct list fds;                    /*!< File descriptors. */
+    struct file *binary;                /*!< File thread was started from. */
     /**@{*/
 #endif
 

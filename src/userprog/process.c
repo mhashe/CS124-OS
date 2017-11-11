@@ -124,11 +124,8 @@ int process_wait(tid_t child_tid) {
     thread_block();
     intr_set_level(old_level);
 
-    /* Once here, child has finished executing and has an exit code. */
-
     parent = thread_current();
     c = thread_get_child_elem(&parent->children, child_tid);
-    thread_remove_child_elem(&parent->children, child_tid);
     return c->exit_code;
 
     // printf("Finished waiting\n");
@@ -162,7 +159,12 @@ void process_exit(void) {
         pagedir_destroy(pd);
     }
 
+    /* Allow writes and close open file. */
+    // file_allow_write(filesys_open(cur->name));
+    file_close(cur->binary);
+    // printf("EXIT: %p\n", filesys_open(cur->name));
     printf("%s: exit(%d)\n", cur->name, cur->exit_code);
+
 
     // printf("TRY SEMA UP\n");
     if (cur->parent_waiting) {
@@ -171,7 +173,6 @@ void process_exit(void) {
         thread_unblock(thread_get_from_tid(cur->parent_tid));  
     }
     
-
     // TODO: free the cur thread struct....? or is that in thread_exit?
 }
 
@@ -293,6 +294,10 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
         goto done; 
     }
 
+    /* Deny write permissions. */
+    file_deny_write(file);
+    t->binary = file;
+
     /* Read program headers. */
     file_ofs = ehdr.e_phoff;
     for (i = 0; i < ehdr.e_phnum; i++) {
@@ -363,7 +368,7 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
 
 done:
     /* We arrive here whether the load is successful or not. */
-    file_close(file);
+    // file_close(file);
     // printf("DONE LOADING!\n");
     return success;
 }

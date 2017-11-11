@@ -86,55 +86,55 @@ static void syscall_handler(struct intr_frame *f) {
     }
     
     switch(syscall_num) {
-        case SYS_HALT :
+        case SYS_HALT :         /* 0 */
             halt(f);
             break;
 
-        case SYS_EXIT :
+        case SYS_EXIT :         /* 1 */
             exit(f);
             break;
 
-        case SYS_EXEC :
+        case SYS_EXEC :         /* 2 */
             exec(f);
             break;
 
-        case SYS_WAIT :
+        case SYS_WAIT :         /* 3 */
             wait(f);
             break;
 
-        case SYS_CREATE :
+        case SYS_CREATE :       /* 4 */
             create(f);
             break;
 
-        case SYS_REMOVE :
+        case SYS_REMOVE :       /* 5 */
             remove(f);
             break;
 
-        case SYS_OPEN :
+        case SYS_OPEN :         /* 6 */
             open(f);
             break;
 
-        case SYS_FILESIZE :
+        case SYS_FILESIZE :     /* 7 */
             filesize(f);
             break;
 
-        case SYS_READ :
+        case SYS_READ :         /* 8 */
             read(f);
             break;
 
-        case SYS_WRITE :
+        case SYS_WRITE :        /* 9 */
             write(f);
             break;
 
-        case SYS_SEEK :
+        case SYS_SEEK :         /* 10 */
             seek(f);
             break;
 
-        case SYS_TELL :
+        case SYS_TELL :         /* 11 */
             tell(f);
             break;
 
-        case SYS_CLOSE :
+        case SYS_CLOSE :        /* 12 */
             close(f);
             break;
 
@@ -222,10 +222,18 @@ static void exec(struct intr_frame *f) {
     /* Verify arguments. */
     verify_pointer((uint32_t *) cmd_line);
     
+    // /* Deny writes. */
+    // open(f);
+    // lock_acquire(&filesys_io);
+    // struct file* file = filesys_open(cmd_line);
+    // lock_release(&filesys_io);
+    // file_deny_write(file);
 
     f->eax = process_execute(cmd_line);
-
     process_wait(f->eax);
+
+    // /* Re-enable write. */
+    // file_allow_write(file);
 
     // Temp
     // thread_exit();
@@ -403,7 +411,9 @@ static void write(struct intr_frame *f) {
     struct file* file = file_from_fd(fd)->file;
     if (file) {
         lock_acquire(&filesys_io);
-        f->eax = file_write(file, buffer, size);
+        int written = file_write(file, buffer, size);
+        f->eax = written;
+        // printf("%d\n", written);
         lock_release(&filesys_io);
     } else {
         /* Can't write to file. */
