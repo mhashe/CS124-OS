@@ -159,10 +159,7 @@ void process_exit(void) {
     printf("%s: exit(%d)\n", cur->name, cur->exit_code);
 
 
-    // printf("TRY SEMA UP\n");
     if (cur->parent_waiting) {
-        // printf("SEMA UP\n");
-        // TODO: get exit code set in exit() (sys call)
         thread_unblock(thread_get_from_tid(cur->parent_tid));  
     }
     

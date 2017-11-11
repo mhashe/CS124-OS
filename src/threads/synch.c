@@ -73,7 +73,7 @@ void sema_down(struct semaphore *sema) {
         if (is_interior(&thread_current()->elem))
             list_remove(&thread_current()->elem);
 
-        list_push_back(&sema->waiters, &thread_current()->elem);        
+        list_push_back(&sema->waiters, &thread_current()->elem);
         thread_block();
     }
 

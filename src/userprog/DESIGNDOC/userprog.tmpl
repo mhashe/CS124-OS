@@ -139,6 +139,9 @@ We added the following fields to the thread struct:
     6. struct file *binary;
     File object for file which this thread was started from.
 
+    7. struct semaphore success_sema;
+    Ensures parent's exec doesn't return until child loads.
+
 
 Additionally, we defined the following structs: 
 
@@ -207,7 +210,7 @@ return errors codes (-1 for read, 0 for write).
 >> for a system call that only copies 2 bytes of data?  Is there room
 >> for improvement in these numbers, and how much?
 
-Neglecting calls to pagedir_get_page() that occur from validating our           TODO
+Neglecting calls to pagedir_get_page() that occur from validating our
 syscall inputs, either load causes at most two and at fewest one page
 install, which calls pagedir_get_page(). Since each of these calls could
 fit on a single page, we could limit ourselves to one page inspection by 

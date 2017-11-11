@@ -107,14 +107,14 @@ void print_ready_queue(void) {
 }
 
 
-/* Prints name, priority, and recent cpu for all threads. */
+/* Prints name, priority, recent cpu, and status for all threads. */
 void print_all_priorities(void) {
     struct list_elem *e;
     for (e = list_begin (&all_list); 
          e != list_end (&all_list); e = list_next (e)) {
         struct thread *t = list_entry(e, struct thread, allelem);
         if (t != idle_thread)
-            printf("%s-p%d-i%d  ", t->name, t->priority, t->tid);
+            printf("%s-p%d-i%d-s%d  ", t->name, t->priority, t->tid, t->status);
     }
     printf("\n");
 }
@@ -425,7 +425,7 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     thread_unblock(t);
 
     /* If new thread has higher priority than current thread, yield to it. */
-    if (priority > thread_current()->priority) {
+    if (priority >= thread_current()->priority) {
         thread_yield();
     }
 
