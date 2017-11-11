@@ -495,7 +495,6 @@ void thread_exit(void) {
 #ifdef USERPROG
     process_exit();
 #endif
-
     /* Remove thread from all threads list, set our status to dying,
        and schedule another process.  That process will destroy us
        when it calls thread_schedule_tail(). */
@@ -505,7 +504,8 @@ void thread_exit(void) {
         /* Make sure all locks are released, if they aren't already. */
         release_all_resources();
         ASSERT(list_empty(&thread_current()->locks));
-        // ASSERT(list_empty(&thread_current()->fds));
+        ASSERT(list_empty(&thread_current()->fds));
+        ASSERT(list_empty(&thread_current()->children));
     }
     thread_current()->status = THREAD_DYING;
     schedule();
@@ -533,9 +533,20 @@ void release_all_resources(void) {
     e = list_begin(&thread_current()->fds);
     while (e != list_end(&thread_current()->fds)) {
         struct file_des *fdes = list_entry(e, struct file_des, elem);
-
+        e_prev = e;
         e = list_next(e);
+        list_remove(e_prev);
         free(fdes);
+    }
+
+    /* Close all children. */
+    e = list_begin(&thread_current()->children);
+    while (e != list_end(&thread_current()->children)) {
+        struct child *cld = list_entry(e, struct child, elem);
+        e_prev = e;
+        e = list_next(e);
+        list_remove(e_prev);
+        free(cld);
     }
 }
 
