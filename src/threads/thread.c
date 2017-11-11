@@ -13,6 +13,7 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 #include "../devices/timer.h"
+
 #ifdef USERPROG
 #include "userprog/process.h"
 #include "filesys/file.h"
@@ -387,17 +388,19 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     /* Initialize thread. */
     init_thread(t, name, priority);
     tid = t->tid = allocate_tid();
-    t->parent_tid = thread_current()->tid;
 
-    struct child* new_child = malloc(sizeof(struct child));
-    new_child->tid = tid;
-    new_child->exit_code = -1;
+    /* Extra initialization for mlfqs. */
+    if (!mlfqs) {
+        t->parent_tid = thread_current()->tid;
 
-    list_push_back(&thread_current()->children, &new_child->elem);
+        struct child* new_child = malloc(sizeof(struct child));
+        new_child->tid = tid;
+        new_child->exit_code = -1;
 
-    /* A threaded created (outside of the init thread) inherits its nice and 
-    recent_cpu values from its parent, and sets its priority from them. */
-    if (thread_mlfqs) {
+        list_push_back(&thread_current()->children, &new_child->elem);
+
+        /* A threaded created (outside of the init thread) inherits its nice and 
+        recent_cpu values from its parent, and sets its priority from them. */
         t->nice = thread_get_nice();
         t->recent_cpu = thread_current()->recent_cpu;
         thread_update_priority_in_mlfqs(t, NULL);
