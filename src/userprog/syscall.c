@@ -1,30 +1,32 @@
 #include "userprog/syscall.h"
 #include "userprog/pagedir.h"
 #include "userprog/process.h"
-#include <stdio.h>
-#include <syscall-nr.h>
-#include <stdbool.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "threads/thread.h"
+#include <stdio.h>
+#include <syscall-nr.h>
+#include <stdbool.h>
 
+
+#include "devices/input.h"    /* For inpute_getc. */
 #include "devices/shutdown.h" /* For halt. */
-#include "filesys/filesys.h"  /* For filesys ops. */
 #include "filesys/file.h"     /* For file ops. */
-#include "threads/malloc.h"    /* For malloc. */
-#include "filesys/off_t.h" /* For off_t. */
-#include "filesys/file.h" /* For file_length, seek, tell. */
-#include "threads/synch.h" /* For locks. */
-#include "devices/input.h" /* For inpute_getc. */
+#include "filesys/filesys.h"  /* For filesys ops. */
+#include "threads/malloc.h"   /* For malloc. */
+#include "filesys/off_t.h"    /* For off_t. */
+#include "threads/synch.h"    /* For locks. */
 
 
 /* Handler function. */
 static void syscall_handler(struct intr_frame *);
 
+
 /* Helper functions. */
 static uint32_t get_arg(struct intr_frame *f, int offset);
 static struct file_des *file_from_fd(int fd);
+
 
 /* Handlers for Project 4. */
 static void     halt(struct intr_frame *f);
@@ -41,94 +43,65 @@ static void     seek(struct intr_frame *f);
 static void     tell(struct intr_frame *f);
 static void    close(struct intr_frame *f);
 
+
+/* Max of two numbers. */
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
+
 
 /*! Lock for performing filesystems operations. */
 static struct lock filesys_io;
 
+
+/* Module init function. */
 void syscall_init(void) {
+    /* Register syscall handler. */
     intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
 
+    /* Initialize lock. */
     lock_init(&filesys_io);
 }
+
 
 /* Checks if given pointer is in user space and in a mapped address. */
 uint32_t* verify_pointer(uint32_t* p) {
     if (is_user_vaddr(p) && pagedir_get_page(thread_current()->pagedir, p)) {
         /* Valid pointer, continue. */
         return p;
-    } else {
-        /* Invalid pointer, exit. */
-        thread_exit();
     }
+    /* Invalid pointer, exit. */
+    thread_exit();
 }
 
 
+/* Entry point for syscalls. */
 static void syscall_handler(struct intr_frame *f) {
     /* Make sure top of variable is valid. */
     verify_pointer(((uint32_t*)f->esp) + 1);
     uint32_t *stack = (uint32_t*)f->esp;
-
-    if (stack == NULL) 
+    if (!stack)  {
         thread_exit();
+    }
+
+    /* Dispatch syscall to appropriate handler. */
     int syscall_num =  *(stack);
-    
     switch(syscall_num) {
-        case SYS_HALT :         /* 0 */
-            halt(f);
-            break;
+        /* Syscalls for Project 4. */
+        case SYS_HALT :     halt(f);     break;     /* 0 */
+        case SYS_EXIT :     exit(f);     break;     /* 1 */
+        case SYS_EXEC :     exec(f);     break;     /* 2 */
+        case SYS_WAIT :     wait(f);     break;     /* 3 */
+        case SYS_CREATE :   create(f);   break;     /* 4 */
+        case SYS_REMOVE :   remove(f);   break;     /* 5 */
+        case SYS_OPEN :     open(f);     break;     /* 6 */
+        case SYS_FILESIZE : filesize(f); break;     /* 7 */
+        case SYS_READ :     read(f);     break;     /* 8 */
+        case SYS_WRITE :    write(f);    break;     /* 9 */
+        case SYS_SEEK :     seek(f);     break;     /* 10 */
+        case SYS_TELL :     tell(f);     break;     /* 11 */
+        case SYS_CLOSE :    close(f);    break;     /* 12 */
 
-        case SYS_EXIT :         /* 1 */
-            exit(f);
-            break;
-
-        case SYS_EXEC :         /* 2 */
-            exec(f);
-            break;
-
-        case SYS_WAIT :         /* 3 */
-            wait(f);
-            break;
-
-        case SYS_CREATE :       /* 4 */
-            create(f);
-            break;
-
-        case SYS_REMOVE :       /* 5 */
-            remove(f);
-            break;
-
-        case SYS_OPEN :         /* 6 */
-            open(f);
-            break;
-
-        case SYS_FILESIZE :     /* 7 */
-            filesize(f);
-            break;
-
-        case SYS_READ :         /* 8 */
-            read(f);
-            break;
-
-        case SYS_WRITE :        /* 9 */
-            write(f);
-            break;
-
-        case SYS_SEEK :         /* 10 */
-            seek(f);
-            break;
-
-        case SYS_TELL :         /* 11 */
-            tell(f);
-            break;
-
-        case SYS_CLOSE :        /* 12 */
-            close(f);
-            break;
-
-        default :
-            /* Invalid syscall. */
-            thread_exit();
+        /* Invalid syscall. */
+        default : thread_exit();
     }
 }
 
@@ -142,10 +115,12 @@ static uint32_t get_arg(struct intr_frame *f, int offset) {
 
     /* Obtain stack pointer. */
     uint32_t *stack = (uint32_t*)f->esp;
+
+    /* Find argument and ensure validity. */
     stack += offset;
     verify_pointer(stack + 1);
 
-    /* Move to offset. */
+    /* Return objectas uint32_t. */
     return *stack;
 }
 
@@ -153,26 +128,30 @@ static uint32_t get_arg(struct intr_frame *f, int offset) {
 /* Each thread maintains a list of its file descriptors. Get the file object 
    associated with the file descriptor. */
 static struct file_des *file_from_fd(int fd) {
+    /* 0, 1 reserved for STDIN, STDOUT. */
+    ASSERT(fd > STDIN_FILENO);
     ASSERT(fd > STDOUT_FILENO);
 
+    /* Iterate over file descriptors, return if one matches. */
     struct list_elem *e;
-    struct thread *cur = thread_current();
+    struct list *lst = &thread_current()->fds;
     struct file_des* fd_s;
 
-    for (e = list_begin (&cur->fds); 
-         e != list_end (&cur->fds); e = list_next(e)) {
+    for (e = list_begin(lst); e != list_end(lst); e = list_next(e)) {
+        /* File descriptor object. */
         fd_s = list_entry(e, struct file_des, elem);
-        // printf("%p\n", e);
-        if (fd_s->fd == fd)
+
+        /* If a match, return. */
+        if (fd_s->fd == fd) {
             return fd_s;
+        }
     }
 
+    /* Invalid file descriptor; terminate offending process. */
     thread_exit();
 }
 
-/* Terminates Pintos by calling shutdown_power_off() (declared in
-   devices/shutdown.h). This should be seldom used, because you lose some
-   information about possible deadlock situations, etc. */
+/* Terminates Pintos by calling shutdown_power_off(). */
 static void halt(struct intr_frame *f UNUSED) {
     /* Terminate Pintos. */
     shutdown_power_off();
@@ -180,41 +159,36 @@ static void halt(struct intr_frame *f UNUSED) {
 
 /* Terminates the current user program, returning status to the kernel. If the
    process's parent waits for it (see below), this is the status that will be
-   returned. Conventionally, a status of 0 indicates success and nonzero values
-   indicate errors. */
+   returned. */
 static void exit(struct intr_frame *f) {
     /* Parse arguments. */
     int status = get_arg(f, 1);
 
+    /* If process has no parent, just exit. */
     struct thread *parent = thread_get_from_tid(thread_current()->parent_tid);
-
-    if (parent == NULL) {
-        f->eax = status;
+    if (!parent) {
         thread_exit();
     }
 
+    /* Parent keeps track of object representing child thread. */
     struct child *c = thread_get_child_elem(&parent->children, 
                                             thread_current()->tid);
-
-    ASSERT(c != NULL);
+    ASSERT(c);
 
     /* Let parent know of our exit status. */
     c->exit_code = status;
+
     /* Keep track of our own exit status. */
     thread_current()->exit_code = status;
-    /* Return the status. */
-    f->eax = status;
 
+    /* Terminate program. */
     thread_exit();
 }
 
 
 /* Runs the executable whose name is given in cmd_line, passing any given
-   arguments, and returns the new process's program id (pid). Must return pid
-   -1, which otherwise should not be a valid pid, if the program cannot load or
-   run for any reason. Thus, the parent process cannot return from the exec
-   until it knows whether the child process successfully loaded its executable.
-   Uses synchronization. */
+   arguments, and returns the new process's program id (pid). Returns -1
+   in case of error. */
 static void exec(struct intr_frame *f) {
     /* Parse arguments. */
     const char* cmd_line = (const char*) get_arg(f, 1);
@@ -224,13 +198,17 @@ static void exec(struct intr_frame *f) {
 
     /* Exec program. */
     f->eax = process_execute(cmd_line);
-    process_wait(f->eax);
 
+    /* Wait until program finishes. */
+    process_wait(f->eax); // TODO
+
+    /* Check load_success flag. */
     sema_down(&thread_current()->success_sema);
     struct child *c = thread_get_child_elem(&thread_current()->children, 
                                             f->eax);
-    if (!c->load_success)
+    if (!c->load_success) {
         f->eax = -1;
+    }
 
 }
 
