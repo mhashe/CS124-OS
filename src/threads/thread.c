@@ -504,21 +504,26 @@ void thread_exit(void) {
 void release_all_resources(void) {
     ASSERT(intr_get_level() == INTR_OFF);
     struct list_elem *e;
+    struct list_elem *e_prev;
 
     /* Release all locks. */
     e = list_begin(&thread_current()->locks);
     while (e != list_end(&thread_current()->locks)) {
         struct lock *l = list_entry(e, struct lock, elem);
+        e_prev = e;
         e = list_next(e);
         lock_release(l);
+        list_remove(e_prev);
     }
 
     /* Close all file descriptors. */
     e = list_begin(&thread_current()->fds);
     while (e != list_end(&thread_current()->fds)) {
         struct file_des *fdes = list_entry(e, struct file_des, elem);
+        e_prev = e;
         e = list_next(e);
         free(fdes);
+        list_remove(e_prev);
     }
 }
 
@@ -782,6 +787,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
         list_init(&t->locks);
         t->blocked_lock = NULL;
         list_init(&t->children);
+        t->exit_code = -1;
 
 #ifdef USERPROG
         list_init(&t->fds);

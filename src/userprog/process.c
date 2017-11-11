@@ -133,6 +133,7 @@ int process_wait(tid_t child_tid) {
 void process_exit(void) {
     struct thread *cur = thread_current();
     // printf("EXITING: %s\n", cur->name);
+
     uint32_t *pd;
 
     /* Destroy the current process's page directory and switch back
@@ -150,6 +151,8 @@ void process_exit(void) {
         pagedir_activate(NULL);
         pagedir_destroy(pd);
     }
+
+    printf("%s: exit(%d)\n", cur->name, cur->exit_code);
 
     // printf("TRY SEMA UP\n");
     if (cur->parent_waiting) {

@@ -54,11 +54,15 @@ void syscall_init(void) {
 }
 
 uint32_t* verify_pointer(uint32_t* p) {
+    // printf("%s: %d\n", thread_current()->name, thread_current()->exit_code);
+    // printf("%p\n", p);
     if (is_user_vaddr(p)) {
+        // printf("why\n");
         /* Valid pointer, continue. */
         return p;
     } else {
         /* Invalid pointer, exit. */
+        // printf("EXITING\n");
         thread_exit();
     }
     // uint32_t* vp = (uint32_t*)pagedir_get_page(thread_current()->pagedir, p);
@@ -68,13 +72,14 @@ uint32_t* verify_pointer(uint32_t* p) {
 
 
 static void syscall_handler(struct intr_frame *f) {
-    uint32_t *stack = verify_pointer((uint32_t*)f->esp);
+    verify_pointer(((uint32_t*)f->esp) + 1);
+    uint32_t *stack = (uint32_t*)f->esp;
     // TODO Handle
     if (stack == NULL) 
         thread_exit();
     int syscall_num =  *(stack);
-    // hex_dump(0, stack-128, 256, true);
     // printf("system call %d!\n", syscall_num);
+    // hex_dump(0, stack-128, 256, true);
     if (syscall_num != 9) {
         // printf("system call %d!\n", syscall_num);
     }
@@ -148,9 +153,11 @@ static uint32_t get_arg(struct intr_frame *f, int offset) {
     /* Obtain stack pointer. */
     uint32_t *stack = (uint32_t*)f->esp;
     // hex_dump(0, stack, 100, true);
+    stack += offset;
+    verify_pointer(stack + 1);
 
     /* Move to offset. */
-    return *(stack + offset);
+    return *stack;
 }
 
 
@@ -194,7 +201,7 @@ static void exit(struct intr_frame *f) {
     ASSERT(c != NULL);
 
     c->exit_code = status;
-    printf("%s: exit(%d)\n", thread_current()->name, status);
+    thread_current()->exit_code = status;
 
     /* Status code returned to kernel; TODO when writing wait. */
     f->eax = status;
