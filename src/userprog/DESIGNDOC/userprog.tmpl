@@ -8,18 +8,22 @@
 
 >> Fill in the names and email addresses of your group members.
 
-FirstName LastName <email@domain.example>
-FirstName LastName <email@domain.example>
-FirstName LastName <email@domain.example>
+Vaibhav Anand <vanand@caltech.edu>
+Nikhil  Gupta <nkgupta@caltech.edu>
+Michael Hashe <mhashe@caltech.edu>
+
 
 >> Specify how many late tokens you are using on this assignment:  
+
+1 late token.
+
 
 >> What is the Git repository and commit hash for your submission?
    (You only need to include the commit-hash in the file you submit
    on Moodle.)
 
-   Repository URL:  
-   commit ...
+   Repository URL:  https://github.com/MichaelHashe/CS124-OS
+   commit        :  
 
 ---- PRELIMINARIES ----
 
@@ -42,8 +46,16 @@ which parts.
 >> L1: How many hours did each team member spend on this assignment?
    Make sure that each member's total time is listed.
 
+Vaibhav: X hours
+Nikhil : Y hours
+Michael: Z hours
+
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
+
+Vaibhav: argument passing, syscall wait()
+Nikhil:  syscall wait(), [other syscalls..., deny writes?]
+Michael: [other syscalls..., deny writes?]
 
                            ARGUMENT PASSING
                            ================
@@ -54,19 +66,44 @@ which parts.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+No structs were added or modified for this section.
+
 ---- ALGORITHMS ----
 
 >> A2: Briefly describe how you implemented argument parsing.  How do
 >> you arrange for the elements of argv[] to be in the right order?
 >> How do you avoid overflowing the stack page?
 
+The requirement is that the pointers are pushed representing args from right 
+to left. To make this easier, since parsing is left to right, a temporary 
+array of pointers was kept.
+
+The command was parsed and pushed to the stack from left to right, 
+while the pointers were added to the array. Then, the array was iterated in 
+reverse while its pointers were pushed to the stack such that pointers were 
+pushed representing args from right to left.
+
+To avoid overflowing, the length of the commandline was limited to 128 
+characters/bytes since this is the maximum limit that Pintos will accept.
+
 ---- RATIONALE ----
 
 >> A3: Why does Pintos implement strtok_r() but not strtok()?
 
+The strtok_r() function is a reentrant version of strtok(). This means that 
+its extra argument is used to store state of the splitting the string rather 
+than returning a local variable of it. The retantrant version can be not 
+only simpler in this manner, but also allow multiple states of splitting 
+strings to be maintained and manipulated at once.
+
 >> A4: In Pintos, the kernel separates commands into a executable name
 >> and arguments.  In Unix-like systems, the shell does this
 >> separation.  Identify at least two advantages of the Unix approach.
+
+By parsing the commands in the shell rather than kernel, it allows the 
+parsing to be done differently based on the application (shell) and it 
+makes the kernel lighter (faster).
+
 
                              SYSTEM CALLS
                              ============
@@ -76,6 +113,17 @@ which parts.
 >> B1: Copy here the declaration of each new or changed `struct' or
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
+
+We added the following fields to the thread struct:
+    1. tid_t parent_tid;  
+    The thread id of the parent of self
+    
+    2. bool parent_waiting; 
+    Whether parent of self is waiting for self to finish 
+
+    3. struct list children;
+    The a linked list of threads that are children of self. Contains 
+    process id info as well as status code if it has exited. 
 
 >> B2: Describe how file descriptors are associated with open files.
 >> Are file descriptors unique within the entire OS or just within a
@@ -95,6 +143,16 @@ which parts.
 
 >> B5: Briefly describe your implementation of the "wait" system call
 >> and how it interacts with process termination.
+
+To implement this, we had parents set a boolean (flag) in their child 
+process before blocking. Then, when the child process exits, it checks if 
+this flag is true; if so, it unblocks its parent (t->parent_tid).
+
+In the case that the child_tid passed was invalid, we return -1, and if 
+the child already exited, we stored the exit status codes of the children 
+in parent->children.
+
+Say something else?                                                             TODO
 
 >> B6: Any access to user program memory at a user-specified address
 >> can fail due to a bad pointer value.  Such accesses must cause the
@@ -156,6 +214,10 @@ penalized.  We can't fix things until we know about them.  :-)
 >> Is there some particular fact or hint we should give students in
 >> future quarters to help them solve the problems?  Conversely, did you
 >> find any of our guidance to be misleading?
+
+The Pintos documentation recommends to implement argument passing in 
+process_execute(), which is not nearly as convenient as inside setup_stack() 
+(which was also discovered on Piazza).
 
 >> Do you have any suggestions for the instructor and/or TAs to more
 >> effectively assist students, either for future quarters or the remaining
