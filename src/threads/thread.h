@@ -141,6 +141,10 @@ struct thread {
                                              when elevated. */
     struct list locks;                  /*!< Locks which thread owns. */
     struct lock *blocked_lock;          /*!< Lock which thread wants. */
+    
+    tid_t parent_tid;                   /*!< Parent thread id. */
+    bool parent_waiting;                /*!< Parent's is waiting. */
+    int child_exit_code;                /*!< Exit code of child thread. */
 
     /*! Shared between thread.c and synch.c. */
     /**@{*/
@@ -211,6 +215,8 @@ bool thread_queue_compare(const struct list_elem *a,
                              void *aux UNUSED);
 
 void thread_defer_to_max_priority(void);
+
+struct thread *thread_get_from_tid(tid_t tid);
 
 #endif /* threads/thread.h */
 
