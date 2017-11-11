@@ -89,9 +89,25 @@ static void start_process(void *file_name_) {
     This function will be implemented in problem 2-2.  For now, it does
     nothing. */
 int process_wait(tid_t child_tid UNUSED) {
-    // if TID is invalid, return -1
-    // if not a child of current_thread(), return -1
-    // if we are already waiting for this child_tid, return -1
+    // TOOD: if we are already waiting for this child_tid, return -1
+
+    /* If TID is invalid, return -1. */
+    struct thread *child = thread_get_from_tid(child_tid);
+    if (child == NULL)
+        return -1;
+    
+    /* If not a child of current_thread(), return -1. */
+    if (child->parent_tid != thread_tid())
+        return -1;
+    
+    /* Create semaphore and give it to child. */
+    struct semaphore *sema;
+    sema_init(sema, 0);
+    child->parent_sem = sema;
+
+    /* Block/wait for sema to be released by child. */
+    sema_up(sema);
+
 
     // when child returns, get response code.
     // if child terminated due to an expection, return -1
@@ -120,6 +136,15 @@ void process_exit(void) {
         pagedir_activate(NULL);
         pagedir_destroy(pd);
     }
+
+    /* Wake parent up if it is waiting for self to exit, and give exit code. */
+    if (cur->parent_sem != NULL) {
+        sema_up(cur->parent_sem);
+        // TODO: get exit code set in exit() (sys call)
+        thread_get_from_tid(cur->parent_tid)->child_exit_code = 0;  
+    }
+
+    // TODO: free the cur thread struct....? or is that in thread_exit?
 }
 
 /*! Sets up the CPU for running user code in the current thread.

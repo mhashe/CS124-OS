@@ -117,6 +117,23 @@ void print_all_priorities(void) {
 }
 
 
+// TODO: Comment
+struct thread *thread_get_from_tid(tid_t tid) {
+    /* For added safety, assert tid does not belong to idle or init thread. */
+    assert(initial_thread->tid != tid);
+    assert(idle_thread->tid != tid);
+
+    struct list_elem *e;
+    for (e = list_begin (&all_list); 
+         e != list_end (&all_list); e = list_next (e)) {
+        struct thread *t = list_entry(e, struct thread, elem);
+        if (t->tid == tid)
+            return t;
+    }
+    return NULL;
+}
+
+
 /* Mimics a "less-than" function*/
 bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,
@@ -737,6 +754,11 @@ static void init_thread(struct thread *t, const char *name, int priority) {
         t->blocked_lock = NULL;
 #ifdef USERPROG
         list_init(&t->fds);
+
+        // TOOD: move this out of user-prog? for kernel threads too?
+        /* Initialize variables for parent-child interaction */
+        t->parent_tid = thread_current()->tid;
+        t->parent_sem = NULL;
 #endif
     }
 
