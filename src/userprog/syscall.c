@@ -251,6 +251,9 @@ static void open(struct intr_frame *f) {
     /* Parse arguments. */
     const char* file_name = (const char*) get_arg(f, 1);
 
+    /* Verify arguments. */
+    verify_pointer((uint32_t *) file_name);
+
     /* Count of file descriptors for error checking. */
     size_t count_start = list_size(&thread_current()->fds);
 
