@@ -389,8 +389,8 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     init_thread(t, name, priority);
     tid = t->tid = allocate_tid();
 
-    /* Extra initialization for mlfqs. */
-    if (!mlfqs) {
+    /* Non-mflqs initialization. */
+    if (!thread_mlfqs) {
         t->parent_tid = thread_current()->tid;
 
         struct child* new_child = malloc(sizeof(struct child));
@@ -398,7 +398,10 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
         new_child->exit_code = -1;
 
         list_push_back(&thread_current()->children, &new_child->elem);
+    }
 
+    /* Mlfqss specific implementation. */
+    if (thread_mlfqs) {
         /* A threaded created (outside of the init thread) inherits its nice and 
         recent_cpu values from its parent, and sets its priority from them. */
         t->nice = thread_get_nice();
@@ -512,15 +515,17 @@ void thread_exit(void) {
     struct list_elem *e_prev;
 
     /* Release all locks. */
-    e = list_begin(&thread_current()->locks);
-    while (e != list_end(&thread_current()->locks)) {
-        struct lock *l = list_entry(e, struct lock, elem);
-        e_prev = e;
-        e = list_next(e);
-        lock_release(l);
-        list_remove(e_prev);
+    if (!thread_mlfqs) {
+        e = list_begin(&thread_current()->locks);
+        while (e != list_end(&thread_current()->locks)) {
+            struct lock *l = list_entry(e, struct lock, elem);
+            e_prev = e;
+            e = list_next(e);
+            lock_release(l);
+            list_remove(e_prev);
+        }
+        ASSERT(list_empty(&thread_current()->locks));
     }
-    ASSERT(list_empty(&thread_current()->locks));
 
 #ifdef USERPROG
     /* Close all file descriptors. */
