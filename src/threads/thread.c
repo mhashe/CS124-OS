@@ -494,24 +494,26 @@ void thread_exit(void) {
 
 #ifdef USERPROG
     process_exit();
+
+    /* Make sure all locks are released, if they aren't already. */
+    release_all_resources();
+    ASSERT(list_empty(&thread_current()->locks));
+    ASSERT(list_empty(&thread_current()->fds));
+    ASSERT(list_empty(&thread_current()->children));
 #endif
+
     /* Remove thread from all threads list, set our status to dying,
        and schedule another process.  That process will destroy us
        when it calls thread_schedule_tail(). */
     intr_disable();
     list_remove(&thread_current()->allelem);
-    if (!thread_mlfqs) {
-        /* Make sure all locks are released, if they aren't already. */
-        release_all_resources();
-        ASSERT(list_empty(&thread_current()->locks));
-        ASSERT(list_empty(&thread_current()->fds));
-        ASSERT(list_empty(&thread_current()->children));
-    }
+
     thread_current()->status = THREAD_DYING;
     schedule();
     NOT_REACHED();
 }
 
+#ifdef USERPROG
 /*! Causes current thread to release all locks and semaphores
     it posses. */
 void release_all_resources(void) {
@@ -554,6 +556,7 @@ void release_all_resources(void) {
         free(cld);
     }
 }
+#endif
 
 
 /*! Yields the CPU.  The current thread is not put to sleep and
