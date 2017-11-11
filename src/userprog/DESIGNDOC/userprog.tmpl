@@ -93,7 +93,7 @@ while the pointers were added to the array. Then, the array was iterated in
 reverse while its pointers were pushed to the stack such that pointers were 
 pushed representing args from right to left.
 
-To avoid overflowing, the length of the commandline was limited to 128 
+To avoid overflowing, the length of the command line was limited to 128 
 characters/bytes since this is the maximum that Pintos will accept.
 
 
@@ -304,12 +304,14 @@ ID.
 After C exits: The parent keeps a list of all its past children. This works
 because thread IDs are not reused so it can uniquely identity a child. Given the
 ID, the parent checks if that ID has ever been a child. If it has, it can return
-the childs exit status. It then overwrites that exit code to -1 for subsequent
+the child's exit status. It then overwrites that exit code to -1 for subsequent
 calls. The malloc'ed memory is then freed on thread exit.
 
 If P has terminated, on exit, the child sees if its parent is still alive. If it
 isn't, then it doesn't bother setting any of the status flags that the parent
 owns.
+
+As far as we can tell, all special cases are handled by this design.
 
 ---- RATIONALE ----
 
@@ -326,7 +328,7 @@ straightforward way to do it.
 
 The design for file descriptors lets every thread know exactly which file
 descriptors is owns. In addition, there is a one to one mapping of fd and file
-objects, to reduce completexity. At the same time, this might add a little
+objects, to reduce complexity. At the same time, this might add a little
 overhead.
 
 >> B11: The default tid_t to pid_t mapping is the identity mapping.
