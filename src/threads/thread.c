@@ -109,9 +109,9 @@ void print_all_priorities(void) {
     struct list_elem *e;
     for (e = list_begin (&all_list); 
          e != list_end (&all_list); e = list_next (e)) {
-        struct thread *t = list_entry(e, struct thread, elem);
+        struct thread *t = list_entry(e, struct thread, allelem);
         if (t != idle_thread)
-            printf("n%s-p%d-c%d  ", t->name, t->priority, t->recent_cpu);
+            printf("n%s-p%d-i%d  ", t->name, t->priority, t->tid);
     }
     printf("\n");
 }
@@ -120,13 +120,13 @@ void print_all_priorities(void) {
 // TODO: Comment
 struct thread *thread_get_from_tid(tid_t tid) {
     /* For added safety, assert tid does not belong to idle or init thread. */
-    assert(initial_thread->tid != tid);
-    assert(idle_thread->tid != tid);
+    ASSERT(initial_thread->tid != tid);
+    ASSERT(idle_thread->tid != tid);
 
     struct list_elem *e;
     for (e = list_begin (&all_list); 
          e != list_end (&all_list); e = list_next (e)) {
-        struct thread *t = list_entry(e, struct thread, elem);
+        struct thread *t = list_entry(e, struct thread, allelem);
         if (t->tid == tid)
             return t;
     }
@@ -264,6 +264,11 @@ void thread_tick(void) {
         thread_update_mlfqs_state();
     }
 
+    if (timer_ticks() % TIMER_FREQ == 0) {
+        printf("Current: %d vs. idle:%d\n", thread_tid(), idle_thread->tid);
+        print_all_priorities();
+    }
+
     /* Add threads to ready queue that have been blocked and are due to be 
     woken up. */
     thread_foreach((thread_action_func *) &thread_wake, NULL);
@@ -358,6 +363,7 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     /* Initialize thread. */
     init_thread(t, name, priority);
     tid = t->tid = allocate_tid();
+    t->parent_tid = thread_current()->tid;
 
     /* A threaded created (outside of the init thread) inherits its nice and 
     recent_cpu values from its parent, and sets its priority from them. */
@@ -757,7 +763,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
 
         // TOOD: move this out of user-prog? for kernel threads too?
         /* Initialize variables for parent-child interaction */
-        t->parent_tid = thread_current()->tid;
+        t->parent_tid = 1;
         t->parent_sem = NULL;
 #endif
     }

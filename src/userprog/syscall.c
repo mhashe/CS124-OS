@@ -170,7 +170,7 @@ static void exit(struct intr_frame *f) {
 
     /* Status code returned to kernel; TODO when writing wait. */
     f->eax = status;
-    shutdown_power_off();
+    // shutdown_power_off();
     thread_exit();
 }
 

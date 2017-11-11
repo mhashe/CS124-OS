@@ -14,6 +14,7 @@
 #include "threads/flags.h"
 #include "threads/init.h"
 #include "threads/interrupt.h"
+#include "threads/synch.h"
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
@@ -88,7 +89,7 @@ static void start_process(void *file_name_) {
 
     This function will be implemented in problem 2-2.  For now, it does
     nothing. */
-int process_wait(tid_t child_tid UNUSED) {
+int process_wait(tid_t child_tid) {
     // TOOD: if we are already waiting for this child_tid, return -1
 
     /* If TID is invalid, return -1. */
@@ -96,23 +97,25 @@ int process_wait(tid_t child_tid UNUSED) {
     if (child == NULL)
         return -1;
     
-    /* If not a child of current_thread(), return -1. */
+    // If not a child of current_thread(), return -1. 
     if (child->parent_tid != thread_tid())
         return -1;
     
+
     /* Create semaphore and give it to child. */
-    struct semaphore *sema;
-    sema_init(sema, 0);
-    child->parent_sem = sema;
+    struct semaphore sema;
+    sema_init(&sema, 0);
+    child->parent_sem = &sema;
 
     /* Block/wait for sema to be released by child. */
-    sema_up(sema);
-
+    printf("SEMA DOWN: %s\n", thread_current()->name);
+    sema_down(&sema);
+    printf("Finished waiting\n");
 
     // when child returns, get response code.
     // if child terminated due to an expection, return -1
     // else, return exit status
-    while(1) {}
+    while(1);
     return -1;
 }
 
@@ -138,11 +141,15 @@ void process_exit(void) {
     }
 
     /* Wake parent up if it is waiting for self to exit, and give exit code. */
+    
+    printf("TRY SEMA UP\n");
     if (cur->parent_sem != NULL) {
+        printf("SEMA UP\n");
         sema_up(cur->parent_sem);
         // TODO: get exit code set in exit() (sys call)
         thread_get_from_tid(cur->parent_tid)->child_exit_code = 0;  
     }
+    
 
     // TODO: free the cur thread struct....? or is that in thread_exit?
 }
