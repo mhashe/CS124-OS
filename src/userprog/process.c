@@ -16,6 +16,7 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/palloc.h"
+#include "threads/malloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
 #include "lib/string.h"
@@ -31,15 +32,22 @@ tid_t process_execute(const char * file_name) {
     char *fn_copy;
     tid_t tid;
 
-    fn_copy = palloc_get_page(0);
+    // fn_copy = palloc_get_page(0);
+    int file_name_len = strlen(file_name) + 1;
+    fn_copy = (char *) malloc(file_name_len);
+
     if (fn_copy == NULL)
         return TID_ERROR;
-    strlcpy(fn_copy, file_name, PGSIZE);
+    // strlcpy(fn_copy, file_name, PGSIZE);
+    strlcpy(fn_copy, file_name, file_name_len);
 
     /* Extract executable name */
-    char* exec_fn = palloc_get_page(0);
-    if (exec_fn == NULL)
+    // char* exec_fn = palloc_get_page(0);
+    char* exec_fn = malloc(file_name_len);
+    if (exec_fn == NULL) {
+        // free(fn_copy);
         return TID_ERROR;
+    }
 
     int exec_fn_len = 0;
     while ((*fn_copy != '\0') && (*fn_copy != ' ')) {
@@ -52,9 +60,13 @@ tid_t process_execute(const char * file_name) {
     /* Create a new thread to execute FILE_NAME. */
     // printf("EXCUTING: %s\n", exec_fn);
     tid = thread_create(exec_fn, PRI_DEFAULT, start_process, fn_copy);
+
     // printf("EXCUTED: %s\n", exec_fn);
-    if (tid == TID_ERROR)
-        palloc_free_page(fn_copy); 
+    // if (tid == TID_ERROR)
+    //     palloc_free_page(fn_copy); 
+    // free(fn_copy);
+    // free(exec_fn);
+
     return tid;
 }
 
@@ -72,7 +84,7 @@ static void start_process(void *file_name_) {
     success = load(file_name, &if_.eip, &if_.esp);
 
     /* If load failed, quit. */
-    palloc_free_page(file_name);
+    // palloc_free_page(file_name);
     if (!success) 
         thread_exit();
 
