@@ -207,6 +207,14 @@ return errors codes (-1 for read, 0 for write).
 >> for a system call that only copies 2 bytes of data?  Is there room
 >> for improvement in these numbers, and how much?
 
+Neglecting calls to pagedir_get_page() that occur from validating our           TODO
+syscall inputs, either load causes at most two and at fewest one page
+install, which calls pagedir_get_page(). Since each of these calls could
+fit on a single page, we could limit ourselves to one page inspection by 
+offsetting our page to start at the beginning of data (which seems to occur
+in process.c already).
+
+
 >> B5: Briefly describe your implementation of the "wait" system call
 >> and how it interacts with process termination.
 
@@ -234,9 +242,13 @@ Say something else?                                                             
 >> paragraphs, describe the strategy or strategies you adopted for
 >> managing these issues.  Give an example.
 
-When an error is detected, thread_exit() is called. During thread exit, a
-function is called that releases all the resources that the thread holds. This
-includes locks, file descriptors, and a list of children.
+We functionalized a good portion of error handling, particularly with regards
+to argument parsing. This makes the actual syscalls somewhat easier to deal
+with. If an error is detected, thread_exit() is called. During thread exit, we 
+loop over all resource lists maintained by the thread (locks, children, files)
+and free everything. This also occurs during the normal course of thread_exit,
+as a check against processes simply neglecting to free their locks.
+
 
 ---- SYNCHRONIZATION ----
 
