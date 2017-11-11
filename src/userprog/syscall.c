@@ -16,6 +16,7 @@
 #include "filesys/off_t.h" /* For off_t. */
 #include "filesys/file.h" /* For file_length, seek, tell. */
 #include "threads/synch.h" /* For locks. */
+#include "devices/input.h" /* For inpute_getc. */
 
 //TODO : Close all fds in thread_exit.
 //TODO : Possible remove once filecount goes to zero?
@@ -339,8 +340,13 @@ static void read(struct intr_frame *f) {
 
     /* Special cases. */
     if (fd == STDIN_FILENO) {
-        // TODO
-        f->eax = -1;
+        /* Wait for keys to be pressed. */
+        // TODO: Check for EOF key?
+        for (unsigned i = 0; i < size; i++) {
+            uint8_t key = input_getc();
+            *((char *) buffer + i) = key;
+        }
+        f->eax = size;
         return;
     } 
     if (fd == STDOUT_FILENO) {
