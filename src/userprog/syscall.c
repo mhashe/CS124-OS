@@ -278,12 +278,17 @@ static void read(struct intr_frame *f) {
     int fd = get_arg(f, 1);
     void* buffer = (void *) get_arg(f, 2);
     unsigned size = get_arg(f, 3);
+    struct file* file = file_from_fd(fd);
 
-    // Temp
-    (void)fd;
-    (void)buffer;
-    (void)size;
-    thread_exit();
+    // TODO : I/O for FD 0, 1
+
+    if (file) {
+        /* Return number of bytes read. */
+        f->eax = file_read(struct file *file, void *buffer, off_t size);
+    } else {
+        /* Can't read invalid file. */
+        f->eax = -1;
+    }
 }
 
 
