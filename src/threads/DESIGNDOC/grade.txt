@@ -1,0 +1,46 @@
+CS124 Project 3 - Threads
+
+
+
+Team: AGH
+
+Graded By: Michael Goulet
+
+
+
+Days Late: 2
+
+Tokens Used: 2
+
+
+
+Raw Score:  94/100
+
+Final Score:  94/100
+
+
+
+Correctness:  65/65
+
+
+
+Design Document / Code Inspection / Git Usage:  29/35
+
+    * I'm putting this on all of the ddocs, but try to use 'git pull --rebase'
+
+      to pull new commits without always making a new merge commit.
+
+-3: There's something very wrong about lines 748-751 on thread.c.
+
+    Please put brackets or else that might've been a huge problem if the 'if'
+
+    statement didn't always return.
+
+-3: You should be storing the wake-up time instead of the ticks-until-wake in
+
+    the thread. If you store NOW+offset, then all you need to do is compare your
+
+    time to the wake-up time, instead of having to update the ticks every timer
+
+    interrupt.
+
