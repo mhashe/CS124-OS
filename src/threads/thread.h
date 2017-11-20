@@ -30,8 +30,8 @@ typedef int tid_t;
 #define PRI_DEFAULT 31                  /*!< Default priority. */
 #define PRI_MAX 63                      /*!< Highest priority. */
 
-/* Value of thread->ticks_until_wake when not asleep */
-#define THREAD_AWAKE -1                     
+/* Value of thread->awake_time when not asleep */
+#define THREAD_AWAKE -1                  
 
 /* Thread niceness values. */
 #define NICE_MIN -20                    /*!< Lowest niceness. */
@@ -143,7 +143,7 @@ struct thread {
     /**@}*/
 
     /* User-added stuff. */
-    int64_t ticks_until_wake;           /*!< Ticks until done sleeping. */
+    int64_t awake_time;                 /*!< Time when finished sleeping. */
     int nice;                           /*!< Nice value. */
     fixedp recent_cpu;                  /*!< Recent cpu time. */
 

@@ -328,19 +328,16 @@ static void thread_update_mlfqs_state(void) {
 decrements it. If it is due, it unblocks the thread. */
 static void thread_wake(struct thread *t, void *aux UNUSED) {
     /* Check if the thread has a timer interrupt. */
-    if (t->ticks_until_wake == THREAD_AWAKE) {
+    if (t->awake_time == THREAD_AWAKE) {
         return;
     }
     
     /* A thread should only have a time until awake if it is  asleep/blocked. */
     ASSERT(t->status == THREAD_BLOCKED);
 
-    /* wake_thread() is called every tick, so decrement time until wakeup. */
-    t->ticks_until_wake--;
-
-    /* Wake up if it is time to wakeup (sleep time left is 0) */
-    if (t->ticks_until_wake <= 0) {
-        t->ticks_until_wake = THREAD_AWAKE;
+    /* Wake up if it is time to wakeup (current time is past wake time) */
+    if (t->awake_time <= timer_ticks()) {
+        t->awake_time = THREAD_AWAKE;
         thread_unblock(t);
     }
 }
@@ -833,7 +830,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
     }
 
     /* Initially, a thread does not need to be woken up at some time. */
-    t->ticks_until_wake = THREAD_AWAKE;
+    t->awake_time = THREAD_AWAKE;
 
     t->magic = THREAD_MAGIC;
 

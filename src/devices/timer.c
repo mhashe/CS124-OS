@@ -93,8 +93,8 @@ void timer_sleep(int64_t ticks) {
     intr_disable();
 
     /* Set flag in thread that will cause blocked thread to be moved to ready 
-    queue once the timer interrupt handler has passed "ticks" time. */
-    thread_current()->ticks_until_wake = ticks;
+    queue once the timer interrupt handler has passed current + "ticks" time. */
+    thread_current()->awake_time = timer_ticks() + ticks;
 
     /* Block this thread. */
     thread_block();
