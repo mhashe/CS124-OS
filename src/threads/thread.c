@@ -861,12 +861,14 @@ static void * alloc_frame(struct thread *t, size_t size) {
 static struct thread * next_thread_to_run(void) {
     struct list_elem *max;
     
-    if (list_empty(&ready_list))
+    if (list_empty(&ready_list)) {
       return idle_thread;
-    else
+    }
+    else {
       max = list_max(&ready_list, (list_less_func*) thread_queue_compare, NULL);
       list_remove(max); /* Basically pop_max, but less overhead. */
       return list_entry(max, struct thread, elem);
+  }
 }
 
 /*! Completes a thread switch by activating the new thread's page tables, and,
