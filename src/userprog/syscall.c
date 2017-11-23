@@ -44,6 +44,11 @@ static void     tell(struct intr_frame *f);
 static void    close(struct intr_frame *f);
 
 
+/* Handlers for Project 5. */
+static void     mmap(struct intr_frame *f);
+static void   munmap(struct intr_frame *f);
+
+
 /* Max of two numbers. */
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 
@@ -99,6 +104,10 @@ static void syscall_handler(struct intr_frame *f) {
         case SYS_SEEK :     seek(f);     break;     /* 10 */
         case SYS_TELL :     tell(f);     break;     /* 11 */
         case SYS_CLOSE :    close(f);    break;     /* 12 */
+
+        /* Syscalls for Project 5. */
+        case SYS_MMAP :     mmap(f);     break;     /* 13 */
+        case SYS_MUNMAP :   munmap(f);   break;     /* 14 */
 
         /* Invalid syscall. */
         default : thread_exit();
@@ -556,5 +565,39 @@ static void close(struct intr_frame *f) {
         /* Can't close invalid file. */
         thread_exit();
     }
+}
+
+
+static void mmap(struct intr_frame *f) {
+    /* Parse arguments. */
+    int fd = get_arg(f, 1);
+    void* addr = (void *) get_arg(f, 2);
+
+    /* Verify arguments. */
+    if (fd == STDIN_FILENO || fd == STDOUT_FILENO) {
+        thread_exit();
+    }
+    verify_pointer((uint32_t *) addr);
+
+    /* TODO: Function, more error checking. */
+
+    /* TODO: return mapid_t */
+    f->eax = -1;
+}
+
+
+static void munmap(struct intr_frame *f) {
+    /* Parse arguments. */
+    // mapid_t mapid = get_arg(f, 1);
+
+    /* TODO : include definition for mapid_t.
+       Used in lib/user/syscall.c */
+
+    /* Verify arguments. */
+    /* TODO : what parameters can mapid_t take? */
+
+    /* TODO : unmap. */
+
+    /* no return. */
 }
 
