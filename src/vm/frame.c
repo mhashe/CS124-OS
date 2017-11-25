@@ -65,7 +65,9 @@ uint32_t get_frame(bool user) {
         PANIC("frame table full\n");
         return -1;
     } else {
-        uint32_t frame_number = evict();
+        uint32_t frame_number = vtof(frame);
+
+        ASSERT(frame_number < init_ram_pages);
 
         // printf("What's the issue?\n");
         frame_table[frame_number]->page = frame;
@@ -75,3 +77,15 @@ uint32_t get_frame(bool user) {
     }
 }
 
+/* Frees the page frame corresponding to the frame number given. */
+void free_frame(uint32_t frame_number) {
+    ASSERT(frame_number < init_ram_pages);
+
+    if (frame_table[frame_number]->page) {
+        palloc_free_page(frame_table[frame_number]->page);
+    } else {
+        PANIC("freeing frame that doesn't exist\n");
+    }
+
+    frame_table[frame_number]->page = NULL;
+}

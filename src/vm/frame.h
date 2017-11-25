@@ -20,6 +20,7 @@ struct frame_table_entry** frame_table;
 void init_frame_table(void);
 uint32_t get_frame(bool user);
 uint32_t evict(void);
+void free_frame(uint32_t frame_number);
 
 /*! Returns frame number at which kernel virtual address VADDR
     is mapped. */
