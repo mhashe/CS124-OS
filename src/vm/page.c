@@ -25,6 +25,7 @@ int sup_alloc_file(uint32_t * vaddr, struct file_des *fd) {
     num_pages += ((num_pages % PGSIZE) != 0);
     vaddr = pg_round_down(vaddr);
     
+    /* Check if needed pages are available. */
     for (int page = 0; page < num_pages; page ++) {
         uint32_t *addr = (vaddr + (PGSIZE * page));
         struct sup_entry* spe = sup_get_entry(addr, spd);
@@ -36,6 +37,8 @@ int sup_alloc_file(uint32_t * vaddr, struct file_des *fd) {
         }
     }
     
+    /* Add the needed pages to the supplemental table with correct file and 
+    offset. */
     for (int page = 0; page < num_pages; page ++) {
         uint32_t *addr = (vaddr + (PGSIZE * page));
         struct sup_entry* spe = sup_get_entry(addr, spd);
@@ -50,11 +53,12 @@ int sup_alloc_file(uint32_t * vaddr, struct file_des *fd) {
 }
 
 
-// TODO: comment
+/* Get an entry from the supplemental page table. */
 struct sup_entry* sup_get_entry(uint32_t * vaddr, struct list *spd) {
     struct list_elem *spe_elem = list_begin(spd);
     struct sup_entry *spe;
 
+    /* Iterate through list to find supplemental page at vaddr. This is O(n). */
     if (spe_elem != list_end(spd)) {
         struct list_elem *e;
         for (e = list_next(spe_elem); e != list_end(spd); e = list_next(e)) {
