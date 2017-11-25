@@ -10,7 +10,8 @@
 #include "threads/vaddr.h"
 
 #define MEM_SIZE (1 << 31)
-#define NUM_FRAME_ENTRIES ((uint32_t) MEM_SIZE / PGSIZE)
+// #define NUM_FRAME_ENTRIES ((uint32_t) MEM_SIZE / PGSIZE)
+#define NUM_FRAME_ENTRIES 367 // TODO : not hard-code this
 
 struct frame_table_entry {
     void* page;     /* pointer to page currently occupying entry */
