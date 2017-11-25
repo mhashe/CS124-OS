@@ -31,10 +31,12 @@ int get_frame(void *page, bool user) {
     // }
     void *frame;
     
-    if (user)
+    if (user) {
         frame = palloc_get_page(PAL_ZERO | PAL_USER);
-    else
+    }
+    else {
         frame = palloc_get_page(PAL_ZERO);
+    }
 
 
     if (frame == NULL) {

@@ -154,6 +154,7 @@ static void page_fault(struct intr_frame *f) {
              user ? "user" : "kernel");
       // TODO: exit with exit(). but how to make the frame?
       // exit(-1);
+      kill(f);
     }
     /* Else if valid, locate data to go into the page. */
     else {
@@ -162,6 +163,7 @@ static void page_fault(struct intr_frame *f) {
       ASSERT(not_present); // TODO: just confirming this is the only option??
       
       // TODO: Load data into frame and link to page of virtual address:
+      
       // void *frame = frame_table[get_empty_frame()]->page;
       // load data into the frame
       // use supplementary table to link frame to virtual address

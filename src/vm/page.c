@@ -7,7 +7,7 @@
 #include "threads/palloc.h"
 #include "threads/vaddr.h"
 #include "threads/pte.h"
-
+#include "threads/thread.h"
 
 struct sup_entry *** sup_pagedir_create(void) {
     struct sup_entry ***sup_pagedir;
@@ -31,5 +31,14 @@ struct sup_entry *** sup_pagedir_create(void) {
 
     return sup_pagedir;
 }
+
+
+void sup_load_file(uint32_t * vaddr, file_des *fd, int offset) {
+    thread *cur = thread_current();
+    struct sup_entry **sup_t = *(cur->sup_pagedir + pd_no(vaddr));
+    struct sup_entry *se = *(sup_t + pt_no(vaddr));
+}
+
+
 
 

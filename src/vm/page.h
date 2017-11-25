@@ -10,7 +10,7 @@
 
 struct sup_entry {
     struct file_des *fd;     /* pointer to file to be opened */
-    int file_ofs;            /* file loaded into page at offset */
+    int file_ofs;            /* file loaded into page at fd's offset */
 };
 
 struct sup_entry *** sup_pagedir_create(void);
