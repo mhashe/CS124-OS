@@ -9,13 +9,14 @@
 #include <stdint.h>
 
 struct sup_entry {
-    int fd;     /* pointer to file to be opened */
-    int file_ofs;            /* file loaded into page at fd's offset */
+    int fd;             /* pointer to file to be opened */
+    unsigned file_ofs;       /* file loaded into page at fd's offset */
+    bool writable;      /* whether the page is writable */
 };
 
 struct sup_entry *** sup_pagedir_create(void);
-int sup_alloc_file(uint32_t * vaddr, int fd);
-int sup_load_file(uint32_t *vaddr, bool user);
+int sup_alloc_file(void * vaddr, int fd, bool writable);
+int sup_load_file(void *vaddr, bool user, bool write);
 
 #endif /* vm/page.h */
 

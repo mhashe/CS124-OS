@@ -13,9 +13,10 @@
 #include "filesys/filesys.h"  /* For filesys ops. */
 #include "filesys/file.h"     /* For file ops. */
 #include "userprog/syscall.h"
+#include "userprog/pagedir.h"
 
-static inline struct sup_entry *sup_get_entry(uint32_t *vaddr, struct sup_entry ***sup_pagedir);
-static inline void sup_set_entry(uint32_t *vaddr, struct sup_entry ***sup_pagedir, struct sup_entry *entry);
+static inline struct sup_entry *sup_get_entry(void *vaddr, struct sup_entry ***sup_pagedir);
+static inline void sup_set_entry(void *vaddr, struct sup_entry ***sup_pagedir, struct sup_entry *entry);
 static int filesize(int fd);
 static struct file_des *file_from_fd(int fd);
 static int read(int fd, void* buffer, unsigned size, unsigned offset);
@@ -46,7 +47,7 @@ struct sup_entry *** sup_pagedir_create(void) {
 
 /* Allocates entire file in as many pages as needed in supplementary page 
 table. To be called in mmap. Returns 0 on success, -1 on failure. */
-int sup_alloc_file(uint32_t * vaddr, int fd) {
+int sup_alloc_file(void * vaddr, int fd, bool writable) {
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
     
     int offset = pg_ofs(vaddr);
@@ -58,7 +59,7 @@ int sup_alloc_file(uint32_t * vaddr, int fd) {
 
     /* Check if needed pages are available. */
     for (int page = 0; page < num_pages; page++) {
-        uint32_t* addr = (vaddr + (PGSIZE * page));
+        void* addr = (vaddr + (PGSIZE * page));
         struct sup_entry* spe = sup_get_entry(addr, sup_pagedir);
 
         // TODO: If this address is not a valid address for other reasons, return -1
@@ -71,12 +72,13 @@ int sup_alloc_file(uint32_t * vaddr, int fd) {
     /* Add the needed pages to the supplemental table with correct file and 
     offset. */
     for (int page = 0; page < num_pages; page ++) {
-        uint32_t *addr = (vaddr + (PGSIZE * page));
+        void *addr = (vaddr + (PGSIZE * page));
         struct sup_entry* spe = sup_get_entry(addr, sup_pagedir);
 
         spe =(struct sup_entry *) malloc(sizeof(struct sup_entry));
         spe->fd = fd;
-        spe->file_ofs = offset + (PGSIZE * page);
+        spe->file_ofs = (unsigned) (offset + (PGSIZE * page));
+        spe->writable = writable;
         sup_set_entry(addr, sup_pagedir, spe);
     }
 
@@ -86,20 +88,30 @@ int sup_alloc_file(uint32_t * vaddr, int fd) {
 
 /* Loads part of file needed at vaddr page. Returns 0 on success, -1 on 
 failure. */
-int sup_load_file(uint32_t *vaddr, bool user) {
-    struct sup_entry * spe = sup_get_entry(pg_round_down(vaddr), 
-        thread_current()->sup_pagedir);
+int sup_load_file(void *vaddr, bool user, bool write) {
+    struct thread *cur = thread_current();
+    void *upage = pg_round_down(vaddr);
+    struct sup_entry * spe = sup_get_entry(upage, cur->sup_pagedir);
 
+    /* If entry in supplementary page table does not exist, then failure. */
     if (spe == NULL) {
         return -1;
     }
 
-    uint32_t * frame_page = get_frame(vaddr, user);
+    /* If page fault due to write attempt to unwritable page, then failure. */
+    if (write && (!spe->writable)) {
+        return -1;
+    }
 
-    // TODO: load part of file into frame
-    // Is it possible to read in a certain offset in a file? 
-    // read(spe->fd, (addr of frame), PG_SIZE, spe->file_ofs)
-    if (read(spe->fd, frame_page, (unsigned) PGSIZE, (unsigned) spe->file_ofs) == -1) {
+    void * kpage = ftov(get_frame(user));
+
+    /* Load one page of file at file_ofs into the frame. */
+    if (read(spe->fd, kpage, (unsigned) PGSIZE, spe->file_ofs) == -1) {
+        return -1;
+    }
+
+    if (!pagedir_set_page(cur->pagedir, upage, kpage, spe->writable)) {
+        // TODO: sup_remove_entry()
         return -1;
     }
 
@@ -110,14 +122,14 @@ int sup_load_file(uint32_t *vaddr, bool user) {
 
 /* Retreives supplemental entry from sup_pagedir at vaddr, which must be 
 page-aligned. */
-static inline struct sup_entry *sup_get_entry(uint32_t *vaddr, struct sup_entry ***sup_pagedir) {
+static inline struct sup_entry *sup_get_entry(void *vaddr, struct sup_entry ***sup_pagedir) {
     return sup_pagedir[pd_no(vaddr)][pt_no(vaddr)];
 }
 
 
 /* Sets supplemental entry from sup_pagedir at vaddr to be entry. vaddr must 
 be page-aligned. */
-static inline void sup_set_entry(uint32_t *vaddr, struct sup_entry ***sup_pagedir, struct sup_entry *entry) {
+static inline void sup_set_entry(void *vaddr, struct sup_entry ***sup_pagedir, struct sup_entry *entry) {
     sup_pagedir[pd_no(vaddr)][pt_no(vaddr)] = entry;
 }
 

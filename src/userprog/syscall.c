@@ -489,7 +489,7 @@ static void write(struct intr_frame *f) {
    the file's start.)
 
    A seek past the current end of a file is not an error. A later read obtains 0
-   bytes, indicating end of file. A later write extends the file, filling any
+   bytes, indicating end of file. A later write extends the file, filling anyvo
    unwritten gap with zeros. (However, in Pintos files have a fixed length until
    project 6 is complete, so writes past end of file will return an error.)
    These semantics are implemented in the file system and do not require any

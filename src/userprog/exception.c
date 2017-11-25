@@ -160,19 +160,11 @@ static void page_fault(struct intr_frame *f) {
 
         ASSERT(not_present); // TODO: just confirming this is the only option??
 
-        /* If tried to load at a virtual address that has not been mapped, 
-        exit the process. */
-        if (sup_load_file(fault_addr, user) == -1) {
+        /* Load data into frame at link to page of virtual address. If virtual 
+        address has not been mapped, exit the process. */
+        if (sup_load_file(fault_addr, user, write) == -1) {
             exit(-1);
         }
-        // TODO: Load data into frame and link to page of virtual address:
-
-        // void *frame = frame_table[get_empty_frame()]->page;
-        // load data into the frame
-        // use supplementary table to link frame to virtual address
-
-        printf("Not implemented yet!\n");
-        kill(f);
     }
       
 }
