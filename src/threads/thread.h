@@ -11,6 +11,7 @@
 #include <fixedp.h>
 #include <stdint.h>
 #include "synch.h"
+#include "vm/page.h"
 
 /*! States in a thread's life cycle. */
 enum thread_status {
@@ -169,6 +170,7 @@ struct thread {
     struct list fds;                    /*!< File descriptors. */
     struct file *binary;                /*!< File thread was started from. */
     struct semaphore success_sema;      /*!< Released once child loaded. */
+    struct sup_entry ***sup_pagedir;            /*!< Supplemental page directory. */
     /**@{*/
 #endif
 

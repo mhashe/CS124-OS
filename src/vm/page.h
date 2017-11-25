@@ -7,13 +7,13 @@
 
 #include <debug.h>
 #include <stdint.h>
-#include "threads/thread.h"
 
-struct supplement_pte {
+struct sup_entry {
     struct file_des *fd;     /* pointer to file to be opened */
     int file_ofs;            /* file loaded into page at offset */
 };
 
+struct sup_entry *** sup_pagedir_create(void);
 
 #endif /* vm/page.h */
 

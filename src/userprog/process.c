@@ -22,6 +22,7 @@
 #include "lib/string.h"
 
 #include "vm/frame.h"
+#include "vm/page.h"
 
 static thread_func start_process NO_RETURN;
 static bool load(const char *cmdline, void (**eip)(void), void **esp);
@@ -267,6 +268,14 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     t->pagedir = pagedir_create();
     if (t->pagedir == NULL) 
         goto done;
+
+#ifdef VM
+    /* Allocate the supplemental page directory. */
+    t->sup_pagedir = sup_pagedir_create();
+    if (t->sup_pagedir == NULL)
+        goto done;
+#endif
+    
     process_activate();
 
     /* Open executable file. */
