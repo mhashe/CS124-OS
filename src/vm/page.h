@@ -15,6 +15,7 @@ struct sup_entry {
 
 struct sup_entry *** sup_pagedir_create(void);
 int sup_alloc_file(uint32_t * vaddr, int fd);
+int sup_load_file(uint32_t *vaddr, bool user);
 
 #endif /* vm/page.h */
 

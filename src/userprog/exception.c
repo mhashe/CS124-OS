@@ -144,30 +144,35 @@ static void page_fault(struct intr_frame *f) {
 
     /* If access to virtual address invalid, then terminate the process. */ 
     if ((user && is_kernel_vaddr(fault_addr)) || // invalid access to kernel
-      (!not_present)) // invalid access to read-only page
+        (!not_present)) // invalid access to read-only page
     {
-      // TODO: delete this print statement or keep?
-      printf("Page fault at %p: %s error %s page in %s context.\n",
+        // TODO: delete this print statement or keep?
+        printf("Page fault at %p: %s error %s page in %s context.\n",
              fault_addr,
              not_present ? "not present" : "rights violation",
              write ? "writing" : "reading",
              user ? "user" : "kernel");
-      exit(-1);
+        exit(-1);
     }
     /* Else if valid, locate data to go into the page. */
     else {
-      // TODO: consider the case that the data is already in a page frame
+        // TODO: consider the case that the data is already in a page frame
 
-      ASSERT(not_present); // TODO: just confirming this is the only option??
-      
-      // TODO: Load data into frame and link to page of virtual address:
-      
-      // void *frame = frame_table[get_empty_frame()]->page;
-      // load data into the frame
-      // use supplementary table to link frame to virtual address
+        ASSERT(not_present); // TODO: just confirming this is the only option??
 
-      printf("Not implemented yet!\n");
-      kill(f);
+        /* If tried to load at a virtual address that has not been mapped, 
+        exit the process. */
+        if (sup_load_file(fault_addr, user) == -1) {
+            exit(-1);
+        }
+        // TODO: Load data into frame and link to page of virtual address:
+
+        // void *frame = frame_table[get_empty_frame()]->page;
+        // load data into the frame
+        // use supplementary table to link frame to virtual address
+
+        printf("Not implemented yet!\n");
+        kill(f);
     }
       
 }

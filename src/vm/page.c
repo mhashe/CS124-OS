@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "vm/page.h"
+#include "vm/frame.h"
 #include "threads/palloc.h"
 #include "threads/malloc.h"
 #include "threads/vaddr.h"
@@ -11,12 +12,13 @@
 #include "threads/thread.h"
 #include "filesys/filesys.h"  /* For filesys ops. */
 #include "filesys/file.h"     /* For file ops. */
+#include "userprog/syscall.h"
 
 static inline struct sup_entry *sup_get_entry(uint32_t *vaddr, struct sup_entry ***sup_pagedir);
 static inline void sup_set_entry(uint32_t *vaddr, struct sup_entry ***sup_pagedir, struct sup_entry *entry);
 static int filesize(int fd);
 static struct file_des *file_from_fd(int fd);
-
+static int read(int fd, void* buffer, unsigned size, unsigned offset);
 
 struct sup_entry *** sup_pagedir_create(void) {
     struct sup_entry ***sup_pagedir;
@@ -82,6 +84,30 @@ int sup_alloc_file(uint32_t * vaddr, int fd) {
 }
 
 
+/* Loads part of file needed at vaddr page. Returns 0 on success, -1 on 
+failure. */
+int sup_load_file(uint32_t *vaddr, bool user) {
+    struct sup_entry * spe = sup_get_entry(pg_round_down(vaddr), 
+        thread_current()->sup_pagedir);
+
+    if (spe == NULL) {
+        return -1;
+    }
+
+    uint32_t * frame_page = get_frame(vaddr, user);
+
+    // TODO: load part of file into frame
+    // Is it possible to read in a certain offset in a file? 
+    // read(spe->fd, (addr of frame), PG_SIZE, spe->file_ofs)
+    if (read(spe->fd, frame_page, (unsigned) PGSIZE, (unsigned) spe->file_ofs) == -1) {
+        return -1;
+    }
+
+    return 0;
+}
+
+
+
 /* Retreives supplemental entry from sup_pagedir at vaddr, which must be 
 page-aligned. */
 static inline struct sup_entry *sup_get_entry(uint32_t *vaddr, struct sup_entry ***sup_pagedir) {
@@ -96,7 +122,10 @@ static inline void sup_set_entry(uint32_t *vaddr, struct sup_entry ***sup_pagedi
 }
 
 
-/* Returns the size, in bytes, of the file open as fd. LOCKS HAVE BEEN REMOVED. */
+
+
+
+/* Returns the size, in bytes, of the file open as fd. */
 static int filesize(int fd) {
     int filesize;
     /* Special cases. */
@@ -107,7 +136,9 @@ static int filesize(int fd) {
     /* Return file size. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
+        // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
         filesize = file_length(file);
+        // lock_release(&filesys_io);                // LOCKS HAVE BEEN REMOVED
     } else {
         /* Invalid file has no size. */
         thread_exit();
@@ -143,3 +174,24 @@ static struct file_des *file_from_fd(int fd) {
 }
 
 
+static int read(int fd, void* buffer, unsigned size, unsigned offset) {
+    int bytes;
+
+    /* Verify arguments. */
+    verify_pointer((uint32_t *) buffer);
+    verify_pointer((uint32_t *) (buffer + size));
+
+    /* Return number of bytes read. */
+    struct file* file = file_from_fd(fd)->file;
+    if (file) {
+        // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
+        file_seek(file, offset);  
+        bytes = file_read(file, buffer, size);
+        // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
+    } else {
+        /* Can't read invalid file. */
+        bytes = -1;
+    }
+
+    return bytes;
+}
