@@ -4,6 +4,7 @@
 #include "userprog/gdt.h"
 #include "threads/interrupt.h"
 #include "threads/thread.h"
+#include "vm/frame.h"
 
 /*! Number of page faults processed. */
 static long long page_fault_cnt;
@@ -134,14 +135,36 @@ static void page_fault(struct intr_frame *f) {
     write = (f->error_code & PF_W) != 0;
     user = (f->error_code & PF_U) != 0;
 
+    // TODO: delete this comment
     /* To implement virtual memory, delete the rest of the function
        body, and replace it with code that brings in the page to
        which fault_addr refers. */
-    printf("Page fault at %p: %s error %s page in %s context.\n",
-           fault_addr,
-           not_present ? "not present" : "rights violation",
-           write ? "writing" : "reading",
-           user ? "user" : "kernel");
-    kill(f);
+
+    /* If access to virtual address invalid, then terminate the process. */
+    if ((user && is_kernel_vaddr(fault_addr)) || // invalid access to kernel
+      (!not_present)) // invalid access to read-only page
+    {
+      // TODO: delete this print statement or keep?
+      printf("Page fault at %p: %s error %s page in %s context.\n",
+             fault_addr,
+             not_present ? "not present" : "rights violation",
+             write ? "writing" : "reading",
+             user ? "user" : "kernel");
+      kill(f);
+    }
+    /* Else if valid, locate data to go into the page. */
+    else {
+      // TODO: consider the case that the data is already in a page frame
+
+      ASSERT(not_present); // TODO: just confirming this is the only option??
+      
+      // TODO: Load data into frame and link to page of virtual address:
+      // void *frame = frame_table[get_empty_frame()]->page;
+      // load data into the frame
+      // use supplementary table to link frame to virtual address
+
+      printf("Not implemented yet!\n");
+    }
+      
 }
 
