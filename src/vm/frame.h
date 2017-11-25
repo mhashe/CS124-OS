@@ -17,7 +17,7 @@ struct frame_table_entry {
 struct frame_table_entry** frame_table;
 
 void init_frame_table(void);
-int get_frame(void* page);
+int get_frame(void* page, bool user);
 
 
 #endif /* vm/frame.h */

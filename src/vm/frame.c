@@ -22,15 +22,19 @@ void init_frame_table(void) {
 
 /* Gets the first free frame in the frame table. Returns an index. 
    page is the virtual memory pointer to a page that is occupying this frame. */
-int get_frame(void *page) {
+int get_frame(void *page, bool user) {
     // uint32_t i = 0;
     // for (i = 0; i < init_ram_pages; i++) {
     //     if (frame_table[i] == NULL) {
     //         break;
     //     }
     // }
-
-    void *frame = palloc_get_page(PAL_ZERO | PAL_USER);
+    void *frame;
+    
+    if (user)
+        frame = palloc_get_page(PAL_ZERO | PAL_USER);
+    else
+        frame = palloc_get_page(PAL_ZERO);
 
 
     if (frame == NULL) {
