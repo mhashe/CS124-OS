@@ -21,6 +21,8 @@ static int filesize(int fd);
 static struct file_des *file_from_fd(int fd);
 static int read(int fd, void* buffer, unsigned size, unsigned offset);
 
+
+/* Allocates and returns a pointer to an empty supplementary table. */
 struct sup_entry *** sup_pagedir_create(void) {
     struct sup_entry ***sup_pagedir;
     struct sup_entry **sup_t;
@@ -46,18 +48,23 @@ struct sup_entry *** sup_pagedir_create(void) {
 
 
 /* Allocates entire file in as many pages as needed in supplementary page 
-table. To be called in mmap. Returns 0 on success, -1 on failure. */
+table. The file is given by "int fd" and it is writable if "writeable". To 
+be called in mmap. Returns 0 on success, -1 on failure. */
 int sup_alloc_file(void * vaddr, int fd, bool writable) {
+    /* Current thread's supplemental page directory. */
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
     
+    /* We allocate file at offset into the page provided by offset. */
     int offset = pg_ofs(vaddr);
 
-    // Make sure that this vaddr is empty
+    /* Calculate the number of pages required to allocate file. */
     int num_pages = (offset + filesize(fd)) / PGSIZE;
     num_pages += ((num_pages % PGSIZE) != 0);
+
+    /* Start allocating page for file in supplemental table at page-align. */
     vaddr = pg_round_down(vaddr);
 
-    /* Check if needed pages are available. */
+    /* Check if needed pages are available in the supplementary table. */
     for (int page = 0; page < num_pages; page++) {
         void* addr = (vaddr + (PGSIZE * page));
         struct sup_entry* spe = sup_get_entry(addr, sup_pagedir);
@@ -110,8 +117,10 @@ int sup_load_file(void *vaddr, bool user, bool write) {
         return -1;
     }
 
+    /* Linking frame to virtual address failed, so remove and deallocate the 
+    page instantiated for it. */
     if (!pagedir_set_page(cur->pagedir, upage, kpage, spe->writable)) {
-        // TODO: sup_remove_entry()
+        // TODO: remove frame
         return -1;
     }
 
@@ -119,18 +128,27 @@ int sup_load_file(void *vaddr, bool user, bool write) {
 }
 
 
-
-/* Retreives supplemental entry from sup_pagedir at vaddr, which must be 
-page-aligned. */
-static inline struct sup_entry *sup_get_entry(void *vaddr, struct sup_entry ***sup_pagedir) {
-    return sup_pagedir[pd_no(vaddr)][pt_no(vaddr)];
+/* Removes supplemental entry from sup_pagedir at upage, which must be 
+page-aligned. Assumes enty exists. */
+static inline void sup_entry *sup_remove_entry(void *upage, struct sup_entry 
+    *** sub_pagedir) {
+    // TODO: make this computationally more efficient
+    free(sup_pagedir[pd_no(upage)][pt_no(upage)]);
+    sup_pagedir[pd_no(upage)][pt_no(upage)] = NULL;
 }
 
 
-/* Sets supplemental entry from sup_pagedir at vaddr to be entry. vaddr must 
+/* Retreives supplemental entry from sup_pagedir at upage, which must be 
+page-aligned. */
+static inline struct sup_entry *sup_get_entry(void *upage, struct sup_entry ***sup_pagedir) {
+    return sup_pagedir[pd_no(upage)][pt_no(upage)];
+}
+
+
+/* Sets supplemental entry from sup_pagedir at upage to be entry. upage must 
 be page-aligned. */
-static inline void sup_set_entry(void *vaddr, struct sup_entry ***sup_pagedir, struct sup_entry *entry) {
-    sup_pagedir[pd_no(vaddr)][pt_no(vaddr)] = entry;
+static inline void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir, struct sup_entry *entry) {
+    sup_pagedir[pd_no(upage)][pt_no(upage)] = entry;
 }
 
 
