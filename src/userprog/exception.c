@@ -5,13 +5,13 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "vm/frame.h"
-#include "userprog/syscall.h"
 
 /*! Number of page faults processed. */
 static long long page_fault_cnt;
 
 static void kill(struct intr_frame *);
 static void page_fault(struct intr_frame *);
+static void exit(int status);
 
 /*! Registers handlers for interrupts that can be caused by user programs.
 
@@ -152,9 +152,7 @@ static void page_fault(struct intr_frame *f) {
              not_present ? "not present" : "rights violation",
              write ? "writing" : "reading",
              user ? "user" : "kernel");
-      // TODO: exit with exit(). but how to make the frame?
-      // exit(-1);
-      kill(f);
+      exit(-1);
     }
     /* Else if valid, locate data to go into the page. */
     else {
@@ -174,3 +172,27 @@ static void page_fault(struct intr_frame *f) {
       
 }
 
+/* Terminates the current user program, returning status to the kernel. If the
+   process's parent waits for it (see below), this is the status that will be
+   returned. */
+static void exit(int status) {
+    /* If process has no parent, just exit. */
+    struct thread *parent = thread_get_from_tid(thread_current()->parent_tid);
+    if (!parent) {
+        thread_exit();
+    }
+
+    /* Parent keeps track of object representing child thread. */
+    struct child *c = thread_get_child_elem(&parent->children, 
+                                            thread_current()->tid);
+    ASSERT(c);
+
+    /* Let parent know of our exit status. */
+    c->exit_code = status;
+
+    /* Keep track of our own exit status. */
+    thread_current()->exit_code = status;
+
+    /* Terminate program. */
+    thread_exit();
+}
