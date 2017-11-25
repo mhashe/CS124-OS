@@ -131,7 +131,7 @@ int sup_load_file(void *vaddr, bool user, bool write) {
     /* Linking frame to virtual address failed, so remove and deallocate the 
     page instantiated for it. */
     if (!pagedir_set_page(cur->pagedir, upage, kpage, spe->writable)) {
-        // TODO: remove frame
+        // TODO: remove and deallocate frame
         return -1;
     }
 

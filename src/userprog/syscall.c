@@ -580,7 +580,8 @@ static void mmap(struct intr_frame *f) {
     verify_pointer((uint32_t *) addr);
 
     /* TODO: Function, more error checking. */
-    
+    sup_alloc_file(addr, fd, true); // TODO: should it always be writable?
+
     /* TODO: return mapid_t */
     f->eax = -1;
 }
