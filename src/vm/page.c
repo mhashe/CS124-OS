@@ -33,8 +33,8 @@ struct sup_entry *** sup_pagedir_create(void) {
 }
 
 
-void sup_load_file(uint32_t * vaddr, file_des *fd, int offset) {
-    thread *cur = thread_current();
+void sup_load_file(uint32_t * vaddr, struct file_des *fd, int offset) {
+    struct thread *cur = thread_current();
     struct sup_entry **sup_t = *(cur->sup_pagedir + pd_no(vaddr));
     struct sup_entry *se = *(sup_t + pt_no(vaddr));
 }
