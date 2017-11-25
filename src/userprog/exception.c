@@ -164,6 +164,7 @@ static void page_fault(struct intr_frame *f) {
       // use supplementary table to link frame to virtual address
 
       printf("Not implemented yet!\n");
+      kill(f);
     }
       
 }
