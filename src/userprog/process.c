@@ -21,6 +21,8 @@
 #include "threads/vaddr.h"
 #include "lib/string.h"
 
+#include "vm/frame.h"
+
 static thread_func start_process NO_RETURN;
 static bool load(const char *cmdline, void (**eip)(void), void **esp);
 
@@ -442,9 +444,23 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
         /* Get a page of memory. */
-        uint8_t *kpage = palloc_get_page(PAL_USER);
-        if (kpage == NULL)
+#ifdef VM
+        /* TODO : verify correctness. */
+        int frame_entry = get_empty_frame();
+        if (frame_entry == -1) {
+            /* Uncaught error message - no frames evictable. */
+            PANIC("frame table full\n");
             return false;
+        }
+#endif
+
+        uint8_t *kpage = palloc_get_page(PAL_USER);
+        // if (kpage == NULL)
+        //     return false;
+        /* This should not happen, if the frame table is working. */
+        ASSERT(kpage != NULL);
+
+        /* TODO : set in frame table. */
 
         /* Load this page. */
         if (file_read(file, kpage, page_read_bytes) != (int) page_read_bytes) {
@@ -473,7 +489,24 @@ static bool setup_stack(void **esp, const char *cmdline) {
     uint8_t *kpage;
     bool success = false;
 
+    /* TODO : verify correctness. */
+#ifdef VM
+    /* Free up some frame to hold the stack. */
+    int frame_entry = get_empty_frame();
+    if (frame_entry == -1) {
+        /* Uncaught error message - no frames evictable. */
+        PANIC("frame table full\n");
+        return false;
+    }
+#endif
+
     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
+
+    /* This should not happen, if the frame table is working. */
+    ASSERT(kpage != NULL);
+
+    /* TODO : set in frame table. */
+
     if (kpage != NULL) {
         success = install_page(((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
         if (success)
