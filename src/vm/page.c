@@ -2,43 +2,50 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <list.h>
 
 #include "vm/page.h"
-#include "threads/palloc.h"
+// #include "threads/palloc.h"
 #include "threads/vaddr.h"
 #include "threads/pte.h"
 #include "threads/thread.h"
+#include "threads/malloc.h"
 
-struct sup_entry *** sup_pagedir_create(void) {
-    struct sup_entry ***sup_pagedir;
-    struct sup_entry **sup_t;
+/* Returns 0 on success, -1 on failure. */
+int sup_load_file(uint32_t * vaddr, struct file_des *fd, int offset) {
+    struct list *spd = &thread_current()->sup_pagedir;
+    
+    // Make sure that this vaddr is empty
+    struct sup_entry* spe = sup_get_entry(vaddr, spd);
+    if (spe != NULL) {
+        return -1;
+    }
+    // TODO: If this address is not a valid address for other reasons, return -1
 
-    sup_pagedir = (struct sup_entry ***) palloc_get_page(PAL_ASSERT | PAL_ZERO);
-    sup_t = NULL;
-    for (size_t page = 0; page < init_ram_pages; page++) {
-        char *vaddr = ptov(page * PGSIZE);
-        size_t pde_idx = pd_no(vaddr);
-        size_t pte_idx = pt_no(vaddr);
+    spe = malloc(sizeof(struct sup_entry));
+    list_push_back(spd, &spe->elem);
+    spe->fd = fd;
+    spe->file_ofs = offset;
 
-        // TODO: is 0 the same as null? counting on that here...
-        if (sup_pagedir[pde_idx] == NULL) {
-            sup_t = (struct sup_entry **) palloc_get_page(PAL_ASSERT | PAL_ZERO);
-            sup_pagedir[pde_idx] = (struct sup_entry **) sup_t;
+    return 0;
+}
+
+struct sup_entry* sup_get_entry(uint32_t * vaddr, struct list *spd) {
+    struct list_elem *spe_elem = list_begin(spd);
+    struct sup_entry *spe;
+
+    if (spe_elem != list_end(spd)) {
+        struct list_elem *e;
+        for (e = list_next(spe_elem); e != list_end(spd); e = list_next(e)) {
+            spe = list_entry(e, struct sup_entry, elem);
+            if (spe->vaddr == vaddr) {
+                return spe;
+            }
         }
-
-        sup_t[pte_idx] = NULL;
     }
 
-    return sup_pagedir;
+    return NULL;
 }
-
-
-void sup_load_file(uint32_t * vaddr, file_des *fd, int offset) {
-    thread *cur = thread_current();
-    struct sup_entry **sup_t = *(cur->sup_pagedir + pd_no(vaddr));
-    struct sup_entry *se = *(sup_t + pt_no(vaddr));
-}
-
 
 
 

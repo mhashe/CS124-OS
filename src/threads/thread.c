@@ -829,6 +829,10 @@ static void init_thread(struct thread *t, const char *name, int priority) {
 #endif
     }
 
+#ifdef VM
+    list_init(&t->sup_pagedir);
+#endif
+
     /* Initially, a thread does not need to be woken up at some time. */
     t->awake_time = THREAD_AWAKE;
 

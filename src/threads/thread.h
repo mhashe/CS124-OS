@@ -170,7 +170,7 @@ struct thread {
     struct list fds;                    /*!< File descriptors. */
     struct file *binary;                /*!< File thread was started from. */
     struct semaphore success_sema;      /*!< Released once child loaded. */
-    struct sup_entry ***sup_pagedir;            /*!< Supplemental page directory. */
+    struct list sup_pagedir;            /*!< Supplemental page directory. */
     /**@{*/
 #endif
 

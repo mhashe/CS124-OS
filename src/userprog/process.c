@@ -268,13 +268,6 @@ bool load(const char *file_name, void (**eip) (void), void **esp) {
     t->pagedir = pagedir_create();
     if (t->pagedir == NULL) 
         goto done;
-
-#ifdef VM
-    /* Allocate the supplemental page directory. */
-    t->sup_pagedir = sup_pagedir_create();
-    if (t->sup_pagedir == NULL)
-        goto done;
-#endif
     
     process_activate();
 
