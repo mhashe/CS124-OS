@@ -456,9 +456,9 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         uint8_t *kpage;
 // #ifdef VM
 //         /* TODO : verify correctness. */
-//         int frame_entry = get_frame(upage, true);
+//         int frame_entry = get_frame(true);
 //         if (frame_entry == -1) {
-//              Uncaught error message - no frames evictable. 
+//              // Uncaught error message - no frames evictable. 
 //             PANIC("frame table full\n");
 //             return false;
 //         }
@@ -468,7 +468,7 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
 //         kpage = palloc_get_page(PAL_USER);
 // #endif
 
-        /* Temp fix; above code not working, probably conceptual/design bug. */
+        //  Temp fix; above code not working, probably conceptual/design bug. 
         kpage = palloc_get_page(PAL_USER);
 
         // if (kpage == NULL)
@@ -504,10 +504,9 @@ static bool setup_stack(void **esp, const char *cmdline) {
     bool success = false;
 
     /* TODO : verify correctness. */
-    // uint8_t *kpage;
 // #ifdef VM
 //     /* Free up some frame to hold the stack. */
-//     int frame_entry = get_frame(((uint8_t *) PHYS_BASE) - PGSIZE, true);
+//     int frame_entry = get_frame(true);
 //     if (frame_entry == -1) {
 //         /* Uncaught error message - no frames evictable. */
 //         PANIC("frame table full\n");
@@ -521,9 +520,8 @@ static bool setup_stack(void **esp, const char *cmdline) {
 //     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
 // #endif
 
-    /* Temp fix; above code not working, probably conceptual/design bug. */
+    //  Temp fix; above code not working, probably conceptual/design bug. 
     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
-
 
     /* This should not happen, if the frame table is working. */
     ASSERT(kpage != NULL);
