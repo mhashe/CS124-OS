@@ -18,6 +18,7 @@ struct sup_entry {
 struct sup_entry *** sup_pagedir_create(void);
 int sup_alloc_file(void * vaddr, int fd, bool writable);
 int sup_load_file(void *vaddr, bool user, bool write);
+int sup_remove_file(void *vaddr);
 
 #endif /* vm/page.h */
 

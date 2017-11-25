@@ -95,6 +95,9 @@ int sup_alloc_file(void * vaddr, int fd, bool writable) {
         sup_set_entry(addr, sup_pagedir, spe);
     }
 
+
+    // TODO: now that pages have been allocated, need to prevent allocating 
+    // pages at these virtual address later on. HOW?
     return 0;
 }
 
@@ -140,6 +143,22 @@ int sup_load_file(void *vaddr, bool user, bool write) {
     return 0;
 }
 
+
+/* Deallocate and remove file from supplementary page table. Return -1 if 
+not successful. 0 if successful. */
+int sup_remove_file(void *vaddr) {
+    struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
+
+    void *upage = pg_round_down(vaddr);
+    struct sup_entry* entry;
+
+    // TODO: implement
+    // do {
+    //     entry = sup_get_entry(upage);
+    //     re
+    // }
+    // while (sup_get_entry(upage, sup_pagedir)->loaded)
+}
 
 /* Removes supplemental entry from sup_pagedir at upage, which must be 
 page-aligned. Assumes enty exists. */
