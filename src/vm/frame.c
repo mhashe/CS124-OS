@@ -7,12 +7,13 @@
 #include <stdio.h>
 
 #include "threads/malloc.h"
+#include "threads/loader.h"
 
 void init_frame_table(void) {
     frame_table = (struct frame_table_entry**) 
-                calloc(sizeof(struct frame_table_entry*), NUM_FRAME_ENTRIES);
+                calloc(sizeof(struct frame_table_entry*), init_ram_pages);
 
-    for (int i = 0; i < NUM_FRAME_ENTRIES; i++) {
+    for (uint32_t i = 0; i < init_ram_pages; i++) {
         frame_table[i] = NULL; 
     }
 }
@@ -21,13 +22,13 @@ void init_frame_table(void) {
    page is the virtual memory pointer to a page that is occupying this frame. */
 int get_frame(void *page) {
     uint32_t i = 0;
-    for (i = 0; i < NUM_FRAME_ENTRIES; i++) {
+    for (i = 0; i < init_ram_pages; i++) {
         if (frame_table[i] == NULL) {
             break;
         }
     }
 
-    if (i == NUM_FRAME_ENTRIES) {
+    if (i == init_ram_pages) {
         // TODO: evict
         PANIC("frame table full\n");
         return -1;
@@ -39,12 +40,6 @@ int get_frame(void *page) {
         return i;
     }
 }
-
-//  page is the virtual memory pointer to a page that is occupying this frame. 
-//    i is the index for this frame. 
-// void set_frame_page(void *page, int i) {
-//     ASSERT(frame_table[i] != NULL);
-// }
 
 
 
