@@ -20,14 +20,13 @@ void init_frame_table(void) {
     for (uint32_t i = 0; i < init_ram_pages; i++) {
         frame_table[i] = (struct frame_table_entry*) 
                         calloc(sizeof(struct frame_table_entry), 1);
-        frame_table[i] = NULL;
     }
 }
 
 /* Select an empty frame if available, otherwise choose a page
    to evict and evict it. */
-int evict(void) {
-    int vic = 0;
+uint32_t evict(void) {
+    uint32_t vic = 0;
 
     /* See if empty frame exists. */
     for (uint32_t i = 0; i < init_ram_pages; i++) {
@@ -45,13 +44,7 @@ int evict(void) {
 
 /* Gets the first free frame in the frame table. Returns an index. 
    page is the virtual memory pointer to a page that is occupying this frame. */
-int get_frame(bool user) {
-    // uint32_t i = 0;
-    // for (i = 0; i < init_ram_pages; i++) {
-    //     if (frame_table[i] == NULL) {
-    //         break;
-    //     }
-    // }
+uint32_t get_frame(bool user) {
     void *frame;
 
     // printf("At least we get here!\n");
@@ -72,7 +65,7 @@ int get_frame(bool user) {
         PANIC("frame table full\n");
         return -1;
     } else {
-        int frame_number = evict();
+        uint32_t frame_number = evict();
 
         // printf("What's the issue?\n");
         frame_table[frame_number]->page = frame;
