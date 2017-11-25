@@ -454,19 +454,22 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
 
         /* Get a page of memory. */
         uint8_t *kpage;
-#ifdef VM
-        /* TODO : verify correctness. */
-        int frame_entry = get_frame(upage, true);
-        if (frame_entry == -1) {
-            /* Uncaught error message - no frames evictable. */
-            PANIC("frame table full\n");
-            return false;
-        }
+// #ifdef VM
+//         /* TODO : verify correctness. */
+//         int frame_entry = get_frame(upage, true);
+//         if (frame_entry == -1) {
+//              Uncaught error message - no frames evictable. 
+//             PANIC("frame table full\n");
+//             return false;
+//         }
 
-        kpage = frame_table[frame_entry]->page;
-#else
+//         kpage = frame_table[frame_entry]->page;
+// #else
+//         kpage = palloc_get_page(PAL_USER);
+// #endif
+
+        /* Temp fix; above code not working, probably conceptual/design bug. */
         kpage = palloc_get_page(PAL_USER);
-#endif
 
         // if (kpage == NULL)
         //     return false;
@@ -502,23 +505,25 @@ static bool setup_stack(void **esp, const char *cmdline) {
 
     /* TODO : verify correctness. */
     // uint8_t *kpage;
-#ifdef VM
-    /* Free up some frame to hold the stack. */
-    int frame_entry = get_frame(((uint8_t *) PHYS_BASE) - PGSIZE, true);
-    if (frame_entry == -1) {
-        /* Uncaught error message - no frames evictable. */
-        PANIC("frame table full\n");
-        return false;
-    }
+// #ifdef VM
+//     /* Free up some frame to hold the stack. */
+//     int frame_entry = get_frame(((uint8_t *) PHYS_BASE) - PGSIZE, true);
+//     if (frame_entry == -1) {
+//         /* Uncaught error message - no frames evictable. */
+//         PANIC("frame table full\n");
+//         return false;
+//     }
 
-    /* TODO : currently this assumes that everything below is successful.
-       Make more robust. */
-    kpage = frame_table[frame_entry]->page;
-#else
+//     /* TODO : currently this assumes that everything below is successful.
+//        Make more robust. */
+//     kpage = frame_table[frame_entry]->page;
+// #else
+//     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
+// #endif
+
+    /* Temp fix; above code not working, probably conceptual/design bug. */
     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
-#endif
 
-    // kpage = palloc_get_page(PAL_USER | PAL_ZERO);
 
     /* This should not happen, if the frame table is working. */
     ASSERT(kpage != NULL);
