@@ -9,9 +9,10 @@
 #include <stdint.h>
 
 struct sup_entry {
-    int fd;             /* pointer to file to be opened */
-    unsigned file_ofs;       /* file loaded into page at fd's offset */
-    bool writable;      /* whether the page is writable */
+    int fd;             /* Pointer to file to be opened */
+    unsigned file_ofs;  /* File loaded into page at fd's offset */
+    bool writable;      /* Whether the page is writable */
+    bool loaded;        /* Whether data has been successfully loaded */
 };
 
 struct sup_entry *** sup_pagedir_create(void);

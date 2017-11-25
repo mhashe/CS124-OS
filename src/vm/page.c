@@ -16,7 +16,13 @@
 #include "userprog/pagedir.h"
 
 static inline struct sup_entry *sup_get_entry(void *vaddr, struct sup_entry ***sup_pagedir);
-static inline void sup_set_entry(void *vaddr, struct sup_entry ***sup_pagedir, struct sup_entry *entry);
+
+static inline void sup_set_entry(void *vaddr, struct sup_entry *** sup_pagedir, struct sup_entry *entry);
+
+static inline void *sup_remove_entry(void *upage, struct sup_entry *** 
+    sup_pagedir);
+
+/* Functions from syscall. TODO: how to not reimplement them here? */
 static int filesize(int fd);
 static struct file_des *file_from_fd(int fd);
 static int read(int fd, void* buffer, unsigned size, unsigned offset);
@@ -105,6 +111,11 @@ int sup_load_file(void *vaddr, bool user, bool write) {
         return -1;
     }
 
+    /* Unknown page fault since data has been loaded already. */
+    if (spe->loaded) {
+        return -1;
+    }
+
     /* If page fault due to write attempt to unwritable page, then failure. */
     if (write && (!spe->writable)) {
         return -1;
@@ -124,14 +135,16 @@ int sup_load_file(void *vaddr, bool user, bool write) {
         return -1;
     }
 
+    spe->loaded = true;
+
     return 0;
 }
 
 
 /* Removes supplemental entry from sup_pagedir at upage, which must be 
 page-aligned. Assumes enty exists. */
-static inline void sup_entry *sup_remove_entry(void *upage, struct sup_entry 
-    *** sub_pagedir) {
+static inline void *sup_remove_entry(void *upage, struct sup_entry 
+    *** sup_pagedir) {
     // TODO: make this computationally more efficient
     free(sup_pagedir[pd_no(upage)][pt_no(upage)]);
     sup_pagedir[pd_no(upage)][pt_no(upage)] = NULL;

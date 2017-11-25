@@ -17,7 +17,7 @@
 #include "threads/malloc.h"   /* For malloc. */
 #include "filesys/off_t.h"    /* For off_t. */
 #include "threads/synch.h"    /* For locks. */
-
+#include "vm/page.h"
 
 /* Handler function. */
 static void syscall_handler(struct intr_frame *);
@@ -580,7 +580,7 @@ static void mmap(struct intr_frame *f) {
     verify_pointer((uint32_t *) addr);
 
     /* TODO: Function, more error checking. */
-
+    
     /* TODO: return mapid_t */
     f->eax = -1;
 }
