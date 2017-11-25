@@ -168,7 +168,7 @@ static void halt(struct intr_frame *f UNUSED) {
 /* Terminates the current user program, returning status to the kernel. If the
    process's parent waits for it (see below), this is the status that will be
    returned. */
-static void exit(struct intr_frame *f) {
+void exit(struct intr_frame *f) {
     /* Parse arguments. */
     int status = get_arg(f, 1);
 

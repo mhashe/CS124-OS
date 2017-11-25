@@ -455,7 +455,7 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         /* Get a page of memory. */
 #ifdef VM
         /* TODO : verify correctness. */
-        int frame_entry = get_frame(upage);
+        int frame_entry = get_frame(upage, true);
         if (frame_entry == -1) {
             /* Uncaught error message - no frames evictable. */
             PANIC("frame table full\n");
@@ -499,7 +499,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
     /* TODO : verify correctness. */
 #ifdef VM
     /* Free up some frame to hold the stack. */
-    int frame_entry = get_frame(((uint8_t *) PHYS_BASE) - PGSIZE);
+    int frame_entry = get_frame(((uint8_t *) PHYS_BASE) - PGSIZE, true);
     if (frame_entry == -1) {
         /* Uncaught error message - no frames evictable. */
         PANIC("frame table full\n");

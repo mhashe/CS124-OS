@@ -141,7 +141,8 @@ static void page_fault(struct intr_frame *f) {
        body, and replace it with code that brings in the page to
        which fault_addr refers. */
 
-    /* If access to virtual address invalid, then terminate the process. */
+
+    /* If access to virtual address invalid, then terminate the process. */ 
     if ((user && is_kernel_vaddr(fault_addr)) || // invalid access to kernel
       (!not_present)) // invalid access to read-only page
     {

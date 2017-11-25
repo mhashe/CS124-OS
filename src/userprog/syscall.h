@@ -2,6 +2,7 @@
 #define USERPROG_SYSCALL_H
 
 #include "lib/inttypes.h"
+#include "threads/interrupt.h"
 
 /* Process identifier. */
 typedef int pid_t;
