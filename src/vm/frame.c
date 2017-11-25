@@ -11,14 +11,16 @@ void init_frame_table(void) {
                 calloc(sizeof(struct frame_table_entry*), NUM_FRAME_ENTRIES);
 }
 
-/* Gets the first free frame in the frame table. Returns an index. */
-int get_empty_frame(void) {
+/* Gets the first free frame in the frame table. Returns an index. 
+   page is the virtual memory pointer to a page that is occupying this frame. */
+int get_frame(void *page) {
     uint32_t i = 0;
     for (i = 0; i < NUM_FRAME_ENTRIES; i++) {
         if (frame_table[i] == NULL) {
             break;
         }
     }
+
     if (i == NUM_FRAME_ENTRIES) {
         // TODO: evict
         PANIC("frame table full\n");
@@ -26,12 +28,17 @@ int get_empty_frame(void) {
     } else {
         frame_table[i] = (struct frame_table_entry*) 
                         calloc(sizeof(struct frame_table_entry), 1);
+        frame_table[i]->page = page;
 
         return i;
     }
 }
 
-
+/* page is the virtual memory pointer to a page that is occupying this frame. 
+   i is the index for this frame. */
+void set_frame_page(void *page, int i) {
+    ASSERT(frame_table[i] != NULL);
+}
 
 
 

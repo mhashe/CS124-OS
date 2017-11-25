@@ -20,7 +20,7 @@ struct frame_table_entry {
 struct frame_table_entry** frame_table;
 
 void init_frame_table(void);
-int get_empty_frame(void);
+int get_frame(void* page);
 
 
 #endif /* vm/frame.h */
