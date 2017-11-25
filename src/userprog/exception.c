@@ -5,6 +5,7 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "vm/frame.h"
+#include "userprog/syscall.h"
 
 /*! Number of page faults processed. */
 static long long page_fault_cnt;
@@ -150,7 +151,8 @@ static void page_fault(struct intr_frame *f) {
              not_present ? "not present" : "rights violation",
              write ? "writing" : "reading",
              user ? "user" : "kernel");
-      kill(f);
+      // TODO: exit with exit(). but how to make the frame?
+      // exit(-1);
     }
     /* Else if valid, locate data to go into the page. */
     else {

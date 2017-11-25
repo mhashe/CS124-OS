@@ -30,7 +30,6 @@ static struct file_des *file_from_fd(int fd);
 
 /* Handlers for Project 4. */
 static void     halt(struct intr_frame *f);
-static void     exit(struct intr_frame *f);
 static void     exec(struct intr_frame *f);
 static void     wait(struct intr_frame *f);
 static void   create(struct intr_frame *f);
