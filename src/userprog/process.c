@@ -446,7 +446,7 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         /* Get a page of memory. */
 #ifdef VM
         /* TODO : verify correctness. */
-        int frame_entry = get_empty_frame();
+        int frame_entry = get_frame(upage);
         if (frame_entry == -1) {
             /* Uncaught error message - no frames evictable. */
             PANIC("frame table full\n");
@@ -459,8 +459,6 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         //     return false;
         /* This should not happen, if the frame table is working. */
         ASSERT(kpage != NULL);
-
-        /* TODO : set in frame table. */
 
         /* Load this page. */
         if (file_read(file, kpage, page_read_bytes) != (int) page_read_bytes) {
@@ -492,20 +490,21 @@ static bool setup_stack(void **esp, const char *cmdline) {
     /* TODO : verify correctness. */
 #ifdef VM
     /* Free up some frame to hold the stack. */
-    int frame_entry = get_empty_frame();
+    int frame_entry = get_frame(((uint8_t *) PHYS_BASE) - PGSIZE);
     if (frame_entry == -1) {
         /* Uncaught error message - no frames evictable. */
         PANIC("frame table full\n");
         return false;
     }
+
+    /* TODO : currently this assumes that everything below is successful.
+       Make more robust. */
 #endif
 
     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
 
     /* This should not happen, if the frame table is working. */
     ASSERT(kpage != NULL);
-
-    /* TODO : set in frame table. */
 
     if (kpage != NULL) {
         success = install_page(((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
