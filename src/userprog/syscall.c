@@ -587,6 +587,7 @@ static void mmap(struct intr_frame *f) {
 
 
 static void munmap(struct intr_frame *f) {
+    (void)f;
     /* Parse arguments. */
     // mapid_t mapid = get_arg(f, 1);
 
