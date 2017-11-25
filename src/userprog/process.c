@@ -453,6 +453,7 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
         /* Get a page of memory. */
+        uint8_t *kpage;
 #ifdef VM
         /* TODO : verify correctness. */
         int frame_entry = get_frame(upage, true);
@@ -461,9 +462,12 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
             PANIC("frame table full\n");
             return false;
         }
+
+        kpage = frame_table[frame_entry]->page;
+#else
+        kpage = palloc_get_page(PAL_USER);
 #endif
 
-        uint8_t *kpage = palloc_get_page(PAL_USER);
         // if (kpage == NULL)
         //     return false;
         /* This should not happen, if the frame table is working. */
@@ -497,6 +501,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
     bool success = false;
 
     /* TODO : verify correctness. */
+    // uint8_t *kpage;
 #ifdef VM
     /* Free up some frame to hold the stack. */
     int frame_entry = get_frame(((uint8_t *) PHYS_BASE) - PGSIZE, true);
@@ -508,9 +513,12 @@ static bool setup_stack(void **esp, const char *cmdline) {
 
     /* TODO : currently this assumes that everything below is successful.
        Make more robust. */
+    kpage = frame_table[frame_entry]->page;
+#else
+    kpage = palloc_get_page(PAL_USER | PAL_ZERO);
 #endif
 
-    kpage = palloc_get_page(PAL_USER | PAL_ZERO);
+    // kpage = palloc_get_page(PAL_USER | PAL_ZERO);
 
     /* This should not happen, if the frame table is working. */
     ASSERT(kpage != NULL);
