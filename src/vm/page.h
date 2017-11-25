@@ -18,8 +18,9 @@ struct sup_entry {
     struct list_elem elem;
 };
 
-int sup_load_file(uint32_t * vaddr, struct file_des *fd, int offset);
+int sup_alloc_file(uint32_t * vaddr, struct file_des *fd);
 struct sup_entry* sup_get_entry(uint32_t * vaddr, struct list *spd);
+int sup_load_file(uint32_t *vaddr, bool user);
 
 #endif /* vm/page.h */
 

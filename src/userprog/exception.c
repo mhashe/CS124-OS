@@ -6,6 +6,7 @@
 #include "threads/thread.h"
 #include "vm/frame.h"
 #include "userprog/syscall.h"
+#include "vm/page.h"
 
 /*! Number of page faults processed. */
 static long long page_fault_cnt;
@@ -142,7 +143,7 @@ static void page_fault(struct intr_frame *f) {
        which fault_addr refers. */
 
 
-    /* If access to virtual address invalid, then terminate the process. */ 
+    /* If access to address invalid, then terminate the process. */ 
     if ((user && is_kernel_vaddr(fault_addr)) || // invalid access to kernel
       (!not_present)) // invalid access to read-only page
     {
@@ -161,9 +162,14 @@ static void page_fault(struct intr_frame *f) {
       // TODO: consider the case that the data is already in a page frame
 
       ASSERT(not_present); // TODO: just confirming this is the only option??
+
+      // TODO: assuming that faul_addr is user virtual addr if user caused fault
+      int res = sup_load_file(fault_addr, user);
+
+
       
       // TODO: Load data into frame and link to page of virtual address:
-      
+
       // void *frame = frame_table[get_empty_frame()]->page;
       // load data into the frame
       // use supplementary table to link frame to virtual address

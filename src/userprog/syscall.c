@@ -35,7 +35,6 @@ static void     wait(struct intr_frame *f);
 static void   create(struct intr_frame *f);
 static void   remove(struct intr_frame *f);
 static void     open(struct intr_frame *f);
-static void filesize(struct intr_frame *f);
 static void     read(struct intr_frame *f);
 static void    write(struct intr_frame *f);
 static void     seek(struct intr_frame *f);
@@ -367,7 +366,7 @@ static void open(struct intr_frame *f) {
 
 
 /* Returns the size, in bytes, of the file open as fd. */
-static void filesize(struct intr_frame *f) {
+void filesize(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
 
