@@ -82,7 +82,7 @@ uint32_t* verify_pointer(uint32_t* p) {
     thread_exit();
 }
 
-/* Checks if given pointer is in user space and in a mapped address. */
+/* Checks if given pointer is in user space. */
 uint32_t* verify_user_pointer(uint32_t* p) {
     if (is_user_vaddr(p)) {
         /* Valid pointer, continue. */
@@ -604,15 +604,14 @@ static void mmap(struct intr_frame *f) {
       
 
     /* TODO: Function, more error checking. */
+    // TODO: should it always be writable?
     mapid_t mapid = sup_alloc_file(addr, fd, true); // 
     if (mapid == MAP_FAILED) {
         f->eax = -1;
     } else {
         f->eax = mapid;
     }
-    // TODO: should it always be writable?
 
-    /* TODO: fail if addr is 0 */
     /* TODO: fail pages overlap existing mapped pages (stack or otherwise) */
 }
 
@@ -621,7 +620,7 @@ static void munmap(struct intr_frame *f) {
     (void)f;
     /* Parse arguments. */
     mapid_t mapid = get_arg(f, 1);
-    sup_remove_map(mapid); // TODO: this can return failure? just ignore it?
+    sup_remove_map(mapid);
 
     /* TODO : include definition for mapid_t.
        Used in lib/user/syscall.c */

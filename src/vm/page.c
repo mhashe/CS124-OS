@@ -15,9 +15,11 @@
 #include "userprog/syscall.h"
 #include "userprog/pagedir.h"
 
-static inline struct sup_entry *sup_get_entry(void *vaddr, struct sup_entry ***sup_pagedir);
+static inline struct sup_entry *sup_get_entry(void *vaddr, 
+    struct sup_entry ***sup_pagedir);
 
-static inline void sup_set_entry(void *vaddr, struct sup_entry *** sup_pagedir, struct sup_entry *entry);
+static inline void sup_set_entry(void *vaddr, struct sup_entry *** sup_pagedir, 
+    struct sup_entry *entry);
 
 static inline void sup_remove_entry(void *upage, struct sup_entry *** 
     sup_pagedir);
@@ -34,6 +36,49 @@ struct sup_entry *** sup_pagedir_create(void) {
     return (struct sup_entry ***) palloc_get_page(PAL_ASSERT | PAL_ZERO);
 }
 
+
+/* Allocate an all zero page and Returns 0 on success, -1 on failure. */
+int sup_all_zeros(void * vaddr, bool user) {
+    struct thread *cur = thread_current();
+    struct sup_entry *spe;
+
+    /* Allocate and get physical frame for data to be loaded into. */
+    uint32_t frame_no = get_frame(user);
+    void *kpage = ftov(frame_no);
+
+    /* If the provided address is not page-aligned, return failure. */
+    int offset = pg_ofs(vaddr);
+    if (offset != 0) {
+        return -1;
+    }
+
+    /* If the page specified by vaddr is already occupied, return failure. */
+    if (sup_get_entry(vaddr, cur->sup_pagedir) != NULL) {
+        return -1;
+    }
+ 
+    /* Linking frame to virtual address failed, so remove and deallocate the 
+    page instantiated for it. */
+    if (!pagedir_set_page(cur->pagedir, vaddr, kpage, true)) {
+        free_frame(frame_no);
+        return -1;
+    }
+
+    /* Create supplmentary entry corresponding to an initially all zero page. */
+    spe = (struct sup_entry *) malloc(sizeof(struct sup_entry));
+    spe->fd = -1;
+    spe->file_ofs = 0;
+    spe->page_end = PGSIZE;
+    spe->writable = true;
+    spe->loaded = true;
+    spe->all_zero = true;
+    spe->frame_no = frame_no;
+    spe->mapid = MAP_FAILED;
+
+    sup_set_entry(vaddr, cur->sup_pagedir, spe);
+
+    return 0;
+}
 
 /* Allocates entire file in as many pages as needed in supplementary page 
 table. The file is given by "int fd" and it is writable if "writeable". To 
@@ -92,6 +137,7 @@ int sup_alloc_file(void * vaddr, int fd, bool writable) {
         spe->loaded = false;
         spe->frame_no = (uint32_t) -1;
         spe->mapid = last_mapid;
+        spe->all_zero = false;
         sup_set_entry(addr, sup_pagedir, spe);
     }
 
@@ -143,6 +189,8 @@ int sup_load_file(void *vaddr, bool user, bool write) {
 
     return 0;
 }
+
+
 
 
 /* Deallocate and remove file from supplementary page table. */
@@ -206,7 +254,8 @@ static inline void sup_remove_entry(void *upage, struct sup_entry
 
 /* Retreives supplemental entry from sup_pagedir at upage, which must be 
 page-aligned. */
-static inline struct sup_entry *sup_get_entry(void *upage, struct sup_entry ***sup_pagedir) {
+static inline struct sup_entry *sup_get_entry(void *upage, 
+                                            struct sup_entry ***sup_pagedir) {
     uintptr_t pd = pd_no(upage);
     if (sup_pagedir[pd] == NULL) {
         return NULL;
@@ -217,7 +266,8 @@ static inline struct sup_entry *sup_get_entry(void *upage, struct sup_entry ***s
 
 /* Sets supplemental entry from sup_pagedir at upage to be entry. upage must 
 be page-aligned. */
-static inline void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir, struct sup_entry *entry) {
+static inline void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir, 
+                                struct sup_entry *entry) {
     uintptr_t pd = pd_no(upage);
     if (sup_pagedir[pd] == NULL) {
         sup_pagedir[pd] = palloc_get_page(PAL_ASSERT | PAL_ZERO);
