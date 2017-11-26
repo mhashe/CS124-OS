@@ -82,9 +82,11 @@ int sup_all_zeros(void * vaddr, bool user) {
 }
 
 
-/* Allocates entire file in as many pages as needed in supplementary page 
-table. The file is given by "int fd" and it is writable if "writeable". To 
-be called in mmap. Returns entry on success, NULL on failure. */
+/* Allocates entire file in as many pages as needed in supplementary page table.
+   The file is given by "int fd" and it is writable if "writeable". To be called
+   in mmap. Returns entry on success, NULL on failure. Note this function does
+   not actually load the pages into memory. That is done on subsequent page
+   faults. */
 int sup_alloc_file(void * vaddr, int fd, bool writable) {
     static mapid_t last_mapid = 0;
 
@@ -148,7 +150,7 @@ int sup_alloc_file(void * vaddr, int fd, bool writable) {
 
 
 /* Loads part of file needed at vaddr page. Returns 0 on success, -1 on 
-failure. */
+   failure. */
 int sup_load_file(void *vaddr, bool user, bool write) {
     struct thread *cur = thread_current();
     void *upage = pg_round_down(vaddr);
@@ -208,7 +210,7 @@ void sup_remove_map(mapid_t mapid) {
             if (!entry || entry->mapid != mapid) {
                 continue;
             }
-            // pagedir_clear_page()
+
             if (entry->loaded) {
                 sup_write(entry->fd, ftov(entry->frame_no), 
                     entry->page_end, entry->file_ofs);
@@ -224,7 +226,8 @@ void sup_remove_map(mapid_t mapid) {
 
 
 /* Free all allocated pages and entries in the supplementary page table. 
-TODO: Add this to process exit! */
+TODO: Add this to process exit!
+TODO: Free the associate frames? */
 void sup_free_table(struct sup_entry ***sup_pagedir) {
     for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
         if (!sup_pagedir[i]) {
@@ -247,8 +250,9 @@ page-aligned. Assumes enty exists. */
 static inline void sup_remove_entry(void *upage, struct sup_entry 
     *** sup_pagedir) {
     // TODO: make this computationally more efficient with local vars
-    free(sup_pagedir[pd_no(upage)][pt_no(upage)]);
+    struct sup_entry *sup_pte = sup_pagedir[pd_no(upage)][pt_no(upage)];
     sup_pagedir[pd_no(upage)][pt_no(upage)] = NULL;
+    free(sup_pte);
     // TODO: free entire table if nothing is left?
 }
 
