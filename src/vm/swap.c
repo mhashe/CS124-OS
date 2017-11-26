@@ -24,7 +24,7 @@ void swap_init(void) {
 }
 
 
-/* Writes data at addr into swap_slot. */
+/* Writes PGSIZE of data at addr into swap_slot. */
 void swap_write(swapslot_t swap_slot, void *addr) {
     block_sector_t first_sec = swap_slot_to_sector(swap_slot);
 
@@ -35,7 +35,7 @@ void swap_write(swapslot_t swap_slot, void *addr) {
 }
 
 
-/* Reads data at swap_slot into addr. */
+/* Reads PGSIZE of data at swap_slot into addr. */
 void swap_read(swapslot_t swap_slot, void *addr) {
     block_sector_t first_sec = swap_slot_to_sector(swap_slot);
 
