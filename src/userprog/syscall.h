@@ -7,6 +7,9 @@
 /* Process identifier. */
 typedef int pid_t;
 
+/* Mapid identifier. */
+typedef int mapid_t;
+
 void syscall_init(void);
 
 uint32_t* verify_pointer(uint32_t* p);
