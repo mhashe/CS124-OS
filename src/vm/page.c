@@ -19,7 +19,7 @@ static inline struct sup_entry *sup_get_entry(void *vaddr, struct sup_entry ***s
 
 static inline void sup_set_entry(void *vaddr, struct sup_entry *** sup_pagedir, struct sup_entry *entry);
 
-static inline void *sup_remove_entry(void *upage, struct sup_entry *** 
+static inline void sup_remove_entry(void *upage, struct sup_entry *** 
     sup_pagedir);
 
 /* Functions from syscall. TODO: how to not reimplement them here? */
@@ -124,7 +124,8 @@ int sup_load_file(void *vaddr, bool user, bool write) {
         return -1;
     }
 
-    void * kpage = ftov(get_frame(user));
+    uint32_t frame_no = get_frame(user);
+    void * kpage = ftov(frame_no);
 
     /* Load one page of file at file_ofs into the frame. */
     if (read(spe->fd, kpage, (unsigned) PGSIZE, spe->file_ofs) == -1) {
@@ -134,10 +135,11 @@ int sup_load_file(void *vaddr, bool user, bool write) {
     /* Linking frame to virtual address failed, so remove and deallocate the 
     page instantiated for it. */
     if (!pagedir_set_page(cur->pagedir, upage, kpage, spe->writable)) {
-        // TODO: remove and deallocate frame
+        free_frame(frame_no);
         return -1;
     }
 
+    spe->frame_no = frame_no;
     spe->loaded = true;
 
     return 0;
@@ -150,19 +152,33 @@ int sup_remove_file(void *vaddr) {
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
 
     void *upage = pg_round_down(vaddr);
-    struct sup_entry* entry;
+    struct sup_entry* entry = sup_get_entry(upage, sup_pagedir);
 
-    // TODO: implement
-    // do {
-    //     entry = sup_get_entry(upage);
-    //     re
-    // }
-    // while (sup_get_entry(upage, sup_pagedir)->loaded)
+    int file = entry->fd;
+    int success = 0;
+
+    while (entry->fd == file) {
+        if (entry->loaded) {
+            free_frame(entry->frame_no);
+        }
+        sup_remove_entry(upage, sup_pagedir);
+        
+        upage += PGSIZE;
+        // TODO: edge case: this is the last page in the entire directory
+        
+        entry = sup_get_entry(upage, sup_pagedir);
+        if (entry == NULL) {
+            success = -1;
+            break;
+        }
+    }
+
+    return success;
 }
 
 /* Removes supplemental entry from sup_pagedir at upage, which must be 
 page-aligned. Assumes enty exists. */
-static inline void *sup_remove_entry(void *upage, struct sup_entry 
+static inline void sup_remove_entry(void *upage, struct sup_entry 
     *** sup_pagedir) {
     // TODO: make this computationally more efficient
     free(sup_pagedir[pd_no(upage)][pt_no(upage)]);
