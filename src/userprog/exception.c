@@ -145,20 +145,21 @@ static void page_fault(struct intr_frame *f) {
        body, and replace it with code that brings in the page to
        which fault_addr refers. */
 
-#ifdef VM
     /* If access to virtual address valid, load data that goes into the page. */ 
-    // If valid access to kernel and present page
+#ifdef VM
+    /* If the user is not accessing the kernel, this is not invalid. */
     if (!(user && is_kernel_vaddr(fault_addr))) {
+
         /* If no data at address was expected (via sup table) or write-attempt 
         was made to read-only page, this returns -1 such that we don't return
-        normally. */
+        normally without exiting the process. */
         if (sup_load_file(fault_addr, user, write) != -1) {
             return;
         }
     }
 #endif
-    
-    /* Else, terminate the process. */
+
+    /* Else, the invalid access terminates the process. */
     printf("Page fault at %p: %s error %s page in %s context.\n",
          fault_addr,
          not_present ? "not present" : "rights violation",

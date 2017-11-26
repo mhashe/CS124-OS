@@ -77,6 +77,7 @@ int sup_alloc_file(void * vaddr, int fd, bool writable) {
 
         // TODO: If this address is not a valid address for other reasons, return -1
 
+        /* There is not enough free pages to allocate the file, so fail. */
         if (spe != NULL) {
             return -1;
         }
@@ -95,9 +96,6 @@ int sup_alloc_file(void * vaddr, int fd, bool writable) {
         sup_set_entry(addr, sup_pagedir, spe);
     }
 
-
-    // TODO: now that pages have been allocated, need to prevent allocating 
-    // pages at these virtual address later on. HOW?
     return 0;
 }
 
@@ -119,15 +117,16 @@ int sup_load_file(void *vaddr, bool user, bool write) {
         return -1;
     }
 
-    /* If page fault due to write attempt to unwritable page, then failure. */
+    /* Invalid access if page fault was due to write attempt on r/only page. */
     if (write && (!spe->writable)) {
         return -1;
     }
 
+    /* Allocate and get physical frame for data to be loaded into. */
     uint32_t frame_no = get_frame(user);
     void * kpage = ftov(frame_no);
 
-    /* Load one page of file at file_ofs into the frame. */
+    /* Load one page of the file at file_ofs into the frame. */
     if (read(spe->fd, kpage, (unsigned) PGSIZE, spe->file_ofs) == -1) {
         return -1;
     }
