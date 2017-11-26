@@ -12,11 +12,11 @@
 
 void swap_init(void);
 
-void swap_write(int swap_slot, void *addr);
+void swap_write(size_t swap_slot, void *addr);
 
-void swap_read(int swap_slot, void *addr);
+void swap_read(size_t swap_slot, void *addr);
 
-
+size_t swap_alloc(void);
 
 
 #endif /* vm/swap.h */
