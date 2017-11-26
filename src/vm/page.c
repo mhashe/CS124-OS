@@ -157,6 +157,8 @@ int sup_remove_file(void *vaddr) {
     int file = entry->fd;
     int success = 0;
 
+    // TODO: this assumes the same file has not been allocated multiple times 
+    // by the same process!
     while (entry->fd == file) {
         if (entry->loaded) {
             free_frame(entry->frame_no);

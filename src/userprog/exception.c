@@ -145,35 +145,28 @@ static void page_fault(struct intr_frame *f) {
        body, and replace it with code that brings in the page to
        which fault_addr refers. */
 
-
-    /* If access to virtual address invalid, then terminate the process. */ 
-    if ((user && is_kernel_vaddr(fault_addr)) || // invalid access to kernel
-        (!not_present)) // invalid access to read-only page
-    {
-        // TODO: delete this print statement or keep?
-        printf("Page fault at %p: %s error %s page in %s context.\n",
-             fault_addr,
-             not_present ? "not present" : "rights violation",
-             write ? "writing" : "reading",
-             user ? "user" : "kernel");
-        exit(-1);
-    }
-    /* Else if valid, locate data to go into the page. */
-    else {
-        // TODO: consider the case that the data is already in a page frame
-
-        ASSERT(not_present); // TODO: just confirming this is the only option??
-
-        /* Load data into frame at link to page of virtual address. If virtual 
-        address has not been mapped, exit the process. */
 #ifdef VM
-        if (sup_load_file(fault_addr, user, write) == -1) {
-            exit(-1);
+    /* If access to virtual address valid, load data that goes into the page. */ 
+    // If valid access to kernel and present page
+    if (!(user && is_kernel_vaddr(fault_addr))) {
+        /* If no data at address was expected (via sup table) or write-attempt 
+        was made to read-only page, this returns -1 such that we don't return
+        normally. */
+        if (sup_load_file(fault_addr, user, write) != -1) {
+            return;
         }
-#endif
     }
-      
+#endif
+    
+    /* Else, terminate the process. */
+    printf("Page fault at %p: %s error %s page in %s context.\n",
+         fault_addr,
+         not_present ? "not present" : "rights violation",
+         write ? "writing" : "reading",
+         user ? "user" : "kernel");
+    exit(-1);
 }
+
 
 /* Terminates the current user program, returning status to the kernel. If the
    process's parent waits for it (see below), this is the status that will be
