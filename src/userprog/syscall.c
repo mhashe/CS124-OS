@@ -635,6 +635,13 @@ static void mmap(struct intr_frame *f) {
     if (fd == STDIN_FILENO || fd == STDOUT_FILENO) {
         thread_exit();
     }
+
+    if (addr == NULL) {
+      f->eax = MAP_FAILED;
+      return;
+
+    }
+    
     verify_user_pointer((uint32_t *) addr);
       
 
@@ -642,7 +649,7 @@ static void mmap(struct intr_frame *f) {
     // TODO: should it always be writable?
     mapid_t mapid = sup_alloc_file(addr, fd, true); // 
     if (mapid == MAP_FAILED) {
-        f->eax = -1;
+        f->eax = MAP_FAILED;
     } else {
         f->eax = mapid;
     }
