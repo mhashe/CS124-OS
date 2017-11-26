@@ -587,13 +587,16 @@ static void mmap(struct intr_frame *f) {
     verify_pointer((uint32_t *) addr);
 
     /* TODO: Function, more error checking. */
-    sup_alloc_file(addr, fd, true); // TODO: should it always be writable?
+    mapid_t mapid = sup_alloc_file(addr, fd, true); // 
+    if (mapid == -1) {
+        f->eax = -1;
+    }
+    // TODO: should it always be writable?
 
     /* TODO: return mapid_t */
     /* TODO: fail if addr is not page-aligned */
     /* TODO: fail if addr is 0 */
     /* TODO: fail pages overlap existing mapped pages (stack or otherwise) */
-    f->eax = -1;
 }
 
 
@@ -601,6 +604,7 @@ static void munmap(struct intr_frame *f) {
     (void)f;
     /* Parse arguments. */
     mapid_t mapid = get_arg(f, 1);
+    sup_remove_map(mapid); // TODO: this can return failure? just ignore it?
 
     /* TODO : include definition for mapid_t.
        Used in lib/user/syscall.c */

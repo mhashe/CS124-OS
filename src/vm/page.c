@@ -36,8 +36,10 @@ struct sup_entry *** sup_pagedir_create(void) {
 
 /* Allocates entire file in as many pages as needed in supplementary page 
 table. The file is given by "int fd" and it is writable if "writeable". To 
-be called in mmap. Returns 0 on success, -1 on failure. */
-int sup_alloc_file(void * vaddr, int fd, bool writable) {
+be called in mmap. Returns entry on success, NULL on failure. */
+int sup_alloc_file(void * vaddr, int fd, bool writable, mapid_t mapid) {
+    static mapid_t last_mapid = 0;
+    last_mapid++;
     /* Current thread's supplemental page directory. */
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
     
@@ -74,10 +76,11 @@ int sup_alloc_file(void * vaddr, int fd, bool writable) {
         spe->fd = fd;
         spe->file_ofs = (unsigned) (offset + (PGSIZE * page));
         spe->writable = writable;
+        spe->mapid = last_mapid;
         sup_set_entry(addr, sup_pagedir, spe);
     }
 
-    return 0;
+    return last_mapid;
 }
 
 
@@ -129,32 +132,31 @@ int sup_load_file(void *vaddr, bool user, bool write) {
 
 /* Deallocate and remove file from supplementary page table. Return -1 if 
 not successful. 0 if successful. */
-int sup_remove_file(void *vaddr) {
+int sup_remove_map(mapid_t mapid) {
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
 
-    void *upage = pg_round_down(vaddr);
-    struct sup_entry* entry = sup_get_entry(upage, sup_pagedir);
+    // struct sup_entry* entry = sup_get_entry(upage, sup_pagedir);
 
-    int file = entry->fd;
+    mapid_t mapid = entry->mapid;
     int success = 0;
 
-    // TODO: this assumes the same file has not been allocated multiple times 
+    // TODO: iterate through all allocated pages with mapid = arg:mapid
     // by the same process!
-    while (entry->fd == file) {
-        if (entry->loaded) {
-            free_frame(entry->frame_no);
-        }
-        sup_remove_entry(upage, sup_pagedir);
+    // while (entry->mapid == mapid) {
+    //     if (entry->loaded) {
+    //         free_frame(entry->frame_no);
+    //     }
+    //     sup_remove_entry(upage, sup_pagedir);
         
-        upage += PGSIZE;
-        // TODO: edge case: this is the last page in the entire directory
+    //     upage += PGSIZE;
+    //     // TODO: edge case: this is the last page in the entire directory
         
-        entry = sup_get_entry(upage, sup_pagedir);
-        if (entry == NULL) {
-            success = -1;
-            break;
-        }
-    }
+    //     entry = sup_get_entry(upage, sup_pagedir);
+    //     if (entry == NULL) {
+    //         success = -1;
+    //         break;
+    //     }
+    // }
 
     return success;
 }
