@@ -166,6 +166,9 @@ void sup_free_table(struct sup_entry ***sup_pagedir) {
     char *vaddr;
     size_t last_pde = pd_no(ptov(0));
 
+    // TODO: change this. not everything is allocated in the begenning. 
+    // instead, only deallocate tables that are not null. within these tables,
+    // only deallocate entries that are not null, as done below.
     for (size_t page = 0; page < init_ram_pages; page++) {
         vaddr = ptov(page * PGSIZE);
         pde_idx = pd_no(vaddr);
@@ -193,9 +196,10 @@ void sup_free_table(struct sup_entry ***sup_pagedir) {
 page-aligned. Assumes enty exists. */
 static inline void sup_remove_entry(void *upage, struct sup_entry 
     *** sup_pagedir) {
-    // TODO: make this computationally more efficient
+    // TODO: make this computationally more efficient with local vars
     free(sup_pagedir[pd_no(upage)][pt_no(upage)]);
     sup_pagedir[pd_no(upage)][pt_no(upage)] = NULL;
+    // TODO: free entire table if nothing is left?
 }
 
 
