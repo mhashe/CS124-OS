@@ -590,6 +590,9 @@ static void mmap(struct intr_frame *f) {
     sup_alloc_file(addr, fd, true); // TODO: should it always be writable?
 
     /* TODO: return mapid_t */
+    /* TODO: fail if addr is not page-aligned */
+    /* TODO: fail if addr is 0 */
+    /* TODO: fail pages overlap existing mapped pages (stack or otherwise) */
     f->eax = -1;
 }
 
@@ -597,7 +600,7 @@ static void mmap(struct intr_frame *f) {
 static void munmap(struct intr_frame *f) {
     (void)f;
     /* Parse arguments. */
-    // mapid_t mapid = get_arg(f, 1);
+    mapid_t mapid = get_arg(f, 1);
 
     /* TODO : include definition for mapid_t.
        Used in lib/user/syscall.c */

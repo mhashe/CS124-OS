@@ -70,7 +70,7 @@ int sup_alloc_file(void * vaddr, int fd, bool writable) {
         void *addr = (vaddr + (PGSIZE * page));
         struct sup_entry* spe = sup_get_entry(addr, sup_pagedir);
 
-        spe =(struct sup_entry *) malloc(sizeof(struct sup_entry));
+        spe = (struct sup_entry *) malloc(sizeof(struct sup_entry));
         spe->fd = fd;
         spe->file_ofs = (unsigned) (offset + (PGSIZE * page));
         spe->writable = writable;
