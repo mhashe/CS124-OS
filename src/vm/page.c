@@ -33,12 +33,15 @@ struct sup_entry *** sup_pagedir_create(void) {
     struct sup_entry ***sup_pagedir;
     struct sup_entry **sup_t;
 
+    size_t pde_idx, pte_idx;
+    char *vaddr;
+
     sup_pagedir = (struct sup_entry ***) palloc_get_page(PAL_ASSERT | PAL_ZERO);
     sup_t = NULL;
     for (size_t page = 0; page < init_ram_pages; page++) {
-        char *vaddr = ptov(page * PGSIZE);
-        size_t pde_idx = pd_no(vaddr);
-        size_t pte_idx = pt_no(vaddr);
+        vaddr = ptov(page * PGSIZE);
+        pde_idx = pd_no(vaddr);
+        pte_idx = pt_no(vaddr);
 
         // TODO: is 0 the same as null? counting on that here...
         if (sup_pagedir[pde_idx] == NULL) {
@@ -177,6 +180,36 @@ int sup_remove_file(void *vaddr) {
 
     return success;
 }
+
+/* Free all allocated pages and entries in the supplementary page table. 
+TODO: Add this to process exit! */
+void sup_free_table(struct sup_entry ***sup_pagedir) {
+    size_t pde_idx, pte_idx;
+    char *vaddr;
+    size_t last_pde = pd_no(ptov(0));
+
+    for (size_t page = 0; page < init_ram_pages; page++) {
+        vaddr = ptov(page * PGSIZE);
+        pde_idx = pd_no(vaddr);
+        pte_idx = pt_no(vaddr);
+
+        if (last_pde != pde_idx) {
+            palloc_free_page(sup_pagedir[last_pde]);
+            last_pde = pde_idx;
+        }
+
+        struct sup_entry * entry = sup_pagedir[pde_idx][pte_idx];
+        if (entry != NULL) {
+            if (entry->loaded) {
+                free_frame(entry->frame_no);
+            }
+            free(entry);
+        }
+    }
+
+    palloc_free_page(sup_pagedir);
+}
+
 
 /* Removes supplemental entry from sup_pagedir at upage, which must be 
 page-aligned. Assumes enty exists. */
