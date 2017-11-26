@@ -587,6 +587,48 @@ static bool setup_stack(void **esp, const char *cmdline) {
     return success;
 }
 
+// /*! Extends stack by creating a new zeroed page on the stack. */
+// bool extend_stack(void) {
+//     uint8_t *kpage;
+//     bool success = false;
+
+//     /* Make sure we're not going over our limit of pages. */
+//     struct thread *t = thread_current();
+//     uint32_t np = t->num_stack_pages;
+
+//     ASSERT(np <= MAX_PAGES);
+//     if (np == MAX_PAGES) {
+//         return success;
+//     }
+
+//     /* TODO : verify correctness. */
+// #ifdef VM
+//     /* Free up some frame to hold the stack. */
+//     int frame_entry = get_frame(true);
+//     if (frame_entry == -1) {
+//         /* Uncaught error message - no frames evictable. */
+//         PANIC("frame table full\n");
+//         return false;
+//     }
+
+//     kpage = frame_table[frame_entry]->page;
+// #endif
+
+//     /* This should not happen, if the frame table is working. */
+//     ASSERT(kpage != NULL);
+
+//     if (kpage != NULL) {
+//         success = install_page(((uint8_t *) PHYS_BASE) - (np+1)*PGSIZE, kpage, true);
+//         if (!success) {
+//             palloc_free_page(kpage);
+//             return success;
+//         }
+//     }
+//     t->num_stack_pages++;
+    
+//     return success;
+// }
+
 /*! Adds a mapping from user virtual address UPAGE to kernel
     virtual address KPAGE to the page table.
     If WRITABLE is true, the user process may modify the page;

@@ -144,9 +144,16 @@ static void page_fault(struct intr_frame *f) {
     /* To implement virtual memory, delete the rest of the function
        body, and replace it with code that brings in the page to
        which fault_addr refers. */
+    uint32_t np = thread_current()->num_stack_pages;
+    int diff = (int) (f->esp - PHYS_BASE + (np+1)*PGSIZE);
+    if (diff <= 64) {
+        /* TODO */
+    }
 
+    printf("We get here! %d\n", diff);
     /* If access to virtual address valid, load data that goes into the page. */ 
 #ifdef VM
+
     /* If the user is not accessing the kernel, this is not invalid. */
     if (!(user && is_kernel_vaddr(fault_addr))) {
 

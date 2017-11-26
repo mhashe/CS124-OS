@@ -101,6 +101,13 @@ static void syscall_handler(struct intr_frame *f) {
         thread_exit();
     }
 
+    // printf("%p %p\n", f->esp, ((uint8_t *) PHYS_BASE) - PGSIZE);
+    //  If we're running out of stack space, allocate some more. 
+    // if (!verify_pointer((uint32_t*)f->esp-128)) {
+    //     printf("    Extend!\n");
+    //     extend_stack();
+    // }
+
     /* Dispatch syscall to appropriate handler. */
     int syscall_num =  *(stack);
     switch(syscall_num) {

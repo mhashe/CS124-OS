@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include "synch.h"
 #include "vm/page.h"
+#include "vaddr.h"
 
 /*! States in a thread's life cycle. */
 enum thread_status {
@@ -53,6 +54,9 @@ fixedp_from_int(LOAD_AVG_PERIOD - TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 /* Coefficient of decay in calculating load_avg. */
 #define LOAD_AVG_DECAY    \
   fixedp_divide(fixedp_from_int(TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
+
+/* Max number of pages for each thread. */
+#define MAX_PAGES (1 << 23) >> PGBITS /* 8 MB / PGSIZE */
 
 /*! File descriptor. */
 struct file_des {
@@ -170,7 +174,8 @@ struct thread {
     struct list fds;                    /*!< File descriptors. */
     struct file *binary;                /*!< File thread was started from. */
     struct semaphore success_sema;      /*!< Released once child loaded. */
-    struct sup_entry ***sup_pagedir;            /*!< Supplemental page directory. */
+    struct sup_entry ***sup_pagedir;    /*!< Supplemental page directory. */
+    uint32_t num_stack_pages;           /*!< Number of pages in stack. */
     /**@{*/
 #endif
 
