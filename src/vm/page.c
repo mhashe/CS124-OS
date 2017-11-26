@@ -82,6 +82,7 @@ int sup_all_zeros(void * vaddr, bool user) {
     return 0;
 }
 
+
 /* Allocates entire file in as many pages as needed in supplementary page 
 table. The file is given by "int fd" and it is writable if "writeable". To 
 be called in mmap. Returns entry on success, NULL on failure. */
@@ -193,8 +194,6 @@ int sup_load_file(void *vaddr, bool user, bool write) {
 }
 
 
-
-
 /* Deallocate and remove file from supplementary page table. */
 void sup_remove_map(mapid_t mapid) {
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
@@ -223,6 +222,7 @@ void sup_remove_map(mapid_t mapid) {
         }
     }
 }
+
 
 /* Free all allocated pages and entries in the supplementary page table. 
 TODO: Add this to process exit! */
@@ -279,8 +279,6 @@ static inline void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir,
 
 
 
-
-
 /* Returns the size, in bytes, of the file open as fd. */
 static int filesize(int fd) {
     int filesize;
@@ -302,6 +300,7 @@ static int filesize(int fd) {
 
     return filesize;
 }
+
 
 /* Each thread maintains a list of its file descriptors. Get the file object 
    associated with the file descriptor. */
@@ -329,6 +328,7 @@ static struct file_des *file_from_fd(int fd) {
     thread_exit();
 }
 
+
 /* Reads size bytes from the file open as fd into buffer. Returns the number of
    bytes actually read (0 at end of file), or -1 if the file could not be read
    (due to a condition other than end of file). Fd 0 reads from the keyboard
@@ -343,8 +343,7 @@ static int sup_read(int fd, void* buffer, unsigned size, unsigned offset) {
     struct file* file = file_from_fd(fd)->file;
     if (file) {
         // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
-        file_seek(file, offset);  
-        bytes = file_read(file, buffer, size);
+        bytes = file_read_at(file, buffer, size, offset);
         // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
     } else {
         /* Can't read invalid file. */
@@ -365,8 +364,7 @@ static int sup_write(int fd, void* buffer, unsigned size, unsigned offset) {
     struct file* file = file_from_fd(fd)->file;
     if (file) {
         // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
-        file_seek(file, offset);  
-        bytes = file_write(file, buffer, size);
+        bytes = file_write_at(file, buffer, size, offset);
         // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
     } else {
         /* Can't read invalid file. */
