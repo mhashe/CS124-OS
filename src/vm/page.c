@@ -48,7 +48,7 @@ int sup_alloc_file(void * vaddr, int fd, bool writable) {
 
     /* Calculate the number of pages required to allocate file. */
     int num_pages = (offset + filesize(fd)) / PGSIZE;
-    num_pages += ((num_pages % PGSIZE) != 0);
+    num_pages += (((offset + filesize(fd)) % PGSIZE) != 0);
 
     /* Start allocating page for file in supplemental table at page-align. */
     vaddr = pg_round_down(vaddr);
@@ -294,10 +294,6 @@ static struct file_des *file_from_fd(int fd) {
    using input_getc(). */
 static int read(int fd, void* buffer, unsigned size, unsigned offset) {
     int bytes;
-
-    /* Verify arguments. */
-    verify_pointer((uint32_t *) buffer);
-    verify_pointer((uint32_t *) (buffer + size));
 
     /* Return number of bytes read. */
     struct file* file = file_from_fd(fd)->file;

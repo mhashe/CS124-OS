@@ -82,6 +82,15 @@ uint32_t* verify_pointer(uint32_t* p) {
     thread_exit();
 }
 
+/* Checks if given pointer is in user space and in a mapped address. */
+uint32_t* verify_user_pointer(uint32_t* p) {
+    if (is_user_vaddr(p)) {
+        /* Valid pointer, continue. */
+        return p;
+    }
+    /* Invalid pointer, exit. */
+    thread_exit();
+}
 
 /* Entry point for syscalls. */
 static void syscall_handler(struct intr_frame *f) {
@@ -584,7 +593,8 @@ static void mmap(struct intr_frame *f) {
     if (fd == STDIN_FILENO || fd == STDOUT_FILENO) {
         thread_exit();
     }
-    verify_pointer((uint32_t *) addr);
+    verify_user_pointer((uint32_t *) addr);
+      
 
     /* TODO: Function, more error checking. */
     mapid_t mapid = sup_alloc_file(addr, fd, true); // 

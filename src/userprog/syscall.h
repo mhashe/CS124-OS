@@ -13,6 +13,7 @@ typedef int mapid_t; // TODO: get from page.h?
 void syscall_init(void);
 
 uint32_t* verify_pointer(uint32_t* p);
+uint32_t* verify_user_pointer(uint32_t* p);
 
 
 #endif /* userprog/syscall.h */
