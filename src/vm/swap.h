@@ -9,8 +9,6 @@
 #include <stdint.h>
 #include "threads/vaddr.h"
 #include "devices/block.h"
-// #include "userprog/syscall.h"
-// #include "threads/pte.h"
 
 /* Set sectors per page to be pgsize/block_sector_size rounded up. */
 #define SECTORS_PER_PAGE (PGSIZE + BLOCK_SECTOR_SIZE - 1) / BLOCK_SECTOR_SIZE

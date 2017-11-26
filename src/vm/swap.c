@@ -3,29 +3,19 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <kernel/bitmap.h>
-// #include "vm/page.h"
-// #include "vm/frame.h"
-// #include "threads/palloc.h"
-// #include "threads/malloc.h"
-// #include "threads/vaddr.h"
-// #include "threads/pte.h"
-// #include "threads/thread.h"
-// #include "filesys/filesys.h"  /* For filesys ops. */
-// #include "filesys/file.h"     /* For file ops. */
-// #include "userprog/syscall.h"
-// #include "userprog/pagedir.h"
+#include "vm/swap.h"
 #include "devices/block.h"
 
-/* 1 if allocated/in-use, 0 if available. */
-static struct bitmap *swap_slots;
-static struct block *swap_block;
-static uint32_t swap_num_slots;
+static struct bitmap *swap_slots;  /* 1 if allocated/in-use, 0 if available. */
+static uint32_t swap_num_slots;    /* Number of slots in swap_slots */
+static struct block *swap_block;   /* Swap block device */
 
+inline static block_sector_t swap_slot_to_sector(size_t swap_slot);
 
 /* Initialize bitmap used to check which swap-slots are available. */
 void swap_init(void) {
     swap_block = block_get_role(BLOCK_SWAP);
-    // TODO: handle case that block doesn't exist
+    // TODO: handle case that swap block doesn't exist
     swap_num_slots = block_size(swap_block) / SECTORS_PER_PAGE;
     swap_slots = bitmap_create(swap_num_slots);
 
@@ -33,30 +23,26 @@ void swap_init(void) {
     printf("Number of swap slots available at start: %d\n", swap_num_slots);
 }
 
+
 /* Writes data at addr into swap_slot. */
 void swap_write(size_t swap_slot, void *addr) {
-    int s;
+    block_sector_t first_sec = swap_slot_to_sector(swap_slot);
 
-    /* Assert the swap slot is a valid index and that it is allocated. */
-    ASSERT((swap_slot <= (swap_num_slots - SECTORS_PER_PAGE)) 
-        && (swap_slot >= 0));
-    for (s = 0; s < SECTORS_PER_PAGE; s++) {
-        ASSERT(bitmap_test(swap_slots, swap_slot));
-    }
-    // TODO: if assert is expensive, perhaps just change a local var and once when done?
-    // TODO: assert the addr is a valid address? or is that overkill?
-
-    /* Write page at addr to swap slot. */
-    for (s = 0; s < SECTORS_PER_PAGE; s++) {
+    for (int s = 0; s < SECTORS_PER_PAGE; s++) {
         // TODO: this assumes that BLOCK_SECTOR_SIZE < PGSIZE (which is true)
-        block_write(swap_block, swap_slot + s, addr + (BLOCK_SECTOR_SIZE * s));
+        block_write(swap_block, first_sec + s, addr + (BLOCK_SECTOR_SIZE * s));
     }
 }
 
 
 /* Reads data at swap_slot into addr. */
 void swap_read(size_t swap_slot, void *addr) {
-    // TODO
+    block_sector_t first_sec = swap_slot_to_sector(swap_slot);
+
+    for (int s = 0; s < SECTORS_PER_PAGE; s++) {
+        // TODO: this assumes that BLOCK_SECTOR_SIZE < PGSIZE (which is true)
+        block_read(swap_block, first_sec + s, addr + (BLOCK_SECTOR_SIZE * s));
+    }
 }
 
 
@@ -70,5 +56,14 @@ size_t swap_alloc(void) {
     }
     
     return swap_slot;
+}
+
+
+/* Asserts that swap slot is a valid allocated index in swap_num_slots and 
+returns the sector in block device corresponding to the swap_slot. */
+inline static block_sector_t swap_slot_to_sector(size_t swap_slot) {
+    ASSERT(bitmap_test(swap_slots, swap_slot));
+
+    return swap_slot * SECTORS_PER_PAGE;
 }
 
