@@ -37,7 +37,7 @@ struct sup_entry *** sup_pagedir_create(void) {
 /* Allocates entire file in as many pages as needed in supplementary page 
 table. The file is given by "int fd" and it is writable if "writeable". To 
 be called in mmap. Returns entry on success, NULL on failure. */
-int sup_alloc_file(void * vaddr, int fd, bool writable, mapid_t mapid) {
+int sup_alloc_file(void * vaddr, int fd, bool writable) {
     static mapid_t last_mapid = 0;
     last_mapid++;
     /* Current thread's supplemental page directory. */
@@ -137,7 +137,6 @@ int sup_remove_map(mapid_t mapid) {
 
     // struct sup_entry* entry = sup_get_entry(upage, sup_pagedir);
 
-    mapid_t mapid = entry->mapid;
     int success = 0;
 
     // TODO: iterate through all allocated pages with mapid = arg:mapid

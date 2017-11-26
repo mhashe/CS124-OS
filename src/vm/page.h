@@ -7,7 +7,10 @@
 
 #include <debug.h>
 #include <stdint.h>
-#include "vm/frame.h"
+#include "userprog/syscall.h"
+
+/* Mapid identifier. */
+typedef int mapid_t;
 
 struct sup_entry {
     int fd;             /* Pointer to file to be opened. */

@@ -8,7 +8,7 @@
 typedef int pid_t;
 
 /* Mapid identifier. */
-typedef int mapid_t;
+typedef int mapid_t; // TODO: get from page.h?
 
 void syscall_init(void);
 
