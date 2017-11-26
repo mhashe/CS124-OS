@@ -25,6 +25,28 @@ void init_frame_table(void) {
     for (uint32_t i = 0; i < init_ram_pages; i++) {
         frame_table[i] = (struct frame_table_entry*) 
                         calloc(sizeof(struct frame_table_entry), 1);
+        if (i < 256) {
+            /* not free memory */
+            frame_table[i]->valid = false;
+        } else if (i < 256 + 1) {
+            /* kernel pool base map, not available for us */
+            frame_table[i]->valid = false;
+            frame_table[i]->user  = false;
+        } else if (i < 256 + 1 + 367) {
+            /* kernel pool, available for us */
+            frame_table[i]->valid = true;
+            frame_table[i]->user  = false;
+        } else if (i < 256 + 1 + 367 + 1) {
+            /* user pool base map, not available for us */
+            frame_table[i]->valid = false;
+            frame_table[i]->user  = true;
+        } else if (i < 256 + 1 + 367 + 1 + 367) {
+            /* user pool, available for us */
+            frame_table[i]->valid = true;
+            frame_table[i]->user  = true;
+        } else {
+            PANIC("Magic numbers have failed us.");
+        }
     }
 }
 
@@ -63,7 +85,7 @@ static void set_bits(void) {
 
 /* Select an empty frame if available, otherwise choose a page
    to evict and evict it. */
-static uint32_t evict(void) {
+static uint32_t evict(bool user) {
 	/* Set accessed/dirty bits in all frame table entries. */
 	set_bits();
 
@@ -71,7 +93,8 @@ static uint32_t evict(void) {
 
     /* See if empty frame exists. */
     for (uint32_t i = 0; i < init_ram_pages; i++) {
-        if (!frame_table[i]->page) {
+        if (!frame_table[i]->page && frame_table[i]->valid && 
+            frame_table[i]->user == user) {
             return i;
         }
     }
@@ -106,7 +129,7 @@ uint32_t get_frame(bool user) {
     if (frame == NULL) {
         // TODO: evict then palloc again
         // PANIC("frame table full\n");
-        evict();
+        evict(user);
 
         // TODO : streamline this code
         if (user) {

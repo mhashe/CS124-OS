@@ -14,6 +14,8 @@ struct frame_table_entry {
     void* page;     /* pointer to page currently occupying entry */
     bool acc;       /* Bit indicating the page has been accessed. */
     bool dirty;     /* Bit indicating the page has been modified. */
+    bool user;      /* Set if allocated from user pool. */
+    bool valid;     /* If frame is a valid place in memory. */
 };
 
 
