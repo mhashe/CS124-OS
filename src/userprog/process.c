@@ -21,8 +21,10 @@
 #include "threads/vaddr.h"
 #include "lib/string.h"
 
-#include "vm/frame.h"
-#include "vm/page.h"
+#ifdef VM
+    #include "vm/frame.h"
+    #include "vm/page.h"
+#endif
 
 static thread_func start_process NO_RETURN;
 static bool load(const char *cmdline, void (**eip)(void), void **esp);
@@ -471,8 +473,9 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         //  Temp fix; above code not working, probably conceptual/design bug. 
         kpage = palloc_get_page(PAL_USER);
 
+        // Needs to be commented in for multi-oom to pass
         // if (kpage == NULL)
-        //     return false;
+            // return false;
         /* This should not happen, if the frame table is working. */
         ASSERT(kpage != NULL);
 
