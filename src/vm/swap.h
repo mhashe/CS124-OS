@@ -13,15 +13,17 @@
 /* Set sectors per page to be pgsize/block_sector_size rounded up. */
 #define SECTORS_PER_PAGE (PGSIZE + BLOCK_SECTOR_SIZE - 1) / BLOCK_SECTOR_SIZE
 
+typedef size_t swapslot_t;
+
 void swap_init(void);
 
-void swap_write(size_t swap_slot, void *addr);
+void swap_write(swapslot_t swap_slot, void *addr);
 
-void swap_read(size_t swap_slot, void *addr);
+void swap_read(swapslot_t swap_slot, void *addr);
 
-size_t swap_alloc(void);
+swapslot_t swap_alloc(void);
 
-void swap_free(size_t swap_slot);
+void swap_free(swapslot_t swap_slot);
 
 
 #endif /* vm/swap.h */

@@ -37,7 +37,7 @@ struct sup_entry *** sup_pagedir_create(void) {
 
 
 /* Allocate an all zero page and Returns 0 on success, -1 on failure. */
-int sup_all_zeros(void * vaddr, bool user) {
+int sup_alloc_all_zeros(void * vaddr, bool user) {
     struct thread *cur = thread_current();
     struct sup_entry *spe;
 
@@ -216,7 +216,7 @@ void sup_remove_map(mapid_t mapid) {
                     entry->page_end, entry->file_ofs);
                 free_frame(entry->frame_no);
             }
-            void *vaddr = index_to_vaddr(i, j);
+            void *vaddr = sup_index_to_vaddr(i, j);
 
             pagedir_clear_page(thread_current()->pagedir, vaddr);
             sup_remove_entry(vaddr, sup_pagedir);

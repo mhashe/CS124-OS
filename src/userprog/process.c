@@ -500,15 +500,14 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
 /*! Create a minimal stack by mapping a zeroed page at the top of
     user virtual memory. */
 static bool setup_stack(void **esp, const char *cmdline) {
-    uint8_t *kpage;
     bool success = false;
     void *stack_addr = ((uint8_t *) PHYS_BASE) - PGSIZE;
 
     /* TODO : verify correctness. */
 #ifdef VM
 
-    /* sup_all_zeros returns an error code. */
-    success = !sup_all_zeros(stack_addr, true);
+    /* sup_alloc_all_zeros returns an error code. */
+    success = !sup_alloc_all_zeros(stack_addr, true);
     if (success) {
         *esp = (void *) ((unsigned int) PHYS_BASE & 0xfffffffc);
     } else {
@@ -516,7 +515,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
     }
 
 #else
-    kpage = palloc_get_page(PAL_USER | PAL_ZERO);
+    uint8_t *kpage = palloc_get_page(PAL_USER | PAL_ZERO);
 
     /* This should not happen, if the frame table is working. */
     ASSERT(kpage != NULL);

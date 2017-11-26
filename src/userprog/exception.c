@@ -150,7 +150,7 @@ static void page_fault(struct intr_frame *f) {
     uint32_t np = thread_current()->num_stack_pages;
     int diff = (int) (f->esp - PHYS_BASE + np*PGSIZE);
     if (diff <= 64) {
-        sup_all_zeros(PHYS_BASE - (np + 1)*PGSIZE, true);
+        sup_alloc_all_zeros(PHYS_BASE - (np + 1)*PGSIZE, true);
         thread_current()->num_stack_pages++;
         return;
     }

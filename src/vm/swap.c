@@ -10,7 +10,7 @@ static struct bitmap *swap_slots;  /* 1 if allocated/in-use, 0 if available. */
 static uint32_t swap_num_slots;    /* Number of slots in swap_slots */
 static struct block *swap_block;   /* Swap block device */
 
-inline static block_sector_t swap_slot_to_sector(size_t swap_slot);
+inline static block_sector_t swap_slot_to_sector(swapslot_t swap_slot);
 
 /* Initialize bitmap used to check which swap-slots are available. */
 void swap_init(void) {
@@ -25,7 +25,7 @@ void swap_init(void) {
 
 
 /* Writes data at addr into swap_slot. */
-void swap_write(size_t swap_slot, void *addr) {
+void swap_write(swapslot_t swap_slot, void *addr) {
     block_sector_t first_sec = swap_slot_to_sector(swap_slot);
 
     for (int s = 0; s < SECTORS_PER_PAGE; s++) {
@@ -36,7 +36,7 @@ void swap_write(size_t swap_slot, void *addr) {
 
 
 /* Reads data at swap_slot into addr. */
-void swap_read(size_t swap_slot, void *addr) {
+void swap_read(swapslot_t swap_slot, void *addr) {
     block_sector_t first_sec = swap_slot_to_sector(swap_slot);
 
     for (int s = 0; s < SECTORS_PER_PAGE; s++) {
@@ -48,7 +48,7 @@ void swap_read(size_t swap_slot, void *addr) {
 
 /* Returns an available swap slot and returns its swap number. If none are 
 available, panic. */
-size_t swap_alloc(void) {
+swapslot_t swap_alloc(void) {
     size_t swap_slot = bitmap_scan_and_flip(swap_slots, 0, 1, false);
     
     if (swap_slot == BITMAP_ERROR) {
@@ -59,8 +59,8 @@ size_t swap_alloc(void) {
 }
 
 
-/* Asserts that swap lot has been allocated and frees it. */
-void swap_free(size_t swap_slot) {
+/* Asserts that swap slot has been allocated and frees it. */
+void swap_free(swapslot_t swap_slot) {
     ASSERT(bitmap_test(swap_slots, swap_slot));
     bitmap_set(swap_slots, swap_slot, false);
 }
@@ -68,7 +68,7 @@ void swap_free(size_t swap_slot) {
 
 /* Asserts that swap slot is a valid allocated index in swap_num_slots and 
 returns the sector in block device corresponding to the swap_slot. */
-inline static block_sector_t swap_slot_to_sector(size_t swap_slot) {
+inline static block_sector_t swap_slot_to_sector(swapslot_t swap_slot) {
     ASSERT(bitmap_test(swap_slots, swap_slot));
 
     return swap_slot * SECTORS_PER_PAGE;
