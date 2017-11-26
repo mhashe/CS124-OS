@@ -241,7 +241,6 @@ void sup_free_table(struct sup_entry ***sup_pagedir) {
         palloc_free_page(sup_pagedir[i]);
     }
     palloc_free_page(sup_pagedir);
-
 }
 
 

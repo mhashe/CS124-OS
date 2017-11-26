@@ -11,15 +11,14 @@
 #include "filesys/file.h"     /* For file ops. */
 #include "userprog/syscall.h"
 #include "threads/thread.h"
-// #include "filesys/filesys.h"  /* For filesys ops. */
+#include "vm/page.h"
+#include "userprog/pagedir.h"
 
 
 /* TODO : verify init_ram_pages is the right number. */
 struct frame_table_entry** frame_table;
 
 void init_frame_table(void) {
-    // printf("At least we're initting!\n");
-
     frame_table = (struct frame_table_entry**) 
                 calloc(sizeof(struct frame_table_entry*), init_ram_pages);
 
@@ -29,22 +28,60 @@ void init_frame_table(void) {
     }
 }
 
+static void set_bits(void) {
+	struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
+	uint32_t *pd = thread_current()->pagedir;
+
+    for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
+        if (!sup_pagedir[i]) {
+            continue;
+        }
+        for (uint32_t j = 0; j < PGSIZE / sizeof(struct sup_entry *); j++) {
+            if (sup_pagedir[i][j]) {
+                /* Check access, dirty bits. */
+                void *page = sup_index_to_vaddr(i, j);
+                uint32_t frame_no = sup_pagedir[i][j]->frame_no;
+
+                if (pagedir_is_accessed(pd, page)) {
+                	/* If accesed since last check, ought to be in a frame. */
+                	ASSERT(frame_table[frame_no]);
+
+                	frame_table[frame_no]->acc = 1;
+
+                	/* Mark unaccessed for eviction policy? */
+                }
+
+                if (pagedir_is_dirty(pd, page)) {
+                	ASSERT(frame_table[frame_no]);
+
+                	frame_table[frame_no]->dirty = 1;
+                }
+            }
+        }
+    }
+}
+
 /* Select an empty frame if available, otherwise choose a page
    to evict and evict it. */
-uint32_t evict(void) {
+static uint32_t evict(void) {
+	/* Set accessed/dirty bits in all frame table entries. */
+	set_bits();
+
     uint32_t vic = 0;
 
     /* See if empty frame exists. */
     for (uint32_t i = 0; i < init_ram_pages; i++) {
         if (!frame_table[i]->page) {
-            vic = i;
-            break;
+            return i;
         }
     }
 
     /* If not, evict a page. */
     /* TODO: evict into the swap */
 
+    // Temp; just free last page.
+    vic = init_ram_pages - 1;
+    free_frame(vic);
     return vic;
 }
 
@@ -68,17 +105,25 @@ uint32_t get_frame(bool user) {
 
     if (frame == NULL) {
         // TODO: evict then palloc again
-        PANIC("frame table full\n");
-        return -1;
-    } else {
-        uint32_t frame_number = vtof(frame);
+        // PANIC("frame table full\n");
+        evict();
 
-        ASSERT(frame_number < init_ram_pages);
+        // TODO : streamline this code
+        if (user) {
+        	frame = palloc_get_page(PAL_ZERO | PAL_USER);
+        } else {
+        	frame = palloc_get_page(PAL_ZERO);
+        }
+    } 
+    ASSERT(frame);
 
-        frame_table[frame_number]->page = frame;
+    uint32_t frame_number = vtof(frame);
 
-        return frame_number;
-    }
+    ASSERT(frame_number < init_ram_pages);
+
+    frame_table[frame_number]->page = frame;
+
+    return frame_number;
 }
 
 /* Frees the page frame corresponding to the frame number given. */
@@ -92,6 +137,8 @@ void free_frame(uint32_t frame_number) {
     }
 
     frame_table[frame_number]->page = NULL;
+    frame_table[frame_number]->acc = 0;
+    frame_table[frame_number]->dirty = 0;
 }
 
 

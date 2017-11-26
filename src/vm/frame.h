@@ -12,6 +12,8 @@
 
 struct frame_table_entry {
     void* page;     /* pointer to page currently occupying entry */
+    bool acc;       /* Bit indicating the page has been accessed. */
+    bool dirty;     /* Bit indicating the page has been modified. */
 };
 
 
@@ -19,7 +21,6 @@ struct frame_table_entry** frame_table;
 
 void init_frame_table(void);
 uint32_t get_frame(bool user);
-uint32_t evict(void);
 void free_frame(uint32_t frame_number);
 int frame_read(int fd, void* buffer, unsigned size, unsigned offset);
 int frame_write(int fd, void* buffer, unsigned size, unsigned offset);
