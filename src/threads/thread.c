@@ -19,6 +19,10 @@
 #include "filesys/file.h"
 #endif
 
+#ifdef VM
+#include "vm/page.h"
+#endif
+
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 
 /*! Random value for struct thread's `magic' member.
@@ -549,6 +553,10 @@ void thread_exit(void) {
         free(cld);
     }
     ASSERT(list_empty(&thread_current()->children));
+#endif
+
+#ifdef VM
+    sup_free_table(thread_current()->sup_pagedir);
 #endif
 
     thread_current()->status = THREAD_DYING;

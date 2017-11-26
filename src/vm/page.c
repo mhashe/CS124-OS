@@ -162,33 +162,44 @@ int sup_remove_file(void *vaddr) {
 /* Free all allocated pages and entries in the supplementary page table. 
 TODO: Add this to process exit! */
 void sup_free_table(struct sup_entry ***sup_pagedir) {
-    size_t pde_idx, pte_idx;
-    char *vaddr;
-    size_t last_pde = pd_no(ptov(0));
+    // size_t pde_idx, pte_idx;
+    // char *vaddr;
+    // size_t last_pde = pd_no(ptov(0));
 
     // TODO: change this. not everything is allocated in the begenning. 
     // instead, only deallocate tables that are not null. within these tables,
     // only deallocate entries that are not null, as done below.
-    for (size_t page = 0; page < init_ram_pages; page++) {
-        vaddr = ptov(page * PGSIZE);
-        pde_idx = pd_no(vaddr);
-        pte_idx = pt_no(vaddr);
 
-        if (last_pde != pde_idx) {
-            palloc_free_page(sup_pagedir[last_pde]);
-            last_pde = pde_idx;
-        }
+    // for (size_t page = 0; page < init_ram_pages; page++) {
+    //     vaddr = ptov(page * PGSIZE);
+    //     pde_idx = pd_no(vaddr);
+    //     pte_idx = pt_no(vaddr);
 
-        struct sup_entry * entry = sup_pagedir[pde_idx][pte_idx];
-        if (entry != NULL) {
-            if (entry->loaded) {
-                free_frame(entry->frame_no);
+    //     if (last_pde != pde_idx) {
+    //         palloc_free_page(sup_pagedir[last_pde]);
+    //         last_pde = pde_idx;
+    //     }
+
+    //     struct sup_entry * entry = sup_pagedir[pde_idx][pte_idx];
+    //     if (entry != NULL) {
+    //         if (entry->loaded) {
+    //             free_frame(entry->frame_no);
+    //         }
+    //         free(entry);
+    //     }
+    // }
+    for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
+        if (sup_pagedir[i]) {
+            for (uint32_t j = 0; j < PGSIZE / sizeof(struct sup_entry *); j++) {
+                if (sup_pagedir[i][j]) {
+                    free(sup_pagedir[i][j]);
+                }
             }
-            free(entry);
+            palloc_free_page(sup_pagedir[i]);
         }
     }
-
     palloc_free_page(sup_pagedir);
+
 }
 
 
