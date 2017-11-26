@@ -598,13 +598,13 @@ static void mmap(struct intr_frame *f) {
 
     /* TODO: Function, more error checking. */
     mapid_t mapid = sup_alloc_file(addr, fd, true); // 
-    if (mapid == -1) {
+    if (mapid == MAP_FAILED) {
         f->eax = -1;
+    } else {
+        f->eax = mapid;
     }
     // TODO: should it always be writable?
 
-    /* TODO: return mapid_t */
-    /* TODO: fail if addr is not page-aligned */
     /* TODO: fail if addr is 0 */
     /* TODO: fail pages overlap existing mapped pages (stack or otherwise) */
 }

@@ -25,7 +25,8 @@ static inline void sup_remove_entry(void *upage, struct sup_entry ***
 /* Functions from syscall. TODO: how to not reimplement them here? */
 static int filesize(int fd);
 static struct file_des *file_from_fd(int fd);
-static int read(int fd, void* buffer, unsigned size, unsigned offset);
+static int sup_read(int fd, void* buffer, unsigned size, unsigned offset);
+static int sup_write(int fd, void* buffer, unsigned size, unsigned offset);
 
 
 /* Allocates and returns a pointer to an empty supplementary table. */
@@ -39,16 +40,21 @@ table. The file is given by "int fd" and it is writable if "writeable". To
 be called in mmap. Returns entry on success, NULL on failure. */
 int sup_alloc_file(void * vaddr, int fd, bool writable) {
     static mapid_t last_mapid = 0;
-    last_mapid++;
+
+    /* The provided address must be page aligned. */
+    int offset = pg_ofs(vaddr);
+    if (offset != 0) {
+        return MAP_FAILED;
+    }
+
     /* Current thread's supplemental page directory. */
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
     
-    /* We allocate file at offset into the page provided by offset. */
-    int offset = pg_ofs(vaddr);
 
     /* Calculate the number of pages required to allocate file. */
-    int num_pages = (offset + filesize(fd)) / PGSIZE;
-    num_pages += (((offset + filesize(fd)) % PGSIZE) != 0);
+    int file_size = filesize(fd);
+    int num_pages = file_size / PGSIZE;
+    num_pages += ((file_size % PGSIZE) != 0);
 
     /* Start allocating page for file in supplemental table at page-align. */
     vaddr = pg_round_down(vaddr);
@@ -60,22 +66,31 @@ int sup_alloc_file(void * vaddr, int fd, bool writable) {
 
         // TODO: If this address is not a valid address for other reasons, return -1
 
-        /* There is not enough free pages to allocate the file, so fail. */
+        /* There are not enough free pages to allocate the file, so fail. */
         if (spe != NULL) {
-            return -1;
+            return MAP_FAILED;
         }
     }
 
-    /* Add the needed pages to the supplemental table with correct file and 
-    offset. */
+    last_mapid++;
+
+
+    /* Add the needed pages to the supplemental table with correct file. */
     for (int page = 0; page < num_pages; page ++) {
         void *addr = (vaddr + (PGSIZE * page));
         struct sup_entry* spe = sup_get_entry(addr, sup_pagedir);
 
         spe = (struct sup_entry *) malloc(sizeof(struct sup_entry));
         spe->fd = fd;
-        spe->file_ofs = (unsigned) (offset + (PGSIZE * page));
+        spe->file_ofs = (unsigned) (PGSIZE * page);
+        if (page == num_pages - 1) {
+            spe->page_end = file_size % PGSIZE;
+        } else {
+            spe->page_end = PGSIZE;
+        }
         spe->writable = writable;
+        spe->loaded = false;
+        spe->frame_no = (uint32_t) -1;
         spe->mapid = last_mapid;
         sup_set_entry(addr, sup_pagedir, spe);
     }
@@ -108,10 +123,10 @@ int sup_load_file(void *vaddr, bool user, bool write) {
 
     /* Allocate and get physical frame for data to be loaded into. */
     uint32_t frame_no = get_frame(user);
-    void * kpage = ftov(frame_no);
+    void *kpage = ftov(frame_no);
 
     /* Load one page of the file at file_ofs into the frame. */
-    if (read(spe->fd, kpage, (unsigned) PGSIZE, spe->file_ofs) == -1) {
+    if (sup_read(spe->fd, kpage, spe->page_end, spe->file_ofs) == -1) {
         free_frame(frame_no);
         return -1;
     }
@@ -130,74 +145,48 @@ int sup_load_file(void *vaddr, bool user, bool write) {
 }
 
 
-/* Deallocate and remove file from supplementary page table. Return -1 if 
-not successful. 0 if successful. */
-int sup_remove_map(mapid_t mapid) {
+/* Deallocate and remove file from supplementary page table. */
+void sup_remove_map(mapid_t mapid) {
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
-
+    struct sup_entry *entry;
     // struct sup_entry* entry = sup_get_entry(upage, sup_pagedir);
 
-    int success = 0;
+    for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
+        if (!sup_pagedir[i]) {
+            continue;
+        }
+        for (uint32_t j = 0; j < PGSIZE / sizeof(struct sup_entry *); j++) {
+            entry = sup_pagedir[i][j];
+            if (!entry || entry->mapid != mapid) {
+                continue;
+            }
+            // pagedir_clear_page()
+            if (entry->loaded) {
+                sup_write(entry->fd, ftov(entry->frame_no), 
+                    entry->page_end, entry->file_ofs);
+                free_frame(entry->frame_no);
+            }
+            void *vaddr = index_to_vaddr(i, j);
 
-    // TODO: iterate through all allocated pages with mapid = arg:mapid
-    // by the same process!
-    // while (entry->mapid == mapid) {
-    //     if (entry->loaded) {
-    //         free_frame(entry->frame_no);
-    //     }
-    //     sup_remove_entry(upage, sup_pagedir);
-        
-    //     upage += PGSIZE;
-    //     // TODO: edge case: this is the last page in the entire directory
-        
-    //     entry = sup_get_entry(upage, sup_pagedir);
-    //     if (entry == NULL) {
-    //         success = -1;
-    //         break;
-    //     }
-    // }
-
-    return success;
+            pagedir_clear_page(thread_current()->pagedir, vaddr);
+            sup_remove_entry(vaddr, sup_pagedir);
+        }
+    }
 }
 
 /* Free all allocated pages and entries in the supplementary page table. 
 TODO: Add this to process exit! */
 void sup_free_table(struct sup_entry ***sup_pagedir) {
-    // size_t pde_idx, pte_idx;
-    // char *vaddr;
-    // size_t last_pde = pd_no(ptov(0));
-
-    // TODO: change this. not everything is allocated in the begenning. 
-    // instead, only deallocate tables that are not null. within these tables,
-    // only deallocate entries that are not null, as done below.
-
-    // for (size_t page = 0; page < init_ram_pages; page++) {
-    //     vaddr = ptov(page * PGSIZE);
-    //     pde_idx = pd_no(vaddr);
-    //     pte_idx = pt_no(vaddr);
-
-    //     if (last_pde != pde_idx) {
-    //         palloc_free_page(sup_pagedir[last_pde]);
-    //         last_pde = pde_idx;
-    //     }
-
-    //     struct sup_entry * entry = sup_pagedir[pde_idx][pte_idx];
-    //     if (entry != NULL) {
-    //         if (entry->loaded) {
-    //             free_frame(entry->frame_no);
-    //         }
-    //         free(entry);
-    //     }
-    // }
     for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
-        if (sup_pagedir[i]) {
-            for (uint32_t j = 0; j < PGSIZE / sizeof(struct sup_entry *); j++) {
-                if (sup_pagedir[i][j]) {
-                    free(sup_pagedir[i][j]);
-                }
-            }
-            palloc_free_page(sup_pagedir[i]);
+        if (!sup_pagedir[i]) {
+            continue;
         }
+        for (uint32_t j = 0; j < PGSIZE / sizeof(struct sup_entry *); j++) {
+            if (sup_pagedir[i][j]) {
+                free(sup_pagedir[i][j]);
+            }
+        }
+        palloc_free_page(sup_pagedir[i]);
     }
     palloc_free_page(sup_pagedir);
 
@@ -292,7 +281,7 @@ static struct file_des *file_from_fd(int fd) {
    bytes actually read (0 at end of file), or -1 if the file could not be read
    (due to a condition other than end of file). Fd 0 reads from the keyboard
    using input_getc(). */
-static int read(int fd, void* buffer, unsigned size, unsigned offset) {
+static int sup_read(int fd, void* buffer, unsigned size, unsigned offset) {
     int bytes;
 
     ASSERT(fd > 1);
@@ -312,3 +301,26 @@ static int read(int fd, void* buffer, unsigned size, unsigned offset) {
 
     return bytes;
 }
+
+
+/* Writes size bytes from buffer to the open file fd. Returns the number of 
+   bytes actually written, which may be less than size if some bytes could not 
+   be written. */
+static int sup_write(int fd, void* buffer, unsigned size, unsigned offset) {
+    int bytes;
+
+    /* Return number of bytes read. */
+    struct file* file = file_from_fd(fd)->file;
+    if (file) {
+        // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
+        file_seek(file, offset);  
+        bytes = file_write(file, buffer, size);
+        // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
+    } else {
+        /* Can't read invalid file. */
+        bytes = -1;
+    }
+
+    return bytes;
+}
+
