@@ -128,6 +128,7 @@ int sup_load_file(void *vaddr, bool user, bool write) {
 
     /* Load one page of the file at file_ofs into the frame. */
     if (read(spe->fd, kpage, (unsigned) PGSIZE, spe->file_ofs) == -1) {
+        free_frame(frame_no);
         return -1;
     }
 
@@ -252,7 +253,10 @@ static struct file_des *file_from_fd(int fd) {
     thread_exit();
 }
 
-
+/* Reads size bytes from the file open as fd into buffer. Returns the number of
+   bytes actually read (0 at end of file), or -1 if the file could not be read
+   (due to a condition other than end of file). Fd 0 reads from the keyboard
+   using input_getc(). */
 static int read(int fd, void* buffer, unsigned size, unsigned offset) {
     int bytes;
 
