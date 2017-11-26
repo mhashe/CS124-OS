@@ -647,7 +647,7 @@ static void mmap(struct intr_frame *f) {
 
     /* TODO: Function, more error checking. */
     // TODO: should it always be writable?
-    mapid_t mapid = sup_alloc_file(addr, fd, true); // 
+    mapid_t mapid = sup_alloc_mmap_file(addr, fd, true); // 
     if (mapid == MAP_FAILED) {
         f->eax = MAP_FAILED;
     } else {

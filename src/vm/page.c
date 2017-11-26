@@ -87,7 +87,7 @@ int sup_alloc_all_zeros(void * vaddr, bool user) {
    in mmap. Returns entry on success, NULL on failure. Note this function does
    not actually load the pages into memory. That is done on subsequent page
    faults. */
-int sup_alloc_file(void * vaddr, int fd, bool writable) {
+int sup_alloc_mmap_file(void * vaddr, int fd, bool writable) {
     static mapid_t last_mapid = 0;
 
     /* The provided address must be page aligned. */
