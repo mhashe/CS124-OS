@@ -28,7 +28,6 @@ static void syscall_handler(struct intr_frame *);
 
 /* Helper functions. */
 static uint32_t get_arg(struct intr_frame *f, int offset);
-static struct file_des *file_from_fd(int fd);
 
 
 /* Handlers for Project 4. */
@@ -82,6 +81,7 @@ uint32_t* verify_pointer(uint32_t* p) {
     thread_exit();
 }
 
+
 /* Checks if given pointer is in user space. */
 uint32_t* verify_user_pointer(uint32_t* p) {
     if (is_user_vaddr(p)) {
@@ -91,6 +91,34 @@ uint32_t* verify_user_pointer(uint32_t* p) {
     /* Invalid pointer, exit. */
     thread_exit();
 }
+
+
+/* Each thread maintains a list of its file descriptors. Get the file object 
+   associated with the file descriptor. */
+struct file_des *file_from_fd(int fd) {
+    /* 0, 1 reserved for STDIN, STDOUT. */
+    ASSERT(fd > STDIN_FILENO);
+    ASSERT(fd > STDOUT_FILENO);
+
+    /* Iterate over file descriptors, return if one matches. */
+    struct list_elem *e;
+    struct list *lst = &thread_current()->fds;
+    struct file_des* fd_s;
+
+    for (e = list_begin(lst); e != list_end(lst); e = list_next(e)) {
+        /* File descriptor object. */
+        fd_s = list_entry(e, struct file_des, elem);
+
+        /* If a match, return. */
+        if (fd_s->fd == fd) {
+            return fd_s;
+        }
+    }
+
+    /* Invalid file descriptor; terminate offending process. */
+    thread_exit();
+}
+
 
 /* Entry point for syscalls. */
 static void syscall_handler(struct intr_frame *f) {
@@ -157,37 +185,12 @@ static uint32_t get_arg(struct intr_frame *f, int offset) {
 }
 
 
-/* Each thread maintains a list of its file descriptors. Get the file object 
-   associated with the file descriptor. */
-static struct file_des *file_from_fd(int fd) {
-    /* 0, 1 reserved for STDIN, STDOUT. */
-    ASSERT(fd > STDIN_FILENO);
-    ASSERT(fd > STDOUT_FILENO);
-
-    /* Iterate over file descriptors, return if one matches. */
-    struct list_elem *e;
-    struct list *lst = &thread_current()->fds;
-    struct file_des* fd_s;
-
-    for (e = list_begin(lst); e != list_end(lst); e = list_next(e)) {
-        /* File descriptor object. */
-        fd_s = list_entry(e, struct file_des, elem);
-
-        /* If a match, return. */
-        if (fd_s->fd == fd) {
-            return fd_s;
-        }
-    }
-
-    /* Invalid file descriptor; terminate offending process. */
-    thread_exit();
-}
-
 /* Terminates Pintos by calling shutdown_power_off(). */
 static void halt(struct intr_frame *f UNUSED) {
     /* Terminate Pintos. */
     shutdown_power_off();
 }
+
 
 /* Terminates the current user program, returning status to the kernel. If the
    process's parent waits for it (see below), this is the status that will be
@@ -244,6 +247,7 @@ static void exec(struct intr_frame *f) {
 
 }
 
+
 /* Waits for a child process pid and retrieves the child's exit status. If pid 
    is still alive, waits until it terminates. Then, returns the status that pid
    passed to exit. If pid did not call exit(), but was terminated by the kernel
@@ -284,6 +288,7 @@ static void wait(struct intr_frame *f) {
     f->eax = process_wait(pid);
 }
 
+
 /* Creates a new file called file initially initial_size bytes in size. Returns
    true if successful, false otherwise. Creating a new file does not open it:
    opening the new file is a separate operation which would require a open
@@ -300,6 +305,7 @@ static void create(struct intr_frame *f) {
     f->eax = filesys_create(file, initial_size);
 }
 
+
 /* Deletes the file called file. Returns true if successful, false otherwise. A
    file may be removed regardless of whether it is open or closed, and removing
    an open file does not close it. */
@@ -313,6 +319,7 @@ static void remove(struct intr_frame *f) {
     /* Remove file. */
     f->eax = filesys_remove(file);
 }
+
 
 /* Opens the file called file. Returns a nonnegative integer handle called a 
    "file descriptor" (fd), or -1 if the file could not be opened.
@@ -456,6 +463,7 @@ static void read(struct intr_frame *f) {
     }
 }
 
+
 /* Writes size bytes from buffer to the open file fd. Returns the number of 
    bytes actually written, which may be less than size if some bytes could not 
    be written.
@@ -507,6 +515,7 @@ static void write(struct intr_frame *f) {
     }
 }
 
+
 /* Changes the next byte to be read or written in open file fd to position,
    expressed in bytes from the beginning of the file. (Thus, a position of 0 is
    the file's start.)
@@ -539,6 +548,7 @@ static void seek(struct intr_frame *f) {
     }
 }
 
+
 /* Returns the position of the next byte to be read or written in open file fd,
    expressed in bytes from the beginning of the file. */
 static void tell(struct intr_frame *f) {
@@ -561,6 +571,7 @@ static void tell(struct intr_frame *f) {
         thread_exit();
     }
 }
+
 
 /* Closes file descriptor fd. Exiting or terminating a process implicitly closes
    all its open file descriptors, as if by calling this function for each one.*/
@@ -590,7 +601,31 @@ static void close(struct intr_frame *f) {
     }
 }
 
+
 #ifdef VM
+/* Maps the file open as fd into the process's virtual address space. The entire
+   file is mapped into consecutive virtual pages starting at addr.
+
+   Your VM system must lazily load pages in mmap regions and use the mmaped file
+   itself as backing store for the mapping. That is, evicting a page mapped by
+   mmap writes it back to the file it was mapped from.
+
+   If the file's length is not a multiple of PGSIZE, then some bytes in the
+   final mapped page "stick out" beyond the end of the file. Set these bytes to
+   zero when the page is faulted in from the file system, and discard them when
+   the page is written back to disk.
+
+   If successful, this function returns a "mapping ID" that uniquely identifies
+   the mapping within the process. On failure, it must return -1, which
+   otherwise should not be a valid mapping id, and the process's mappings must
+   be unchanged.
+
+   A call to mmap may fail if the file open as fd has a length of zero bytes. It
+   must fail if addr is not page-aligned or if the range of pages mapped
+   overlaps any existing set of mapped pages, including the stack or pages
+   mapped at executable load time. It must also fail if addr is 0, because some
+   Pintos code assumes virtual page 0 is not mapped. Finally, file descriptors 0
+   and 1, representing console input and output, are not mappable. */
 static void mmap(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
@@ -616,6 +651,9 @@ static void mmap(struct intr_frame *f) {
 }
 
 
+/* Unmaps the mapping designated by mapping, which must be a mapping ID returned
+   by a previous call to mmap by the same process that has not yet been
+   unmapped. */
 static void munmap(struct intr_frame *f) {
     (void)f;
     /* Parse arguments. */

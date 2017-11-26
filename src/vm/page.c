@@ -26,7 +26,6 @@ static inline void sup_remove_entry(void *upage, struct sup_entry ***
 
 /* Functions from syscall. TODO: how to not reimplement them here? */
 static int filesize(int fd);
-static struct file_des *file_from_fd(int fd);
 static int sup_read(int fd, void* buffer, unsigned size, unsigned offset);
 static int sup_write(int fd, void* buffer, unsigned size, unsigned offset);
 
@@ -299,33 +298,6 @@ static int filesize(int fd) {
     }
 
     return filesize;
-}
-
-
-/* Each thread maintains a list of its file descriptors. Get the file object 
-   associated with the file descriptor. */
-static struct file_des *file_from_fd(int fd) {
-    /* 0, 1 reserved for STDIN, STDOUT. */
-    ASSERT(fd > STDIN_FILENO);
-    ASSERT(fd > STDOUT_FILENO);
-
-    /* Iterate over file descriptors, return if one matches. */
-    struct list_elem *e;
-    struct list *lst = &thread_current()->fds;
-    struct file_des* fd_s;
-
-    for (e = list_begin(lst); e != list_end(lst); e = list_next(e)) {
-        /* File descriptor object. */
-        fd_s = list_entry(e, struct file_des, elem);
-
-        /* If a match, return. */
-        if (fd_s->fd == fd) {
-            return fd_s;
-        }
-    }
-
-    /* Invalid file descriptor; terminate offending process. */
-    thread_exit();
 }
 
 
