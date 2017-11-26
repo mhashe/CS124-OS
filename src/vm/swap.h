@@ -21,6 +21,8 @@ void swap_read(size_t swap_slot, void *addr);
 
 size_t swap_alloc(void);
 
+void swap_free(size_t swap_slot);
+
 
 #endif /* vm/swap.h */
 

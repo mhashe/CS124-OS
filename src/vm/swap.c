@@ -59,6 +59,13 @@ size_t swap_alloc(void) {
 }
 
 
+/* Asserts that swap lot has been allocated and frees it. */
+void swap_free(size_t swap_slot) {
+    ASSERT(bitmap_test(swap_slots, swap_slot));
+    bitmap_set(swap_slots, swap_slot, false);
+}
+
+
 /* Asserts that swap slot is a valid allocated index in swap_num_slots and 
 returns the sector in block device corresponding to the swap_slot. */
 inline static block_sector_t swap_slot_to_sector(size_t swap_slot) {
