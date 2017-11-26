@@ -30,29 +30,7 @@ static int read(int fd, void* buffer, unsigned size, unsigned offset);
 
 /* Allocates and returns a pointer to an empty supplementary table. */
 struct sup_entry *** sup_pagedir_create(void) {
-    struct sup_entry ***sup_pagedir;
-    struct sup_entry **sup_t;
-
-    size_t pde_idx, pte_idx;
-    char *vaddr;
-
-    sup_pagedir = (struct sup_entry ***) palloc_get_page(PAL_ASSERT | PAL_ZERO);
-    sup_t = NULL;
-    for (size_t page = 0; page < init_ram_pages; page++) {
-        vaddr = ptov(page * PGSIZE);
-        pde_idx = pd_no(vaddr);
-        pte_idx = pt_no(vaddr);
-
-        // TODO: is 0 the same as null? counting on that here...
-        if (sup_pagedir[pde_idx] == NULL) {
-            sup_t = (struct sup_entry **) palloc_get_page(PAL_ASSERT | PAL_ZERO);
-            sup_pagedir[pde_idx] = (struct sup_entry **) sup_t;
-        }
-
-        sup_t[pte_idx] = NULL;
-    }
-
-    return sup_pagedir;
+    return (struct sup_entry ***) palloc_get_page(PAL_ASSERT | PAL_ZERO);
 }
 
 
@@ -224,14 +202,22 @@ static inline void sup_remove_entry(void *upage, struct sup_entry
 /* Retreives supplemental entry from sup_pagedir at upage, which must be 
 page-aligned. */
 static inline struct sup_entry *sup_get_entry(void *upage, struct sup_entry ***sup_pagedir) {
-    return sup_pagedir[pd_no(upage)][pt_no(upage)];
+    uintptr_t pd = pd_no(upage);
+    if (sup_pagedir[pd] == NULL) {
+        return NULL;
+    }
+    return sup_pagedir[pd][pt_no(upage)];
 }
 
 
 /* Sets supplemental entry from sup_pagedir at upage to be entry. upage must 
 be page-aligned. */
 static inline void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir, struct sup_entry *entry) {
-    sup_pagedir[pd_no(upage)][pt_no(upage)] = entry;
+    uintptr_t pd = pd_no(upage);
+    if (sup_pagedir[pd] == NULL) {
+        sup_pagedir[pd] = palloc_get_page(PAL_ASSERT | PAL_ZERO);
+    }
+    sup_pagedir[pd][pt_no(upage)] = entry;
 }
 
 
