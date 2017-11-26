@@ -295,6 +295,9 @@ static struct file_des *file_from_fd(int fd) {
 static int read(int fd, void* buffer, unsigned size, unsigned offset) {
     int bytes;
 
+    ASSERT(fd > 1);
+    ASSERT(is_kernel_vaddr(buffer));
+
     /* Return number of bytes read. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
