@@ -12,8 +12,11 @@
 #include "threads/vaddr.h"
 
 /* TODO : verify init_ram_pages is the right number. */
+struct frame_table_entry** frame_table;
 
 void init_frame_table(void) {
+    // printf("At least we're initting!\n");
+
     frame_table = (struct frame_table_entry**) 
                 calloc(sizeof(struct frame_table_entry*), init_ram_pages);
 
@@ -30,7 +33,7 @@ uint32_t evict(void) {
 
     /* See if empty frame exists. */
     for (uint32_t i = 0; i < init_ram_pages; i++) {
-        if (frame_table[i]) {
+        if (!frame_table[i]->page) {
             vic = i;
             break;
         }
@@ -45,11 +48,14 @@ uint32_t evict(void) {
 /* Gets the first free frame in the frame table. Returns an index. 
    page is the virtual memory pointer to a page that is occupying this frame. */
 uint32_t get_frame(bool user) {
+    // uint32_t i = 0;
+    // for (i = 0; i < init_ram_pages; i++) {
+    //     if (frame_table[i] == NULL) {
+    //         break;
+    //     }
+    // }
     void *frame;
 
-    // printf("At least we get here!\n");
-    // printf("%d\n", init_ram_pages);
-    
     if (user) {
         frame = palloc_get_page(PAL_ZERO | PAL_USER);
     }
@@ -57,11 +63,8 @@ uint32_t get_frame(bool user) {
         frame = palloc_get_page(PAL_ZERO);
     }
 
-    // printf("And here!\n");
-
     if (frame == NULL) {
         // TODO: evict then palloc again
-        // printf("Oopsy!\n");
         PANIC("frame table full\n");
         return -1;
     } else {
@@ -69,9 +72,7 @@ uint32_t get_frame(bool user) {
 
         ASSERT(frame_number < init_ram_pages);
 
-        // printf("What's the issue?\n");
         frame_table[frame_number]->page = frame;
-        // printf("Seriously?\n");
 
         return frame_number;
     }
