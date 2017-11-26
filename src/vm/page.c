@@ -11,10 +11,11 @@
 #include "threads/vaddr.h"
 #include "threads/pte.h"
 #include "threads/thread.h"
-#include "filesys/filesys.h"  /* For filesys ops. */
 #include "filesys/file.h"     /* For file ops. */
-#include "userprog/syscall.h"
 #include "userprog/pagedir.h"
+// #include "filesys/filesys.h"  /* For filesys ops. */
+// #include "userprog/syscall.h"
+
 
 static inline struct sup_entry *sup_get_entry(void *vaddr, 
     struct sup_entry ***sup_pagedir);
@@ -27,8 +28,6 @@ static inline void sup_remove_entry(void *upage, struct sup_entry ***
 
 /* Functions from syscall. TODO: how to not reimplement them here? */
 static int filesize(int fd);
-static int sup_read(int fd, void* buffer, unsigned size, unsigned offset);
-static int sup_write(int fd, void* buffer, unsigned size, unsigned offset);
 
 
 /* Allocates and returns a pointer to an empty supplementary table. */
@@ -177,7 +176,7 @@ int sup_load_file(void *vaddr, bool user, bool write) {
     void *kpage = ftov(frame_no);
 
     /* Load one page of the file at file_ofs into the frame. */
-    if (sup_read(spe->fd, kpage, spe->page_end, spe->file_ofs) == -1) {
+    if (frame_read(spe->fd, kpage, spe->page_end, spe->file_ofs) == -1) {
         free_frame(frame_no);
         return -1;
     }
@@ -213,7 +212,7 @@ void sup_remove_map(mapid_t mapid) {
             }
 
             if (entry->loaded) {
-                sup_write(entry->fd, ftov(entry->frame_no), 
+                frame_write(entry->fd, ftov(entry->frame_no), 
                     entry->page_end, entry->file_ofs);
                 free_frame(entry->frame_no);
             }
@@ -304,50 +303,3 @@ static int filesize(int fd) {
 
     return filesize;
 }
-
-
-/* Reads size bytes from the file open as fd into buffer. Returns the number of
-   bytes actually read (0 at end of file), or -1 if the file could not be read
-   (due to a condition other than end of file). Fd 0 reads from the keyboard
-   using input_getc(). */
-static int sup_read(int fd, void* buffer, unsigned size, unsigned offset) {
-    int bytes;
-
-    ASSERT(fd > 1);
-    ASSERT(is_kernel_vaddr(buffer));
-
-    /* Return number of bytes read. */
-    struct file* file = file_from_fd(fd)->file;
-    if (file) {
-        // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
-        bytes = file_read_at(file, buffer, size, offset);
-        // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
-    } else {
-        /* Can't read invalid file. */
-        bytes = -1;
-    }
-
-    return bytes;
-}
-
-
-/* Writes size bytes from buffer to the open file fd. Returns the number of 
-   bytes actually written, which may be less than size if some bytes could not 
-   be written. */
-static int sup_write(int fd, void* buffer, unsigned size, unsigned offset) {
-    int bytes;
-
-    /* Return number of bytes read. */
-    struct file* file = file_from_fd(fd)->file;
-    if (file) {
-        // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
-        bytes = file_write_at(file, buffer, size, offset);
-        // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
-    } else {
-        /* Can't read invalid file. */
-        bytes = -1;
-    }
-
-    return bytes;
-}
-

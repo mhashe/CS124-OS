@@ -21,6 +21,8 @@ void init_frame_table(void);
 uint32_t get_frame(bool user);
 uint32_t evict(void);
 void free_frame(uint32_t frame_number);
+int frame_read(int fd, void* buffer, unsigned size, unsigned offset);
+int frame_write(int fd, void* buffer, unsigned size, unsigned offset);
 
 /*! Returns frame number at which kernel virtual address VADDR
     is mapped. */

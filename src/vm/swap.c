@@ -30,6 +30,7 @@ void swap_write(swapslot_t swap_slot, void *addr) {
 
     for (int s = 0; s < SECTORS_PER_PAGE; s++) {
         // TODO: this assumes that BLOCK_SECTOR_SIZE < PGSIZE (which is true)
+        // TODO: this also assumes that PGSIZE is a multiple of BLOCK_SECTOR_SIZE
         block_write(swap_block, first_sec + s, addr + (BLOCK_SECTOR_SIZE * s));
     }
 }
@@ -41,6 +42,7 @@ void swap_read(swapslot_t swap_slot, void *addr) {
 
     for (int s = 0; s < SECTORS_PER_PAGE; s++) {
         // TODO: this assumes that BLOCK_SECTOR_SIZE < PGSIZE (which is true)
+        // TODO: this also assumes that PGSIZE is a multiple of BLOCK_SECTOR_SIZE
         block_read(swap_block, first_sec + s, addr + (BLOCK_SECTOR_SIZE * s));
     }
 }

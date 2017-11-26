@@ -1,15 +1,18 @@
-#include "vm/frame.h"
-
 #include <debug.h>
 #include <stddef.h>
 #include <stdint.h>
-
 #include <stdio.h>
 
+#include "vm/frame.h"
 #include "threads/malloc.h"
 #include "threads/loader.h"
 #include "threads/palloc.h"
 #include "threads/vaddr.h"
+#include "filesys/file.h"     /* For file ops. */
+#include "userprog/syscall.h"
+#include "threads/thread.h"
+// #include "filesys/filesys.h"  /* For filesys ops. */
+
 
 /* TODO : verify init_ram_pages is the right number. */
 struct frame_table_entry** frame_table;
@@ -40,7 +43,7 @@ uint32_t evict(void) {
     }
 
     /* If not, evict a page. */
-    /* TODO */
+    /* TODO: evict into the swap */
 
     return vic;
 }
@@ -90,3 +93,51 @@ void free_frame(uint32_t frame_number) {
 
     frame_table[frame_number]->page = NULL;
 }
+
+
+/* Reads size bytes from the file open as fd into buffer. Returns the number of
+   bytes actually read (0 at end of file), or -1 if the file could not be read
+   (due to a condition other than end of file). Fd 0 reads from the keyboard
+   using input_getc(). */
+int frame_read(int fd, void* buffer, unsigned size, unsigned offset) {
+    int bytes;
+
+    ASSERT(fd > 1);
+    ASSERT(is_kernel_vaddr(buffer));
+
+    /* Return number of bytes read. */
+    struct file* file = file_from_fd(fd)->file;
+    if (file) {
+        // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
+        bytes = file_read_at(file, buffer, size, offset);
+        // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
+    } else {
+        /* Can't read invalid file. */
+        bytes = -1;
+    }
+
+    return bytes;
+}
+
+
+/* Writes size bytes from buffer to the open file fd. Returns the number of 
+   bytes actually written, which may be less than size if some bytes could not 
+   be written. */
+int frame_write(int fd, void* buffer, unsigned size, unsigned offset) {
+    int bytes;
+
+    /* Return number of bytes read. */
+    struct file* file = file_from_fd(fd)->file;
+    if (file) {
+        // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
+        bytes = file_write_at(file, buffer, size, offset);
+        // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
+    } else {
+        /* Can't read invalid file. */
+        bytes = -1;
+    }
+
+    return bytes;
+}
+
+
