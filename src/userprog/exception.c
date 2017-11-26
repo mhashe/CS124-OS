@@ -161,7 +161,7 @@ static void page_fault(struct intr_frame *f) {
         /* If no data at address was expected (via sup table) or write-attempt 
         was made to read-only page, this returns -1 such that we don't return
         normally without exiting the process. */
-        if (sup_load_file(fault_addr, user, write) != -1) {
+        if (sup_load_page(fault_addr, user, write) != -1) {
             return;
         }
     }

@@ -39,7 +39,7 @@ struct sup_entry {
 
 struct sup_entry *** sup_pagedir_create(void);
 int sup_alloc_mmap_file(void * vaddr, int fd, bool writable);
-int sup_load_file(void *vaddr, bool user, bool write);
+int sup_load_page(void *vaddr, bool user, bool write);
 void sup_remove_map(mapid_t mapid);
 void sup_free_table(struct sup_entry ***sup_pagedir);
 int sup_alloc_all_zeros(void * vaddr, bool user);

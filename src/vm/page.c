@@ -73,6 +73,7 @@ int sup_alloc_all_zeros(void * vaddr, bool user) {
     spe->writable = true;
     spe->loaded = true;
     spe->all_zero = true;
+    spe->slot = SUP_NO_SWAP;
     spe->frame_no = frame_no;
     spe->mapid = MAP_FAILED;
 
@@ -142,6 +143,7 @@ int sup_alloc_mmap_file(void * vaddr, int fd, bool writable) {
         spe->frame_no = (uint32_t) -1;
         spe->mapid = last_mapid;
         spe->all_zero = false;
+        spe->slot = SUP_NO_SWAP;
         sup_set_entry(addr, sup_pagedir, spe);
     }
 
@@ -151,7 +153,7 @@ int sup_alloc_mmap_file(void * vaddr, int fd, bool writable) {
 
 /* Loads part of file needed at vaddr page. Returns 0 on success, -1 on 
    failure. */
-int sup_load_file(void *vaddr, bool user, bool write) {
+int sup_load_page(void *vaddr, bool user, bool write) {
     struct thread *cur = thread_current();
     void *upage = pg_round_down(vaddr);
     struct sup_entry * spe = sup_get_entry(upage, cur->sup_pagedir);
@@ -161,8 +163,8 @@ int sup_load_file(void *vaddr, bool user, bool write) {
         return -1;
     }
 
-    /* Unknown page fault since data has been loaded already. */
-    if (spe->loaded) {
+    /* Unknown page fault since data has been loaded into memory already. */
+    if ((spe->loaded) && (spe->slot != SUP_NO_SWAP)) {
         return -1;
     }
 
@@ -175,10 +177,17 @@ int sup_load_file(void *vaddr, bool user, bool write) {
     uint32_t frame_no = get_frame(user);
     void *kpage = ftov(frame_no);
 
-    /* Load one page of the file at file_ofs into the frame. */
-    if (frame_read(spe->fd, kpage, spe->page_end, spe->file_ofs) == -1) {
-        free_frame(frame_no);
-        return -1;
+
+    /* If not present in swap, load one page of the file at file_ofs into the frame. */
+    if (spe->slot == SUP_NO_SWAP) {
+        if (frame_read(spe->fd, kpage, spe->page_end, spe->file_ofs) == -1) {
+            free_frame(frame_no);
+            return -1;
+        }
+    } 
+    /* Else if in swap, just load the page from swap into the frame. */
+    else {
+        swap_read(spe->slot, kpage);
     }
 
     /* Linking frame to virtual address failed, so remove and deallocate the 
@@ -195,11 +204,14 @@ int sup_load_file(void *vaddr, bool user, bool write) {
 }
 
 
-/* Deallocate and remove file from supplementary page table. */
+/* Deallocate and remove file from supplementary page table. 
+TODO: Deal with multiple maps to single frame!
+*/
 void sup_remove_map(mapid_t mapid) {
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
     struct sup_entry *entry;
-    // struct sup_entry* entry = sup_get_entry(upage, sup_pagedir);
+    void *temp_swap_frame = NULL;
+    uint32_t temp_swap_frame_no;
 
     for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
         if (!sup_pagedir[i]) {
@@ -212,9 +224,22 @@ void sup_remove_map(mapid_t mapid) {
             }
 
             if (entry->loaded) {
-                frame_write(entry->fd, ftov(entry->frame_no), 
-                    entry->page_end, entry->file_ofs);
-                free_frame(entry->frame_no);
+                if (entry->slot == SUP_NO_SWAP) {
+                    /* Write frame to disk and free frame. */
+                    frame_write(entry->fd, ftov(entry->frame_no), 
+                        entry->page_end, entry->file_ofs);
+                    free_frame(entry->frame_no);
+                } else {
+                    /* Write swap to frame, write frame to disk, delloc swap */
+                    if (!temp_swap_frame) {
+                        temp_swap_frame_no = get_frame(true);
+                        temp_swap_frame = ftov(temp_swap_frame_no); // TODO: remove magic true?
+                    }
+                    swap_read(entry->slot, temp_swap_frame);
+                    frame_write(entry->fd, temp_swap_frame, 
+                        entry->page_end, entry->file_ofs);
+                    swap_free(entry->slot);
+                }
             }
             void *vaddr = sup_index_to_vaddr(i, j);
 
@@ -222,12 +247,18 @@ void sup_remove_map(mapid_t mapid) {
             sup_remove_entry(vaddr, sup_pagedir);
         }
     }
+
+    if (temp_swap_frame) {
+        free_frame(temp_swap_frame_no);
+    }
 }
 
 
 /* Free all allocated pages and entries in the supplementary page table. 
 TODO: Add this to process exit!
-TODO: Free the associate frames? */
+TODO: Free the associated frames! 
+TODO: Deal with multiple maps to single frame! 
+*/
 void sup_free_table(struct sup_entry ***sup_pagedir) {
     for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
         if (!sup_pagedir[i]) {
