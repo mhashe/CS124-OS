@@ -834,6 +834,7 @@ static void init_thread(struct thread *t, const char *name, int priority) {
         /* Initialize variables for parent-child interaction */
         t->parent_tid = 1;
         t->parent_waiting = false;
+        t->num_stack_pages = 1;
 #endif
     }
 

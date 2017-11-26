@@ -49,11 +49,13 @@ int sup_all_zeros(void * vaddr, bool user) {
     /* If the provided address is not page-aligned, return failure. */
     int offset = pg_ofs(vaddr);
     if (offset != 0) {
+        free_frame(frame_no);
         return -1;
     }
 
     /* If the page specified by vaddr is already occupied, return failure. */
     if (sup_get_entry(vaddr, cur->sup_pagedir) != NULL) {
+        free_frame(frame_no);
         return -1;
     }
  

@@ -502,36 +502,36 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
 static bool setup_stack(void **esp, const char *cmdline) {
     uint8_t *kpage;
     bool success = false;
+    void *stack_addr = ((uint8_t *) PHYS_BASE) - PGSIZE;
 
     /* TODO : verify correctness. */
 #ifdef VM
-    /* Free up some frame to hold the stack. */
-    int frame_entry = get_frame(true);
-    if (frame_entry == -1) {
-        /* Uncaught error message - no frames evictable. */
-        PANIC("frame table full\n");
-        return false;
+
+    /* sup_all_zeros returns an error code. */
+    success = !sup_all_zeros(stack_addr, true);
+    if (success) {
+        *esp = (void *) ((unsigned int) PHYS_BASE & 0xfffffffc);
+    } else {
+        return success;
     }
 
-    /* TODO : currently this assumes that everything below is successful.
-       Make more robust. */
-    kpage = frame_table[frame_entry]->page;
 #else
     kpage = palloc_get_page(PAL_USER | PAL_ZERO);
-#endif
 
     /* This should not happen, if the frame table is working. */
     ASSERT(kpage != NULL);
 
     if (kpage != NULL) {
-        success = install_page(((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-        if (success)
+        success = install_page(stack_addr, kpage, true);
+        if (success) {
             *esp = (void *) ((unsigned int) PHYS_BASE & 0xfffffffc);
-        else {
+        } else {
             palloc_free_page(kpage);
             return success;
         }
     }
+#endif
+
 
     uint8_t *sp  = (uint8_t *) *esp;
 
