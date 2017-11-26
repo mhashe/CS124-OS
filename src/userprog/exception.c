@@ -4,7 +4,11 @@
 #include "userprog/gdt.h"
 #include "threads/interrupt.h"
 #include "threads/thread.h"
-#include "vm/frame.h"
+#include "threads/vaddr.h"
+
+#ifdef VM
+    #include "vm/frame.h"
+#endif
 
 /*! Number of page faults processed. */
 static long long page_fault_cnt;
@@ -162,9 +166,11 @@ static void page_fault(struct intr_frame *f) {
 
         /* Load data into frame at link to page of virtual address. If virtual 
         address has not been mapped, exit the process. */
+#ifdef VM
         if (sup_load_file(fault_addr, user, write) == -1) {
             exit(-1);
         }
+#endif
     }
       
 }

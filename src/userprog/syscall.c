@@ -17,7 +17,10 @@
 #include "threads/malloc.h"   /* For malloc. */
 #include "filesys/off_t.h"    /* For off_t. */
 #include "threads/synch.h"    /* For locks. */
-#include "vm/page.h"
+
+#ifdef VM
+#include "vm/frame.h"
+#endif
 
 /* Handler function. */
 static void syscall_handler(struct intr_frame *);
@@ -45,8 +48,10 @@ static void    close(struct intr_frame *f);
 
 
 /* Handlers for Project 5. */
+#ifdef VM
 static void     mmap(struct intr_frame *f);
 static void   munmap(struct intr_frame *f);
+#endif
 
 
 /* Max of two numbers. */
@@ -105,9 +110,11 @@ static void syscall_handler(struct intr_frame *f) {
         case SYS_TELL :     tell(f);     break;     /* 11 */
         case SYS_CLOSE :    close(f);    break;     /* 12 */
 
+#ifdef VM
         /* Syscalls for Project 5. */
         case SYS_MMAP :     mmap(f);     break;     /* 13 */
         case SYS_MUNMAP :   munmap(f);   break;     /* 14 */
+#endif
 
         /* Invalid syscall. */
         default : thread_exit();
@@ -237,18 +244,18 @@ static void exec(struct intr_frame *f) {
    child of the calling process if and only if the calling process received pid
    as a return value from a successful call to exec.
 
-  Note that children are not inherited: if A spawns child B and B spawns child
-  process C, then A cannot wait for C, even if B is dead. A call to wait(C) by
-  process A must fail. Similarly, orphaned processes are not assigned to a new
-  parent if their parent process exits before they do.
+   Note that children are not inherited: if A spawns child B and B spawns child
+   process C, then A cannot wait for C, even if B is dead. A call to wait(C) by
+   process A must fail. Similarly, orphaned processes are not assigned to a new
+   parent if their parent process exits before they do.
 
-  Note that children are not inherited: if A spawns child B and B spawns child
-  process C, then A cannot wait for C, even if B is dead. A call to wait(C) by
-  process A must fail. Similarly, orphaned processes are not assigned to a new
-  parent if their parent process exits before they do.
+   Note that children are not inherited: if A spawns child B and B spawns child
+   process C, then A cannot wait for C, even if B is dead. A call to wait(C) by
+   process A must fail. Similarly, orphaned processes are not assigned to a new
+   parent if their parent process exits before they do.
 
-  The process that calls wait has already called wait on pid. That is, a process
-  may wait for any given child at most once.
+   The process that calls wait has already called wait on pid. That is, a
+   process may wait for any given child at most once.
 
    You must ensure that Pintos does not terminate until the initial process
    exits. The supplied Pintos code tries to do this by calling process_wait()
@@ -567,7 +574,7 @@ static void close(struct intr_frame *f) {
     }
 }
 
-
+#ifdef VM
 static void mmap(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
@@ -602,4 +609,5 @@ static void munmap(struct intr_frame *f) {
 
     /* no return. */
 }
+#endif
 
