@@ -41,7 +41,7 @@ struct sup_entry {
     mapid_t mapid;       /* Map id if mapped with mmap. */
 
     /* Lock for loading. */
-    struct lock lock; 
+    struct lock spe_lock; 
 };
 
 void sup_init(void);

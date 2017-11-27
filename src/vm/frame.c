@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "vm/frame.h"
 #include "vm/swap.h"
@@ -133,6 +134,8 @@ static uint32_t evict(bool user) {
 
     /* Unlock global lock? */
 
+    lock_acquire(&frame_table[victim]->fte_lock);
+    
     /* Allocate swap, write frame to swap, and then free frame. */
     swapslot_t new_swap = swap_alloc();
     swap_write(new_swap, ftov(victim));
@@ -175,7 +178,7 @@ static uint32_t evict(bool user) {
     }
     // }
     // printf("FREEING VICTIM\n");
-    free_frame(victim);
+    // free_frame(victim);
     // printf("DONE FREEING VICTIM\n");
 
     return victim;
@@ -185,12 +188,7 @@ static uint32_t evict(bool user) {
 /* Gets the first free frame in the frame table. Returns an index. 
    page is the virtual memory pointer to a page that is occupying this frame. */
 uint32_t get_frame(bool user) {
-    // uint32_t i = 0;
-    // for (i = 0; i < init_ram_pages; i++) {
-    //     if (frame_table[i] == NULL) {
-    //         break;
-    //     }
-    // }
+    uint32_t frame_number;
     void *frame;
 
     lock_acquire(&ft_lock);
@@ -204,24 +202,27 @@ uint32_t get_frame(bool user) {
 
     if (frame == NULL) {
         // TODO: evict then palloc again
-        evict(user);
+        frame_number = evict(user);
+        frame = ftov(frame_number);
+        memset(frame, 0, PGSIZE);
 
         // TODO : streamline this code
-        if (user) {
-        	frame = palloc_get_page(PAL_ZERO | PAL_USER);
-        } else {
-        	frame = palloc_get_page(PAL_ZERO);
-        }
+        // if (user) {
+        //     frame = palloc_get_page(PAL_ZERO | PAL_USER);
+        // } else {
+        //     frame = palloc_get_page(PAL_ZERO);
+        // }
+        lock_release(&frame_table[frame_number]->fte_lock);
     }
     ASSERT(frame);
 
-    uint32_t frame_number = vtof(frame);
+    frame_number = vtof(frame);
 
     ASSERT(frame_number < init_ram_pages);
 
     frame_table[frame_number]->page = frame;
 
-    lock_acquire(&frame_table[frame_number]->fte_lock);
+    // lock_acquire(&frame_table[frame_number]->fte_lock);
     lock_release(&ft_lock);
 
     // frame_table[frame_number]->sup 
