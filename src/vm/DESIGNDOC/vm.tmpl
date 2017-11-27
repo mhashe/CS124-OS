@@ -8,27 +8,34 @@
 
 >> Fill in the names and email addresses of your group members.
 
-FirstName LastName <email@domain.example>
-FirstName LastName <email@domain.example>
-FirstName LastName <email@domain.example>
+Vaibhav Anand <vanand@caltech.edu>
+Nikhil  Gupta <nkgupta@caltech.edu>
+Michael Hashe <mhashe@caltech.edu>
 
 >> Specify how many late tokens you are using on this assignment:  
+
+0
 
 >> What is the Git repository and commit hash for your submission?
    (You only need to include the commit-hash in the file you submit
    on Moodle.)
 
-   Repository URL:  
-   commit ...
+   Repository URL:  https://github.com/MichaelHashe/CS124-OS
+   commit        :  
 
 ---- PRELIMINARIES ----
 
 >> If you have any preliminary comments on your submission, notes for the
 >> TAs, or extra credit, please give them here.
 
+Many of the commits for this assignment correspond to team members 
+working on other team members computers.
+
 >> Please cite any offline or online sources you consulted while
 >> preparing your submission, other than the Pintos documentation, course
 >> text, lecture notes, and course instructors.
+
+Stack overflow.
 
 ---- LOGISTICS ----
 
@@ -39,8 +46,16 @@ which parts.
 >> L1: How many hours did each team member spend on this assignment?
    Make sure that each member's total time is listed.
 
+Vaibhav: 
+Nikhil : 
+Michael: 
+
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
+
+Vaibhav: Supplementary Page Table, sync, swap table
+Nikhil : mmap, frame table, sync, paging
+Michael: eviction, sync, dirty bits, stack growth, paging
 
 Note that this design document is a bit long.  Most of the questions can be
 answered pretty briefly.  Don't feel a need to write a long answer if it is
@@ -55,14 +70,44 @@ not required by the question.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+struct thread {
+    struct sup_entry ***sup_pagedir;    /*!< Supplemental page directory. */
+};
+
 ---- ALGORITHMS ----
 
 >> A2: In a few paragraphs, describe your code for locating the frame,
 >> if any, that contains the data of a given page.
 
+First of all, if the data is already loaded into memory, it is already
+loaded into the process's page table. As such, it will not page fault
+and we will have nothing to handle. 
+
+The way it does it through a one to one mapping. Given a virtual 
+address, you can get a kernel virtual address through the process's 
+page table. This kernel virtual address is in a one to one mapping 
+with the frame table. The frame number is just some of the upper bits 
+of the kernel virtual address.
+
+If the frame is not currently loaded, the process will page fault
+on an attempted load. The handler will check if the fault was due to 
+an attempted access on the stack (discussed later) or something else.
+
+If it is something else, the address is checked against the 
+supplementary page table. This supplementary page table maintains
+all the information about the location of the data, whether it is in
+disk, swap, or memory.
+
+
 >> A3: How does your code coordinate accessed and dirty bits between
 >> kernel and user virtual addresses that alias a single frame, or
 >> alternatively how do you avoid the issue?
+
+Whenever the accessed or dirty bits are needed, they are reconciled.
+In particular, this means that we loop through all the elements in 
+the supplementary page tables and check each of their accessed and 
+dirty bits from the actual page table. These values are then or'ed 
+with the corresponding accessed and dirty bit in the frame table. 
 
 ---- SYNCHRONIZATION ----
 
@@ -74,6 +119,14 @@ not required by the question.
 >> A5: Why did you choose the data structure(s) that you did for
 >> representing virtual-to-physical mappings?
 
+We used a supplementary page table that exactly shadowed the 
+original page table. This allowed us to have easy logic in keeping
+the two in sync. Additionally, this means that we do not use an 
+excessive amount of space because we can keep nested tables as 
+NULL. Each entry in the supplementary page table is a struct 
+which allows us to add as much information as we need for any
+given entry.
+
 		       PAGING TO AND FROM DISK
 		       =======================
 
@@ -83,6 +136,11 @@ not required by the question.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+struct thread {
+    uint32_t num_stack_pages;           /*!< Number of pages in stack. */
+};
+
+
 ---- ALGORITHMS ----
 
 >> B2: When a frame is required but none is free, some frame must be
@@ -91,6 +149,13 @@ not required by the question.
 >> B3: When a process P obtains a frame that was previously used by a
 >> process Q, how do you adjust the page table (and any other data
 >> structures) to reflect the frame Q no longer has?
+
+When this happens, that means that the frame that process Q previously
+had is now written to swap. This is kept track of in process Q's 
+supplementary page table. In particular, in the entry, the frame 
+number is given a certain invalid value and the swap slot is given
+the number of the swap slot process Q now occupies. 
+
 
 >> B4: Explain your heuristic for deciding whether a page fault for an
 >> invalid virtual address should cause the stack to be extended into
@@ -144,6 +209,14 @@ not required by the question.
 
 >> C3: Explain how you determine whether a new file mapping overlaps
 >> any existing segment.
+
+Upon the load of a memory mapped file, we attempt to allocate all 
+necessary segments in the supplemental page table. Since this table 
+maintains the state of all potentially mapped objects for the process,
+if any of the necessary segments are occupied, we know that the new 
+file overlaps an existing segment. In particular, before we actually 
+allocate any segment, we check to see that all the necessary segments
+are unallocated.
 
 ---- RATIONALE ----
 
