@@ -87,17 +87,6 @@ uint32_t* verify_pointer(uint32_t* p) {
 }
 
 
-/* Checks if given pointer is in user space. */
-uint32_t* verify_user_pointer(uint32_t* p) {
-    if (is_user_vaddr(p)) {
-        /* Valid pointer, continue. */
-        return p;
-    }
-    /* Invalid pointer, exit. */
-    thread_exit();
-}
-
-
 /* Each thread maintains a list of its file descriptors. Get the file object 
    associated with the file descriptor. */
 struct file_des *file_from_fd(int fd) {
@@ -647,7 +636,7 @@ static void mmap(struct intr_frame *f) {
 
     }
     
-    verify_user_pointer((uint32_t *) addr);
+    verify_pointer((uint32_t *) addr);
       
 
     /* TODO: Function, more error checking. */
