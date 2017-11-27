@@ -62,7 +62,7 @@ void frame_init(size_t user_page_limit) {
             PANIC("Frame table init failed.");
         }
 
-        // list_init(&frame_table[i]->sup_entries);
+        lock_init(&frame_table[i]->fte_lock);
     }
 }
 
@@ -119,11 +119,14 @@ static uint32_t evict(bool user) {
     }
 
     /* If not, evict a page. */
+    /* TODO : Add a lock around this, just to make sure that we don't evict the
+       same page repeatedly. */
     /* TODO: evict into the swap */
-
 
     // Temp; just free last page.
     victim = init_ram_pages - 1;
+
+    /* Unlock global lock? */
 
     /* Allocate swap, write frame to swap, and then free frame. */
     swapslot_t new_swap = swap_alloc();
@@ -168,8 +171,6 @@ static uint32_t evict(bool user) {
     // }
 
     free_frame(victim);
-
-    // intr_enable();
 
     return victim;
 }

@@ -11,6 +11,7 @@
 #include "userprog/syscall.h"
 #include "threads/pte.h"
 #include "vm/swap.h"
+#include "threads/synch.h"
 
 
 #define SUP_NO_SWAP (size_t) -1
@@ -39,8 +40,8 @@ struct sup_entry {
     bool loaded;         /* Whether data has been successfully loaded. */
     mapid_t mapid;       /* Map id if mapped with mmap. */
 
-    /* List-elem. */
-    // struct list_elem elem; /* For vm lists. */
+    /* Lock for loading. */
+    struct lock lock; 
 };
 
 void sup_init(void);

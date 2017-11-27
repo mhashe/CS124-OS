@@ -208,6 +208,7 @@ int sup_load_page(void *vaddr, bool user, bool write) {
     if (spe->slot == SUP_NO_SWAP) {
         if (frame_read(spe->f, kpage, spe->page_end, spe->file_ofs) == -1) {
             free_frame(frame_no);
+            // lock_release(&frame_table[frame_no]->fte_lock);
             return -1;
         }
     } else {
@@ -216,16 +217,21 @@ int sup_load_page(void *vaddr, bool user, bool write) {
         swap_free(spe->slot);
         spe->slot = SUP_NO_SWAP;
     }
+    /* When modifying this entry, lock it. */
 
     /* Linking frame to virtual address failed, so remove and deallocate the 
     page instantiated for it. */
     if (!pagedir_set_page(cur->pagedir, upage, kpage, spe->writable)) {
         free_frame(frame_no);
+        // lock_release(&frame_table[frame_no]->fte_lock);
         return -1;
     }
 
     spe->frame_no = frame_no;
     spe->loaded = true;
+
+    /* Release victim frame. */
+    // lock_release(&frame_table[frame_no]->fte_lock);
 
     return 0;
 }

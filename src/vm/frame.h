@@ -12,9 +12,7 @@
 #include "threads/vaddr.h"
 #include "threads/loader.h"
 #include "filesys/file.h"
-
-#define FRAME_NONE (uint32_t) -1
-
+#include "threads/synch.h"
 
 #define FRAME_NONE (uint32_t) -1
 
@@ -27,6 +25,9 @@ struct frame_table_entry {
 
     // struct list *sup_entries; /* List of entries in sup_page table 
                                 // referencing this frame. */
+
+    /* Lock used to prevent multiple eviction, replacement. */
+    struct lock fte_lock;
 };
 
 // struct id_to_sup_entries {
