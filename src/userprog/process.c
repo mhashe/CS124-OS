@@ -462,8 +462,12 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
 #ifdef VM
-        sup_alloc_segment(upage, file, writable, (unsigned) ofs, 
-            (unsigned) page_read_bytes, (mapid_t) last_mapid);
+        if (page_zero_bytes == PGSIZE) {
+            sup_alloc_all_zeros(upage, true);
+        } else {
+            sup_alloc_segment(upage, file, writable, (unsigned) ofs, 
+                (unsigned) page_read_bytes, (mapid_t) last_mapid);
+        }
         ofs += PGSIZE;
 #else
         /* Get a page of memory. */

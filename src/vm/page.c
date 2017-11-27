@@ -96,7 +96,7 @@ int sup_alloc_all_zeros(void * vaddr, bool user) {
 
 
 /* Allocates entire file in as many pages as needed in supplementary page table.
-   The file is given by "file" and it is writable if "writeable". To be called
+   The file is given by "file" and it is writable if "writable". To be called
    in mmap. Returns entry on success, NULL on failure. Note this function does
    not actually load the pages into memory. That is done on subsequent page
    faults. */
@@ -189,7 +189,8 @@ int sup_load_page(void *vaddr, bool user, bool write) {
         return -1;
     }
 
-    /* Unknown page fault since data has been loaded from disk already. */
+    /* Unknown page fault since data has been loaded from disk already and isn't
+       in memory or swap. */
     if (spe->loaded && (spe->slot == SUP_NO_SWAP)) {
         return -1;
     }
@@ -288,7 +289,6 @@ void sup_remove_map(mapid_t mapid) {
 
 
 /* Free all allocated pages and entries in the supplementary page table. 
-TODO: Add this to process exit!
 TODO: Free the associated frames! 
 TODO: Deal with multiple maps to single frame! 
 */
