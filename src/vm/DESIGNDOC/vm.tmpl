@@ -102,36 +102,34 @@ struct sup_entry {
 >> A2: In a few paragraphs, describe your code for locating the frame,
 >> if any, that contains the data of a given page.
 
-If the data is already loaded into memory, it is already
-loaded into the process's page table. As such, it will not page fault
-and we will have nothing to handle. 
+If the data is already loaded into memory, it is already loaded into the
+process's page table. As such, it will not page fault and we will have nothing
+to handle.
 
-We obtain the fram through a one to one mapping that we maintain. Given 
-a virtual address, you can get a kernel virtual address through the 
-process's page table. This kernel virtual address is in a one to one 
-mapping with the frame table. The frame number is just some of the upper 
-bits of the kernel virtual address.
+We obtain the frame through a one to one mapping that we maintain. Given a
+virtual address, you can get a kernel virtual address through the process's page
+table. This kernel virtual address is in a one to one mapping with the frame
+table. The frame number is just some of the upper bits of the kernel virtual
+address.
 
-If the frame is not currently loaded, the process will page fault
-on an attempted load. The handler will check if the fault was due to 
-an attempted access on the stack (discussed later) or something else.
+If the frame is not currently loaded, the process will page fault on an
+attempted load. The handler will check if the fault was due to an attempted
+access on the stack (discussed later) or something else.
 
-If it is something else, the address is checked against the 
-supplementary page table. This supplementary page table maintains
-all the information about the location of the data, whether it is in
-disk, swap, or memory.
+If it is something else, the address is checked against the supplementary page
+table. This supplementary page table maintains all the information about the
+location of the data, whether it is in disk, swap, or memory.
 
 
 >> A3: How does your code coordinate accessed and dirty bits between
 >> kernel and user virtual addresses that alias a single frame, or
 >> alternatively how do you avoid the issue?
 
-Whenever the accessed or dirty bits are needed, they are reconciled.
-In particular, this means that we loop through all the elements in 
-the supplementary page tables and check each of their accessed and 
-dirty bits from the actual page table. These values are then or'ed 
-with the corresponding accessed and dirty bits in each frame table
-entry.
+Whenever the accessed or dirty bits are needed, they are reconciled. In
+particular, this means that we loop through all the elements in the
+supplementary page tables and check each of their accessed and dirty bits from
+the actual page table. These values are then or'ed with the corresponding
+accessed and dirty bits in each frame table entry.
 
 
 ---- SYNCHRONIZATION ----
@@ -139,16 +137,15 @@ entry.
 >> A4: When two user processes both need a new frame at the same time,
 >> how are races avoided?
 
-We were unable to get our locks to work, and in particular adding in locks
-broke a few of the other tests. Our idea for managing this (which is not
-implemented in the current code, but is likely in the repo somewhere) was to
-have two locks; one global lock on the frame table (say, ft_lock) and one
-lock for each of the frame table entries. Whenever a process requests a 
-frame, it enters get_frame. At the top of this function, the process would
-then acquire ft_lock. Once it does, it would select a frame that is currently
-unlocked and then free ft_lock. Once the frame is added into the new
-page directory, it can be released; after this point, it serves as a normal,
-evictable, frame.
+We were unable to get our locks to work, and in particular adding in locks broke
+a few of the other tests. Our idea for managing this (which is not implemented
+in the current code, but is likely in the repo somewhere) was to have two locks;
+one global lock on the frame table (say, ft_lock) and one lock for each of the
+frame table entries. Whenever a process requests a frame, it enters get_frame.
+At the top of this function, the process would then acquire ft_lock. Once it
+does, it would select a frame that is currently unlocked, acquire its lock and
+then free ft_lock. Once the frame is added into the new page directory, it can
+be released; after this point, it serves as a normal, evictable, frame.
 
 
 ---- RATIONALE ----
@@ -156,13 +153,12 @@ evictable, frame.
 >> A5: Why did you choose the data structure(s) that you did for
 >> representing virtual-to-physical mappings?
 
-We used a supplementary page table that exactly shadowed the 
-original page table. This allowed us to have easy logic in keeping
-the two in sync. Additionally, this means that we do not use an 
-excessive amount of space because we can keep nested tables as 
-NULL. Each entry in the supplementary page table is a struct 
-which allows us to add as much information as we need for any
-given entry.
+We used a supplementary page table that exactly shadowed the original page
+table. This allowed us to have easy logic in keeping the two in sync.
+Additionally, this means that we do not use an excessive amount of space because
+we can keep nested tables as NULL. Each entry in the supplementary page table is
+a struct which allows us to add as much information as we need for any given
+entry.
 
 		       PAGING TO AND FROM DISK
 		       =======================
@@ -268,7 +264,8 @@ simply wait until the first process obtains that lock.
 >> between P evicting Q's frame and Q faulting the page back in?
 
 Global locks around the frame table; only one evictable frame is chosen 
-at any given time.
+at any given time. Q could not fault the page back into the same frame 
+slot becasue that frame slsot would have a lock on it.
 
 
 >> B7: Suppose a page fault in process P causes a page to be read from
@@ -287,10 +284,11 @@ initialization is finished.
 >> into physical memory, or do you use some other design?  How do you
 >> gracefully handle attempted accesses to invalid virtual addresses?
 
-We rely on page faults; our current design has no mechanism for pinning.
-For syscalls at least, accessed to invalid virtual addresses are caught 
-before access, when all pointers are verified. If an invalid address is
-passed, the offending process is then terminated.
+We rely on page faults; our current design has no mechanism for pinning because
+we didn't see a need for it in our design. For syscalls at least, accessed to
+invalid virtual addresses are caught before access, when all pointers are
+verified. If an invalid address is passed, the offending process is then
+terminated.
 
 ---- RATIONALE ----
 
@@ -335,12 +333,12 @@ offsets in the file map. Then, when an address in the mapped region
 has a fault, the related entry is used to load the file's data from disk 
 into an empty frame, which is then linked to the faulting virtual address.
 
-When a page fault occurs, the address accessed is found in the supplemental 
-page table for the process (if not, it terminates). If the fault 
-is not a r/w i/o violation, it continues. If the entry in the supplemental 
-table is installed in the swap table, it is loaded into an empty frame. Else,
-the file for the entry is loaded from disk into an empty frame. The empty 
-frame is then linked to the faulting virtual address. 
+When a page fault occurs, the address accessed is found in the supplemental page
+table for the process (if not, it terminates). If the fault is not a r/w i/o
+violation, it continues. If the entry in the supplemental table is installed in
+the swap table, it is loaded into an empty frame. Else, the file for the entry
+is loaded from disk into an empty frame. The empty frame is then linked to the
+faulting virtual address.
 
 The only pages that are evicted are pages installed in the frame table 
 (and not in the swap table).
@@ -349,13 +347,13 @@ The only pages that are evicted are pages installed in the frame table
 >> C3: Explain how you determine whether a new file mapping overlaps
 >> any existing segment.
 
-Upon the load of a memory mapped file, we attempt to allocate all 
-necessary segments in the supplemental page table. Since this table 
-maintains the state of all potentially mapped objects for the process,
-if any of the necessary segments are occupied, we know that the new 
-file overlaps an existing segment. In particular, before we actually 
-allocate any segment, we check to see that all the necessary segments
-are unallocated.
+Upon the load of a memory mapped file, we attempt to allocate all necessary
+segments in the supplemental page table (without actually loading the file into
+memory). Since this table maintains the state of all potentially mapped objects
+for the process, if any of the necessary segments are occupied, we know that the
+new file overlaps an existing segment. In particular, before we actually
+allocate any segment, we check to see that all the necessary segments are
+unallocated.
 
 
 ---- RATIONALE ----
@@ -367,7 +365,8 @@ are unallocated.
 >> implementation either does or does not share much of the code for
 >> the two situations.
 
-TODO
+On unmapping or on process exit, an mmap'ed file is written back to the original
+file. As such, the implementation of demand paged mmap'ed into memory. 
 
 			   SURVEY QUESTIONS
 			   ================
