@@ -18,10 +18,10 @@
 
 
 inline mapid_t sup_inc_mapid(void);
-static inline void sup_set_entry(void *vaddr, struct sup_entry *** sup_pagedir, 
+static void sup_set_entry(void *vaddr, struct sup_entry *** sup_pagedir, 
     struct sup_entry *entry);
 
-static inline void sup_remove_entry(void *upage, struct sup_entry *** 
+static void sup_remove_entry(void *upage, struct sup_entry *** 
     sup_pagedir);
 
 /* Functions from syscall. TODO: how to not reimplement them here? */
@@ -304,7 +304,7 @@ void sup_free_table(struct sup_entry ***sup_pagedir) {
 
 /* Removes supplemental entry from sup_pagedir at upage, which must be 
 page-aligned. Assumes enty exists. */
-static inline void sup_remove_entry(void *upage, struct sup_entry 
+static void sup_remove_entry(void *upage, struct sup_entry 
     *** sup_pagedir) {
     // TODO: make this computationally more efficient with local vars
     struct sup_entry *sup_pte = sup_pagedir[pd_no(upage)][pt_no(upage)];
@@ -316,7 +316,7 @@ static inline void sup_remove_entry(void *upage, struct sup_entry
 
 /* Sets supplemental entry from sup_pagedir at upage to be entry. upage must 
 be page-aligned. */
-static inline void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir, 
+static void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir, 
                                 struct sup_entry *entry) {
     uintptr_t pd = pd_no(upage);
     if (sup_pagedir[pd] == NULL) {
