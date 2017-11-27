@@ -78,7 +78,12 @@ static void set_bits(void) {
             if (sup_pagedir[i][j]) {
                 /* Check access, dirty bits. */
                 void *page = sup_index_to_vaddr(i, j);
-                uint32_t frame_no = sup_pagedir[i][j]->frame_no;
+                int frame_no = sup_pagedir[i][j]->frame_no;
+
+                /* If frame_no is -1, it points to swap. */
+                if (frame_no == -1) {
+                    continue;
+                }
 
                 if (pagedir_is_accessed(pd, page)) {
                 	/* If accesed since last check, ought to be in a frame. */
@@ -106,7 +111,7 @@ static uint32_t evict(bool user) {
     ASSERT(user);
 
     /* Set accessed/dirty bits in all frame table entries. */
-    // set_bits();
+    set_bits();
 
     uint32_t victim = 0;
 
