@@ -3,20 +3,17 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "vm/page.h"
-#include "vm/frame.h"
-#include "vm/swap.h"
-#include "vm/clru.h"
-#include "threads/palloc.h"
+#include "filesys/file.h"     /* For file ops. */
 #include "threads/malloc.h"
-#include "threads/vaddr.h"
+#include "threads/palloc.h"
 #include "threads/pte.h"
 #include "threads/thread.h"
-#include "filesys/file.h"     /* For file ops. */
+#include "threads/vaddr.h"
 #include "userprog/pagedir.h"
-
-// #include "filesys/filesys.h"  /* For filesys ops. */
-// #include "userprog/syscall.h"
+#include "vm/clru.h"
+#include "vm/frame.h"
+#include "vm/page.h"
+#include "vm/swap.h"
 
 
 inline mapid_t sup_inc_mapid(void);
@@ -209,11 +206,11 @@ int sup_load_page(void *vaddr, bool user, bool write) {
     void *kpage = ftov(frame_no);
 
 
-    /* If not present in swap, load one page of the file at file_ofs into the frame. */
+    /* If not present in swap, load one page of the file at file_ofs into the 
+       frame. */
     if (spe->slot == SUP_NO_SWAP) {
         if (frame_read(spe->f, kpage, spe->page_end, spe->file_ofs) == -1) {
             free_frame(frame_no);
-            // lock_release(&frame_table[frame_no]->fte_lock);
             return -1;
         }
     } else {
@@ -222,21 +219,16 @@ int sup_load_page(void *vaddr, bool user, bool write) {
         swap_free(spe->slot);
         spe->slot = SUP_NO_SWAP;
     }
-    /* When modifying this entry, lock it. */
 
     /* Linking frame to virtual address failed, so remove and deallocate the 
     page instantiated for it. */
     if (!pagedir_set_page(cur->pagedir, upage, kpage, spe->writable)) {
         free_frame(frame_no);
-        // lock_release(&frame_table[frame_no]->fte_lock);
         return -1;
     }
 
     spe->frame_no = frame_no;
     spe->loaded = true;
-
-    /* Release victim frame. */
-    // lock_release(&frame_table[frame_no]->fte_lock);
 
     return 0;
 }
@@ -268,8 +260,9 @@ void sup_remove_map(mapid_t mapid) {
                 if (entry->slot == SUP_NO_SWAP) {
                     /* Write frame to disk and free frame. */
 
-                    // TODO: check if dirty
-                    if (entry->writable && !entry->all_zero && frame_table[entry->frame_no]->dirty) {
+                    if (entry->writable 
+                        && !entry->all_zero 
+                        && frame_table[entry->frame_no]->dirty) {
                         frame_write(entry->f, ftov(entry->frame_no), 
                             entry->page_end, entry->file_ofs);
                     }
@@ -326,8 +319,9 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
                 if (entry->slot == SUP_NO_SWAP) {
                     /* Write frame to disk and free frame if want to save. */
 
-                    // TODO: check if dirty
-                    if (entry->writable && !entry->all_zero && frame_table[entry->frame_no]->dirty) {
+                    if (entry->writable 
+                        && !entry->all_zero 
+                        && frame_table[entry->frame_no]->dirty) {
                         frame_write(entry->f, ftov(entry->frame_no), 
                             entry->page_end, entry->file_ofs);
                     }
@@ -395,9 +389,7 @@ static int filesize(struct file* file) {
 
     /* Return file size. */
     if (file) {
-        // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
         filesize = file_length(file);
-        // lock_release(&filesys_io);                // LOCKS HAVE BEEN REMOVED
     } else {
         /* Invalid file has no size. */
         thread_exit();

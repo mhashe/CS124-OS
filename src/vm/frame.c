@@ -3,21 +3,20 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "vm/frame.h"
-#include "vm/swap.h"
-#include "threads/malloc.h"
-#include "threads/loader.h"
-#include "threads/palloc.h"
-#include "threads/vaddr.h"
 #include "filesys/file.h"     /* For file ops. */
-#include "userprog/syscall.h"
-#include "threads/thread.h"
-#include "vm/page.h"
-#include "userprog/pagedir.h"
 #include "threads/interrupt.h"
-#include "clru.h"
+#include "threads/loader.h"
+#include "threads/malloc.h"
+#include "threads/palloc.h"
+#include "threads/thread.h"
+#include "threads/vaddr.h"
+#include "userprog/pagedir.h"
+#include "userprog/syscall.h"
+#include "vm/clru.h"
+#include "vm/frame.h"
+#include "vm/page.h"
+#include "vm/swap.h"
 
-/* TODO : verify init_ram_pages is the right number. */
 struct frame_table_entry** frame_table;
 
 void frame_init(size_t user_page_limit) {
@@ -62,8 +61,6 @@ void frame_init(size_t user_page_limit) {
         } else {
             PANIC("Frame table init failed.");
         }
-
-        lock_init(&frame_table[i]->fte_lock);
     }
 }
 
@@ -84,26 +81,13 @@ static uint32_t evict(bool user) {
     }
 
     /* If not, evict a page. */
-    /* TODO : Add a lock around this, just to make sure that we don't evict the
-       same page repeatedly. */
-    /* TODO: evict into the swap */
-
-    // Temp; just free last page.
     victim = clru_evict();
 
-    /* Unlock global lock? */
 
     /* Allocate swap, write frame to swap, and then free frame. */
     swapslot_t new_swap = swap_alloc();
     swap_write(new_swap, ftov(victim));
 
-    // struct list_elem *e;
-
-    // intr_disable();
-
-    // for (e = list_begin(&all_list); e != list_end(&all_list);
-    //      e = list_next(e)) {
-    //     struct thread *t = list_entry(e, struct thread, allelem);
 
     /* Find all entries that use victim and redirect them to swap. */
     struct thread *t = thread_current();
@@ -120,8 +104,6 @@ static uint32_t evict(bool user) {
 
             /* If entry is a victim entry, set redirect it to swap. */
             if (entry && (entry->frame_no == victim)) {
-                // printf("HELLO VICTIM\n");
-                
                 ASSERT(entry->slot == SUP_NO_SWAP);
 
                 entry->slot = new_swap;
@@ -133,7 +115,6 @@ static uint32_t evict(bool user) {
 
         }
     }
-    // }
 
     free_frame(victim);
 
@@ -144,12 +125,6 @@ static uint32_t evict(bool user) {
 /* Gets the first free frame in the frame table. Returns an index. 
    page is the virtual memory pointer to a page that is occupying this frame. */
 uint32_t get_frame(bool user) {
-    // uint32_t i = 0;
-    // for (i = 0; i < init_ram_pages; i++) {
-    //     if (frame_table[i] == NULL) {
-    //         break;
-    //     }
-    // }
     void *frame;
 
     if (user) {
@@ -183,8 +158,6 @@ uint32_t get_frame(bool user) {
         clru_enqueue(frame_number);
     }
 
-    // frame_table[frame_number]->sup 
-
     return frame_number;
 }
 
@@ -216,9 +189,7 @@ int frame_read(struct file* f, void* buffer, unsigned size, unsigned offset) {
     ASSERT(is_kernel_vaddr(buffer));
 
     if (f) {
-        // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
         bytes = file_read_at(f, buffer, size, offset);
-        // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
     } else {
         /* Can't read invalid file. */
         bytes = -1;
@@ -236,9 +207,7 @@ int frame_write(struct file* f, void* buffer, unsigned size, unsigned offset) {
     int bytes;
 
     if (f) {
-        // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
         bytes = file_write_at(f, buffer, size, offset);
-        // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
     } else {
         /* Can't read invalid file. */
         bytes = -1;

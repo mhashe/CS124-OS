@@ -1,10 +1,11 @@
 #include <debug.h>
+#include <kernel/bitmap.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <kernel/bitmap.h>
-#include "vm/swap.h"
+
 #include "devices/block.h"
+#include "vm/swap.h"
 
 static struct bitmap *swap_slots;  /* 1 if allocated/in-use, 0 if available. */
 static int swap_num_slots;    /* Number of slots in swap_slots */
@@ -19,8 +20,6 @@ void swap_init(void) {
     swap_num_slots = block_size(swap_block) / SECTORS_PER_PAGE;
     swap_slots = bitmap_create(swap_num_slots);
 
-    // TODO: delete this print statement
-    printf("Number of swap slots available at start: %d\n", swap_num_slots);
 }
 
 

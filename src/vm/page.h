@@ -7,25 +7,16 @@
 
 #include <debug.h>
 #include <stdint.h>
-// #include <list.h>
-#include "userprog/syscall.h"
+
 #include "threads/pte.h"
+#include "userprog/syscall.h"
 #include "vm/swap.h"
-#include "threads/synch.h"
 
 
 #define SUP_NO_SWAP (size_t) -1
 
 /* Mapid identifier. */
 typedef int mapid_t;
-
-/* Types of pages in supplemental table entry. */
-// enum sup_type {
-//     SUP_ALL_ZERO,             /* Represents an initially all-zero page. */
-//     SUP_FILE,                 /* Represents a page to a file on disk. */
-//     SUP_SWAP                  /* Comment. */
-// };
-// 
 
 struct sup_entry {
     uint32_t frame_no;   /* Frame number which data was loaded into. */
@@ -39,9 +30,6 @@ struct sup_entry {
     bool writable;       /* Whether the page is writable. */
     bool loaded;         /* Whether data has been successfully loaded. */
     mapid_t mapid;       /* Map id if mapped with mmap. */
-
-    /* Lock for loading. */
-    struct lock lock; 
 };
 
 void sup_init(void);

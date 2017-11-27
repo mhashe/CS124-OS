@@ -22,8 +22,8 @@
 #include "lib/string.h"
 
 #ifdef VM
-    #include "vm/frame.h"
-    #include "vm/page.h"
+#include "vm/frame.h"
+#include "vm/page.h"
 #endif
 
 static thread_func start_process NO_RETURN;
@@ -462,12 +462,9 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
 #ifdef VM
-        // if (page_zero_bytes == PGSIZE) {
-        //     sup_alloc_all_zeros(upage, true);
-        // } else {
+        /* If page_read_bytes is 0, it will just allocate a page of 0s. */
         sup_alloc_segment(upage, file, writable, (unsigned) ofs, 
             (unsigned) page_read_bytes, (mapid_t) last_mapid);
-        // }
         ofs += PGSIZE;
 #else
         /* Get a page of memory. */
@@ -511,8 +508,8 @@ static bool setup_stack(void **esp, const char *cmdline) {
     bool success = false;
     void *stack_addr = ((uint8_t *) PHYS_BASE) - PGSIZE;
 
-    /* TODO : verify correctness. */
 #ifdef VM
+    /* So warning doesn't go off. */
     (void)&install_page;
 
     /* sup_alloc_all_zeros returns an error code. */
@@ -595,47 +592,6 @@ static bool setup_stack(void **esp, const char *cmdline) {
     return success;
 }
 
-// /*! Extends stack by creating a new zeroed page on the stack. */
-// bool extend_stack(void) {
-//     uint8_t *kpage;
-//     bool success = false;
-
-//     /* Make sure we're not going over our limit of pages. */
-//     struct thread *t = thread_current();
-//     uint32_t np = t->num_stack_pages;
-
-//     ASSERT(np <= MAX_PAGES);
-//     if (np == MAX_PAGES) {
-//         return success;
-//     }
-
-//     /* TODO : verify correctness. */
-// #ifdef VM
-//     /* Free up some frame to hold the stack. */
-//     int frame_entry = get_frame(true);
-//     if (frame_entry == -1) {
-//         /* Uncaught error message - no frames evictable. */
-//         PANIC("frame table full\n");
-//         return false;
-//     }
-
-//     kpage = frame_table[frame_entry]->page;
-// #endif
-
-//     /* This should not happen, if the frame table is working. */
-//     ASSERT(kpage != NULL);
-
-//     if (kpage != NULL) {
-//         success = install_page(((uint8_t *) PHYS_BASE) - (np+1)*PGSIZE, kpage, true);
-//         if (!success) {
-//             palloc_free_page(kpage);
-//             return success;
-//         }
-//     }
-//     t->num_stack_pages++;
-    
-//     return success;
-// }
 
 /*! Adds a mapping from user virtual address UPAGE to kernel
     virtual address KPAGE to the page table.

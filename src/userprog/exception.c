@@ -152,6 +152,7 @@ static void page_fault(struct intr_frame *f) {
          /* Can't allocate any more memory, this is a page fault. */
         printf("Max number of stack pages allocated!\n");
     } else if (diff <= 64) {
+        // TODO make sure it is above the max size of the stack
         while (diff <= 64 && np < MAX_PAGES) {    
             sup_alloc_all_zeros(PHYS_BASE - (np + 1)*PGSIZE, true);
             thread_current()->num_stack_pages++;

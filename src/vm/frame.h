@@ -7,12 +7,11 @@
 
 #include <debug.h>
 #include <stdint.h>
-// #include <list.h>
 
-#include "threads/vaddr.h"
-#include "threads/loader.h"
 #include "filesys/file.h"
+#include "threads/loader.h"
 #include "threads/synch.h"
+#include "threads/vaddr.h"
 
 #define FRAME_NONE (uint32_t) -1
 
@@ -22,23 +21,7 @@ struct frame_table_entry {
     bool dirty;     /* Bit indicating the page has been modified. */
     bool user;      /* Set if allocated from user pool. */
     bool valid;     /* If frame is a valid place in memory. */
-
-    // struct list *sup_entries; /* List of entries in sup_page table 
-                                // referencing this frame. */
-
-    /* Lock used to prevent multiple eviction, replacement. */
-    struct lock fte_lock;
 };
-
-// struct id_to_sup_entries {
-//     uint32_t id;
-//     bool id_is_frame_or_swap;
-//     struct list sup_entries;
-// }
-
-// struct swap_id_to_entries {
-//     struct list *sup_entries;
-// }
 
 struct frame_table_entry** frame_table;
 
@@ -62,7 +45,6 @@ static inline void * ftov(uint32_t frame_number) {
 
     return (void *) ((frame_number << PGBITS) + PHYS_BASE);
 }
-
 
 
 #endif /* vm/frame.h */
