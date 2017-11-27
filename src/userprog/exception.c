@@ -140,6 +140,8 @@ static void page_fault(struct intr_frame *f) {
     write = (f->error_code & PF_W) != 0;
     user = (f->error_code & PF_U) != 0;
 
+    (void)not_present;
+
     /* If access to virtual address valid, load data that goes into the page. */ 
 #ifdef VM
     uint32_t np = thread_current()->num_stack_pages;
