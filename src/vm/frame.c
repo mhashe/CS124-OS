@@ -165,9 +165,9 @@ uint32_t get_frame(bool user) {
 
         // TODO : streamline this code
         if (user) {
-        	frame = palloc_get_page(PAL_ZERO | PAL_USER);
+            frame = palloc_get_page(PAL_ZERO | PAL_USER);
         } else {
-        	frame = palloc_get_page(PAL_ZERO);
+            frame = palloc_get_page(PAL_ZERO);
         }
     }
     ASSERT(frame);
@@ -179,7 +179,9 @@ uint32_t get_frame(bool user) {
     frame_table[frame_number]->page = frame;
 
     /* Keep track of new frame in clru. */
-    clru_enqueue(frame_number);
+    if (user) {
+        clru_enqueue(frame_number);
+    }
 
     // frame_table[frame_number]->sup 
 
