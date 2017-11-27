@@ -26,11 +26,12 @@ void frame_init(size_t user_page_limit) {
     /* Shadow code in palloc_init for memory pool init. */
     uint8_t *free_start = ptov(1024 * 1024);
     uint8_t *free_end = ptov(init_ram_pages * PGSIZE);
-    size_t reserved_pages = (uint32_t)free_start / PGSIZE;
-    printf("%d\n", reserved_pages);
+
+    size_t reserved_pages = (uint32_t)vtop(free_start) / PGSIZE;
     size_t free_pages = (free_end - free_start) / PGSIZE;
     size_t user_pages = free_pages / 2;
     size_t kernel_pages;
+    
     if (user_pages > user_page_limit)
         user_pages = user_page_limit;
     kernel_pages = free_pages - user_pages;
