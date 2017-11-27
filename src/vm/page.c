@@ -33,8 +33,8 @@ struct sup_entry *** sup_pagedir_create(void) {
     return (struct sup_entry ***) palloc_get_page(PAL_ASSERT | PAL_ZERO);
 }
 
-static mapid_t last_mapid;
 
+static mapid_t last_mapid;
 
 /* Initialize the first mapid (representing mapping of file) as 0. */
 void sup_init(void) {

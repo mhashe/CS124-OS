@@ -509,6 +509,7 @@ static bool setup_stack(void **esp, const char *cmdline) {
 
     /* TODO : verify correctness. */
 #ifdef VM
+    (void)&install_page;
 
     /* sup_alloc_all_zeros returns an error code. */
     success = !sup_alloc_all_zeros(stack_addr, true);
