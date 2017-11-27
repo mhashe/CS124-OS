@@ -345,6 +345,7 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
                 }
             }
             sup_remove_entry(vaddr, sup_pagedir);
+            ASSERT(sup_pagedir[i][j] == NULL);
         }
         palloc_free_page(sup_pagedir[i]);
         sup_pagedir[i] = NULL;
