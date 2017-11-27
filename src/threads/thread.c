@@ -494,6 +494,13 @@ tid_t thread_tid(void) {
 void thread_exit(void) {
     ASSERT(!intr_context());
 
+#ifdef VM
+    /* Has to be before process_exit because process_exit destorys the page 
+       directory which we need to write modified information to disk. */
+    struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
+    sup_free_table(sup_pagedir, thread_current()->pagedir);
+#endif
+
 #ifdef USERPROG
     process_exit();
 #endif
@@ -549,10 +556,6 @@ void thread_exit(void) {
         free(cld);
     }
     ASSERT(list_empty(&thread_current()->children));
-#endif
-
-#ifdef VM
-    sup_free_table(thread_current()->sup_pagedir);
 #endif
 
     thread_current()->status = THREAD_DYING;

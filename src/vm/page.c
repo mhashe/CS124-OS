@@ -258,28 +258,36 @@ void sup_remove_map(mapid_t mapid) {
             if (!entry || entry->mapid != mapid) {
                 continue;
             }
+            void *vaddr = sup_index_to_vaddr(i, j);
 
             if (entry->loaded) {
                 if (entry->slot == SUP_NO_SWAP) {
                     /* Write frame to disk and free frame. */
-                    frame_write(entry->f, ftov(entry->frame_no), 
-                        entry->page_end, entry->file_ofs);
+
+                    // TODO: check if dirty
+                    if (entry->writable && !entry->all_zero) {
+                        frame_write(entry->f, ftov(entry->frame_no), 
+                            entry->page_end, entry->file_ofs);
+                    }
+                    pagedir_clear_page(thread_current()->pagedir, vaddr);
                     free_frame(entry->frame_no);
                 } else {
                     /* Write swap to frame, write frame to disk, delloc swap */
-                    if (!temp_swap_frame) {
-                        temp_swap_frame_no = get_frame(true);
-                        temp_swap_frame = ftov(temp_swap_frame_no); // TODO: remove magic true?
+
+                    // TODO: check if dirty
+                    if (entry->writable && !entry->all_zero) {
+                        if (!temp_swap_frame) {
+                            temp_swap_frame_no = get_frame(true);
+                            temp_swap_frame = ftov(temp_swap_frame_no);
+                        }
+                        swap_read(entry->slot, temp_swap_frame);
+                        frame_write(entry->f, temp_swap_frame, 
+                            entry->page_end, entry->file_ofs);
                     }
-                    swap_read(entry->slot, temp_swap_frame);
-                    frame_write(entry->f, temp_swap_frame, 
-                        entry->page_end, entry->file_ofs);
                     swap_free(entry->slot);
                 }
             }
-            void *vaddr = sup_index_to_vaddr(i, j);
 
-            pagedir_clear_page(thread_current()->pagedir, vaddr);
             sup_remove_entry(vaddr, sup_pagedir);
         }
     }
@@ -291,13 +299,12 @@ void sup_remove_map(mapid_t mapid) {
 
 
 /* Free all allocated pages and entries in the supplementary page table. 
-TODO: Free the associated frames! 
 TODO: Deal with multiple maps to single frame! 
 */
-void sup_free_table(struct sup_entry ***sup_pagedir) {
+void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
     struct sup_entry *entry;
-    // void *temp_swap_frame = NULL;
-    // uint32_t temp_swap_frame_no;
+    void *temp_swap_frame = NULL;
+    uint32_t temp_swap_frame_no;
 
     for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
         if (!sup_pagedir[i]) {
@@ -308,32 +315,42 @@ void sup_free_table(struct sup_entry ***sup_pagedir) {
             if (!entry) {
                 continue;
             }
-
-            // if (entry->loaded) {
-            //     if (entry->slot == SUP_NO_SWAP) {
-            //         /* Write frame to disk and free frame. */
-            //         frame_write(entry->f, ftov(entry->frame_no), 
-            //             entry->page_end, entry->file_ofs);
-            //         free_frame(entry->frame_no);
-            //     } else {
-            //         /* Write swap to frame, write frame to disk, delloc swap */
-            //         if (!temp_swap_frame) {
-            //             temp_swap_frame_no = get_frame(true);
-            //             temp_swap_frame = ftov(temp_swap_frame_no); // TODO: remove magic true?
-            //         }
-            //         swap_read(entry->slot, temp_swap_frame);
-            //         frame_write(entry->f, temp_swap_frame, 
-            //             entry->page_end, entry->file_ofs);
-            //         swap_free(entry->slot);
-            //     }
-            // }
-
             void *vaddr = sup_index_to_vaddr(i, j);
 
+            if (entry->loaded) {
+                if (entry->slot == SUP_NO_SWAP) {
+                    /* Write frame to disk and free frame if want to save. */
+
+                    // TODO: check if dirty
+                    if (entry->writable && !entry->all_zero) {
+                        frame_write(entry->f, ftov(entry->frame_no), 
+                            entry->page_end, entry->file_ofs);
+                    }
+                    pagedir_clear_page(pd, vaddr);
+                    free_frame(entry->frame_no);
+                } else {
+                    // Write swap to frame, write frame to disk, delloc swap 
+                    
+                    // TODO: check if dirty
+                    if (entry->writable && !entry->all_zero) {
+                        if (!temp_swap_frame) {
+                            temp_swap_frame_no = get_frame(true);
+                            temp_swap_frame = ftov(temp_swap_frame_no);
+                        }
+                        swap_read(entry->slot, temp_swap_frame);
+                        frame_write(entry->f, temp_swap_frame, 
+                            entry->page_end, entry->file_ofs);
+                    }
+                    swap_free(entry->slot);
+                }
+            }
             sup_remove_entry(vaddr, sup_pagedir);
         }
         palloc_free_page(sup_pagedir[i]);
         sup_pagedir[i] = NULL;
+    }
+    if (temp_swap_frame) {
+        free_frame(temp_swap_frame_no);
     }
     palloc_free_page(sup_pagedir);
     sup_pagedir = NULL;

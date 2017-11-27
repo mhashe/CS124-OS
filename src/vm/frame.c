@@ -196,7 +196,6 @@ uint32_t get_frame(bool user) {
 
     if (frame == NULL) {
         // TODO: evict then palloc again
-        // printf("Frame Table Full\n");
         evict(user);
 
         // TODO : streamline this code
@@ -222,6 +221,7 @@ uint32_t get_frame(bool user) {
 /* Frees the page frame corresponding to the frame number given. */
 void free_frame(uint32_t frame_number) {
     ASSERT(frame_number < init_ram_pages);
+
 
     if (frame_table[frame_number]->page) {
         palloc_free_page(frame_table[frame_number]->page);
