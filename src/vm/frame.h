@@ -41,7 +41,7 @@ struct frame_table_entry {
 
 struct frame_table_entry** frame_table;
 
-void init_frame_table(void);
+void frame_init(size_t user_page_limit);
 uint32_t get_frame(bool user);
 void free_frame(uint32_t frame_number);
 int frame_read(struct file *f, void* buffer, unsigned size, unsigned offset);

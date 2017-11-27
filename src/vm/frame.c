@@ -19,34 +19,46 @@
 /* TODO : verify init_ram_pages is the right number. */
 struct frame_table_entry** frame_table;
 
-void init_frame_table(void) {
+void frame_init(size_t user_page_limit) {
     frame_table = (struct frame_table_entry**) 
                 calloc(sizeof(struct frame_table_entry*), init_ram_pages);
+
+    /* Shadow code in palloc_init for memory pool init. */
+    uint8_t *free_start = ptov(1024 * 1024);
+    uint8_t *free_end = ptov(init_ram_pages * PGSIZE);
+    size_t reserved_pages = (uint32_t)free_start / PGSIZE;
+    printf("%d\n", reserved_pages);
+    size_t free_pages = (free_end - free_start) / PGSIZE;
+    size_t user_pages = free_pages / 2;
+    size_t kernel_pages;
+    if (user_pages > user_page_limit)
+        user_pages = user_page_limit;
+    kernel_pages = free_pages - user_pages;
 
     for (uint32_t i = 0; i < init_ram_pages; i++) {
         frame_table[i] = (struct frame_table_entry*) 
                         calloc(sizeof(struct frame_table_entry), 1);
-        if (i < 256) {
+        if (i < reserved_pages) {
             /* not free memory */
             frame_table[i]->valid = false;
-        } else if (i < 256 + 1) {
+        } else if (i < reserved_pages + 1) {
             /* kernel pool base map, not available for us */
             frame_table[i]->valid = false;
             frame_table[i]->user  = false;
-        } else if (i < 256 + 1 + 367) {
+        } else if (i < reserved_pages + kernel_pages) {
             /* kernel pool, available for us */
             frame_table[i]->valid = true;
             frame_table[i]->user  = false;
-        } else if (i < 256 + 1 + 367 + 1) {
+        } else if (i < reserved_pages + kernel_pages + 1) {
             /* user pool base map, not available for us */
             frame_table[i]->valid = false;
             frame_table[i]->user  = true;
-        } else if (i < 256 + 1 + 367 + 1 + 367) {
+        } else if (i < reserved_pages + kernel_pages + user_pages) {
             /* user pool, available for us */
             frame_table[i]->valid = true;
             frame_table[i]->user  = true;
         } else {
-            PANIC("Magic numbers have failed us.");
+            PANIC("Frame table init failed.");
         }
 
         // list_init(&frame_table[i]->sup_entries);

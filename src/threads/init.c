@@ -142,7 +142,7 @@ int main(void) {
 #endif
 
 #ifdef VM
-    init_frame_table();
+    frame_init(user_page_limit);
     sup_init();
     swap_init();
 #endif
