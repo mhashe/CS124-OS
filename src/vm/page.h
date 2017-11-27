@@ -23,7 +23,6 @@ typedef int mapid_t;
 //     SUP_SWAP                  /* Comment. */
 // };
 // 
-static mapid_t last_mapid = 0;
 
 struct sup_entry {
     uint32_t frame_no;   /* Frame number which data was loaded into. */
@@ -53,8 +52,11 @@ static inline void* sup_index_to_vaddr(uint32_t di, uint32_t ti) {
     return (void *) (((uintptr_t)di << PDSHIFT) | ((uintptr_t)ti << PTSHIFT));
 }
 
+
 static inline mapid_t sup_inc_mapid(void) {
-    return last_mapid++;
+    static mapid_t last_mapid = 0;
+    last_mapid++;
+    return last_mapid;
 }
 
 /* Retreives supplemental entry from sup_pagedir at upage, which must be 
