@@ -17,6 +17,7 @@
 
 /* Mapid identifier. */
 typedef int mapid_t;
+#define MAP_FAILED ((mapid_t) -1)
 
 struct sup_entry {
     uint32_t frame_no;   /* Frame number which data was loaded into. */

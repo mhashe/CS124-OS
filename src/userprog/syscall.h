@@ -3,13 +3,10 @@
 
 #include "lib/inttypes.h"
 #include "threads/interrupt.h"
+#include "vm/page.h"
 
 /* Process identifier. */
 typedef int pid_t;
-
-/* Mapid identifier. */
-typedef int mapid_t; // TODO: get from page.h?
-#define MAP_FAILED ((mapid_t) -1)
 
 void syscall_init(void);
 
