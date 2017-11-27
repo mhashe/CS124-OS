@@ -207,6 +207,22 @@ the number of the swap slot process Q now occupies.
 >> memory subsystem.  Explain how the page fault and eviction
 >> processes differ between swap pages and other pages.
 
+When a file is memory mapped, is lazily loaded such that supplemental 
+table entries at the approriate addresses are create with the appropriate 
+offsets in the file mapped. Then, when an address in the mapped region 
+has a fault, the related entry is used to load the file's data from disk 
+into an empty frame, which is then linked to the faulting virtual address.
+
+When a page fault occurs, the address accessed is found in the supplemental 
+page table for the process (if not, it terminates). If the fault 
+is not a r/w i/o violation, it continues. If the entry in the supplemental 
+table is installed in the swap table, it is loaded into an empty frame. Else,
+the file for the entry is loaded from disk into an empty frame. The empty 
+frame is then linked to the faulting virtual address. 
+
+The only pages that are evicted are pages installed in the frame table 
+(and not in the swap table).
+
 >> C3: Explain how you determine whether a new file mapping overlaps
 >> any existing segment.
 
