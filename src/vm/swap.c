@@ -7,7 +7,7 @@
 #include "devices/block.h"
 
 static struct bitmap *swap_slots;  /* 1 if allocated/in-use, 0 if available. */
-static uint32_t swap_num_slots;    /* Number of slots in swap_slots */
+static int swap_num_slots;    /* Number of slots in swap_slots */
 static struct block *swap_block;   /* Swap block device */
 
 inline static block_sector_t swap_slot_to_sector(swapslot_t swap_slot);
@@ -54,7 +54,7 @@ swapslot_t swap_alloc(void) {
     size_t swap_slot = bitmap_scan_and_flip(swap_slots, 0, 1, false);
     
     if (swap_slot == BITMAP_ERROR) {
-        // TODO: panic the kernel b/c we ran out of slots
+        PANIC("Out of swap slots!");
     }
     
     return swap_slot;

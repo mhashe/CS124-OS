@@ -458,6 +458,7 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         uint8_t *kpage;
 #ifdef VM
         /* TODO : verify correctness. */
+        printf("Getting frame in load segment!\n");
         int frame_entry = get_frame(true);
         if (frame_entry == -1) {
              // Uncaught error message - no frames evictable. 

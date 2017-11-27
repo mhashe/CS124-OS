@@ -58,6 +58,10 @@ fixedp_from_int(LOAD_AVG_PERIOD - TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 /* Max number of pages for each thread. */
 #define MAX_PAGES (1 << 23) >> PGBITS /* 8 MB / PGSIZE */
 
+/*! List of all processes.  Processes are added to this list
+  when they are first scheduled and removed when they exit. */
+struct list all_list;
+
 /*! File descriptor. */
 struct file_des {
     int fd;                /*!< Numeric file descriptor. */

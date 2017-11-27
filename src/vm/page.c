@@ -140,7 +140,7 @@ int sup_alloc_mmap_file(void * vaddr, int fd, bool writable) {
         }
         spe->writable = writable;
         spe->loaded = false;
-        spe->frame_no = (uint32_t) -1;
+        spe->frame_no = FRAME_NONE;
         spe->mapid = last_mapid;
         spe->all_zero = false;
         spe->slot = SUP_NO_SWAP;
@@ -154,17 +154,20 @@ int sup_alloc_mmap_file(void * vaddr, int fd, bool writable) {
 /* Loads part of file needed at vaddr page. Returns 0 on success, -1 on 
    failure. */
 int sup_load_page(void *vaddr, bool user, bool write) {
+    printf("LOAD %p\n", vaddr);
     struct thread *cur = thread_current();
     void *upage = pg_round_down(vaddr);
     struct sup_entry * spe = sup_get_entry(upage, cur->sup_pagedir);
 
     /* If entry in supplementary page table does not exist, then failure. */
     if (spe == NULL) {
+        printf("LOAD FAIL1\n");
         return -1;
     }
 
-    /* Unknown page fault since data has been loaded into memory already. */
+    /* Unknown page fault since data has been loaded from disk already. */
     if ((spe->loaded) && (spe->slot != SUP_NO_SWAP)) {
+        printf("LOAD FAIL2\n");
         return -1;
     }
 
@@ -188,6 +191,7 @@ int sup_load_page(void *vaddr, bool user, bool write) {
     /* Else if in swap, just load the page from swap into the frame. */
     else {
         swap_read(spe->slot, kpage);
+        swap_free(spe->slot);
     }
 
     /* Linking frame to virtual address failed, so remove and deallocate the 
@@ -304,9 +308,11 @@ be page-aligned. */
 static inline void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir, 
                                 struct sup_entry *entry) {
     uintptr_t pd = pd_no(upage);
+    printf("SET\n");
     if (sup_pagedir[pd] == NULL) {
         sup_pagedir[pd] = palloc_get_page(PAL_ASSERT | PAL_ZERO);
     }
+    printf("SET %p[%d]\n", sup_pagedir, pd);
     sup_pagedir[pd][pt_no(upage)] = entry;
 }
 

@@ -11,7 +11,7 @@
 #include "devices/block.h"
 
 /* Set sectors per page to be pgsize/block_sector_size rounded up. */
-#define SECTORS_PER_PAGE (PGSIZE + BLOCK_SECTOR_SIZE - 1) / BLOCK_SECTOR_SIZE
+#define SECTORS_PER_PAGE ((PGSIZE + BLOCK_SECTOR_SIZE - 1) / BLOCK_SECTOR_SIZE)
 
 typedef size_t swapslot_t;
 
