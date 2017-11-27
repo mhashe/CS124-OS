@@ -366,7 +366,13 @@ unallocated.
 >> the two situations.
 
 On unmapping or on process exit, an mmap'ed file is written back to the original
-file. As such, the implementation of demand paged mmap'ed into memory. 
+file. As such, the implementation of data demand-paged from executables is
+pretty much the exact same as an mmap'ed file. The difference is that a data
+demand-paged is originally an all 0 file, (denoted by having a read length of
+0). We store the file length (read length) in the particular supplemental page
+table entry. For a data demand-paged, it doesn't read anything from file on the
+inital load. As such, the file length is 0 so it has 0 file length (stored in
+the frame table) so on process exit, does not get written back to disk.
 
 			   SURVEY QUESTIONS
 			   ================
@@ -380,15 +386,31 @@ penalized.  We can't fix things until we know about them.  :-)
 >> In your opinion, was this assignment, or any of the parts of it, too
 >> easy or too hard?  Did it take too long or too little time?
 
+This was quite a difficult assignment. I guess a lot of it was we were trying to
+design a system without having too much background knowledge about how all the
+parts played together. I wouldn't say it was too difficult or too easy. It felt
+like there were a lot of distinct components we had to implement (many of which
+could be a CS 24 like assignment on its own) so it took a lot of time in that
+regard.
+
 >> Did you find that working on a particular part of the assignment gave
 >> you greater insight into some aspect of OS design?
+
+Yes, it was pretty cool working at such a level that you rely on very low level
+CPU behaviour, like page faults, accessed/dirty bits, finding stuff in the page
+table.
 
 >> Were there any parts of the assignment that you felt were unnecessarily
 >> tedious or pointless?
 
+Not really.
+
 >> Is there some particular fact or hint we should give students in
 >> future quarters to help them solve the problems?  Conversely, did you
 >> find any of our guidance to be misleading?
+
+I can't think of anything that wouldn't detract from the design orientated
+nature of this project.
 
 >> Do you have any suggestions for the instructor and/or TAs to more
 >> effectively assist students, either for future quarters or the remaining
