@@ -451,37 +451,21 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
     ASSERT((read_bytes + zero_bytes) % PGSIZE == 0);
     ASSERT(pg_ofs(upage) == 0);
     ASSERT(ofs % PGSIZE == 0);
-    // printf("load_segment %p %d-%d \n", upage, ofs, read_bytes);
+    (void)last_mapid;
 
-#ifdef VM
     file_seek(file, ofs);
     while (read_bytes > 0 || zero_bytes > 0) {
-
         /* Calculate how to fill this page.
            We will read PAGE_READ_BYTES bytes from FILE
            and zero the final PAGE_ZERO_BYTES bytes. */
         size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
         size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
+#ifdef VM
         sup_alloc_segment(upage, file, writable, (unsigned) ofs, 
             (unsigned) page_read_bytes, (mapid_t) last_mapid);
         ofs += PGSIZE;
-
-        /* Advance. */
-        read_bytes -= page_read_bytes;
-        zero_bytes -= page_zero_bytes;
-        upage += PGSIZE;
-    }
 #else
-    (void)last_mapid;
-    file_seek(file, ofs);
-    while (read_bytes > 0 || zero_bytes > 0) {
-        /* Calculate how to fill this page.
-           We will read PAGE_READ_BYTES bytes from FILE
-           and zero the final PAGE_ZERO_BYTES bytes. */
-        size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-        size_t page_zero_bytes = PGSIZE - page_read_bytes;
-
         /* Get a page of memory. */
         uint8_t *kpage;
 
@@ -507,13 +491,13 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
             palloc_free_page(kpage);
             return false; 
         }
+#endif
 
         /* Advance. */
         read_bytes -= page_read_bytes;
         zero_bytes -= page_zero_bytes;
         upage += PGSIZE;
     }
-#endif
     return true;
 }
 
