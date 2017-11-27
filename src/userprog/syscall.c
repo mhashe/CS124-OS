@@ -58,17 +58,10 @@ static void   munmap(struct intr_frame *f);
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 
 
-/*! Lock for performing filesystems operations. */
-static struct lock filesys_io;
-
-
 /* Module init function. */
 void syscall_init(void) {
     /* Register syscall handler. */
     intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
-
-    /* Initialize lock. */
-    lock_init(&filesys_io);
 }
 
 
@@ -367,9 +360,7 @@ static void open(struct intr_frame *f) {
 
     if (file_name) {
         /* Try to open file. */
-        lock_acquire(&filesys_io);
         struct file* file = filesys_open(file_name);
-        lock_release(&filesys_io);
 
         if (file) {
             /* File opened! Create a file descriptor, add to list. */
@@ -429,9 +420,7 @@ static void filesize(struct intr_frame *f) {
     /* Return file size. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-        lock_acquire(&filesys_io);
         f->eax = file_length(file);
-        lock_release(&filesys_io);
     } else {
         /* Invalid file has no size. */
         thread_exit();
@@ -473,9 +462,7 @@ static void read(struct intr_frame *f) {
     /* Return number of bytes read. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-        lock_acquire(&filesys_io);
         f->eax = file_read(file, buffer, size);
-        lock_release(&filesys_io);
     } else {
         /* Can't read invalid file. */
         f->eax = -1;
@@ -524,10 +511,8 @@ static void write(struct intr_frame *f) {
     /* Return number of bytes written. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-        lock_acquire(&filesys_io);
         int written = file_write(file, buffer, size);
         f->eax = written;
-        lock_release(&filesys_io);
     } else {
         /* Can't write to file. */
         f->eax = 0;
@@ -558,9 +543,7 @@ static void seek(struct intr_frame *f) {
     /* Seek file. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-        lock_acquire(&filesys_io);
         file_seek(file, position);
-        lock_release(&filesys_io);
     } else {
         /* Can't seek invalid file. */
         thread_exit();
@@ -582,9 +565,7 @@ static void tell(struct intr_frame *f) {
     /* Tell file. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-        lock_acquire(&filesys_io);
         f->eax = file_tell(file);
-        lock_release(&filesys_io);
     } else {
         /* Can't tell invalid file. */
         thread_exit();
@@ -606,9 +587,7 @@ static void close(struct intr_frame *f) {
     /* Tell file. */
     struct file_des* file_des = file_from_fd(fd);
     if (file_des) {
-        lock_acquire(&filesys_io);
         file_close(file_des->file);
-        lock_release(&filesys_io);
 
         /* Free memory, remove from list. */
         list_remove(&file_des->elem);
