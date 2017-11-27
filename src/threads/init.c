@@ -52,9 +52,6 @@
 #include "devices/ide.h"
 #include "filesys/filesys.h"
 #include "filesys/fsutil.h"
-
-#else
-
 #include "userprog/fs_lock.h"
 
 #endif
@@ -124,6 +121,9 @@ int main(void) {
     gdt_init();
 #endif
 
+    /* Global fs lock. */
+    fs_lock_init();
+
     /* Initialize interrupt handlers. */
     intr_init();
     timer_init();
@@ -144,8 +144,6 @@ int main(void) {
     ide_init();
     locate_block_devices();
     filesys_init(format_filesys);
-#else
-    fs_lock_init();
 #endif
 
 #ifdef VM

@@ -4,11 +4,11 @@
 #include "threads/synch.h"
 
 /* Global filesystem lock - will be removed in project 6. */
-struct lock filesys_io;
+struct lock fs_lock;
 
 /* Init the lock. */
-void fs_lock_init(void) {
-	lock_init(&filesys_io);
+static void fs_lock_init(void) {
+	lock_init(&fs_lock);
 }
 
 #endif
