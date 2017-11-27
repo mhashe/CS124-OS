@@ -114,6 +114,8 @@ static uint32_t evict(bool user) {
     for (uint32_t i = 0; i < init_ram_pages; i++) {
         if (!frame_table[i]->page && frame_table[i]->valid && 
             frame_table[i]->user == user) {
+            // void *frame = palloc_get_page(PAL_ZERO | PAL_USER);
+            // printf("ASSERTION FRAME %d\n", frame == NULL);
             ASSERT(0);
         }
     }
@@ -125,6 +127,7 @@ static uint32_t evict(bool user) {
 
     // Temp; just free last page.
     victim = init_ram_pages - 1;
+    // printf("VICTIM is empty? %d\n", frame_table[victim]->page == NULL);
 
     /* Unlock global lock? */
 
@@ -169,8 +172,9 @@ static uint32_t evict(bool user) {
         }
     }
     // }
-
+    // printf("FREEING VICTIM\n");
     free_frame(victim);
+    // printf("DONE FREEING VICTIM\n");
 
     return victim;
 }
