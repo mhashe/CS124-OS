@@ -93,7 +93,7 @@ static uint32_t evict(bool user) {
     ASSERT(user);
 
     /* Set accessed/dirty bits in all frame table entries. */
-    set_bits();
+    // set_bits();
 
     uint32_t victim = 0;
 
@@ -139,6 +139,7 @@ static uint32_t evict(bool user) {
 
             /* If entry is a victim entry, set redirect it to swap. */
             if (entry && (entry->frame_no == victim)) {
+                // printf("HELLO VICTIM\n");
                 
                 ASSERT(entry->slot == SUP_NO_SWAP);
 
@@ -181,7 +182,7 @@ uint32_t get_frame(bool user) {
 
     if (frame == NULL) {
         // TODO: evict then palloc again
-        PANIC("frame table full %d from thread %s\n", user, thread_current()->name);
+        // printf("Frame Table Full\n");
         evict(user);
 
         // TODO : streamline this code

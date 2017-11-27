@@ -190,7 +190,7 @@ int sup_load_page(void *vaddr, bool user, bool write) {
     }
 
     /* Unknown page fault since data has been loaded from disk already. */
-    if ((spe->loaded) && (spe->slot != SUP_NO_SWAP)) {
+    if (spe->loaded && (spe->slot == SUP_NO_SWAP)) {
         return -1;
     }
 
@@ -210,11 +210,11 @@ int sup_load_page(void *vaddr, bool user, bool write) {
             free_frame(frame_no);
             return -1;
         }
-    } 
-    /* Else if in swap, just load the page from swap into the frame. */
-    else {
+    } else {
+        /* Else if in swap, just load the page from swap into the frame. */
         swap_read(spe->slot, kpage);
         swap_free(spe->slot);
+        spe->slot = SUP_NO_SWAP;
     }
 
     /* Linking frame to virtual address failed, so remove and deallocate the 
