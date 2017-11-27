@@ -1,9 +1,10 @@
 #include <list.h>
-#include "page.h"
-#include "threads/thread.h"
-#include "frame.h"
+
 #include "threads/malloc.h"
+#include "threads/thread.h"
 #include "userprog/pagedir.h"
+#include "vm/frame.h"
+#include "vm/page.h"
 
 #include "clru.h"
 
@@ -16,7 +17,7 @@ uint32_t clru_evict(void);
 static struct list lru;
 
 /* Max size of queue. */
-static uint32_t max = 367;
+static uint32_t max;
 
 struct clru_entry {
     uint32_t fn;            /*!< Frame table number. */
@@ -28,6 +29,15 @@ struct clru_entry {
 void clru_init(void) {
     /* Init queue. */
     list_init(&lru);
+
+    /* Shadow code in palloc_init for memory pool init. */
+    uint8_t *free_start = ptov(1024 * 1024);
+    uint8_t *free_end = ptov(init_ram_pages * PGSIZE);
+
+    size_t reserved_pages = (uint32_t)vtop(free_start) / PGSIZE;
+    size_t free_pages = (free_end - free_start) / PGSIZE;
+    size_t user_pages = free_pages / 2;
+    max = user_pages - 1;
 }
 
 /* Updates queue according to recent access. */
@@ -63,7 +73,8 @@ void clru_timer_tick(void) {
         /* If accessed, reset access flag and set to back. */
         if (frame_table[ce->fn]->acc) {
 
-            /* Critical to reset access flag; otherwise, this loop will continue inifinitely. */
+            /* Critical to reset access flag; otherwise, this loop will 
+               continue inifinitely. */
             frame_table[ce->fn]->acc = 0;
 
             /* Move to back of list. */
@@ -71,7 +82,6 @@ void clru_timer_tick(void) {
             list_push_back(&lru, e_prev);
         }
     }
-    // ASSERT(list_size(&lru) <= max);
 }
 
 /* Adds a new frame to the LRU queue. */
@@ -82,8 +92,6 @@ void clru_enqueue(uint32_t fn) {
 
     list_push_back(&lru, &new->elem);
 
-    // ASSERT(list_size(&lru) <= max);
-    // printf("SIZE: %d\n", list_size(&lru));
 }
 
 /* Returns front of queue. */
