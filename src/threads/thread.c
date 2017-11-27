@@ -201,7 +201,7 @@ void recalculate_priority(struct thread *t) {
     }
     t->priority = max;
 
-    if (t->blocked_lock) {
+    if (t->blocked_lock && t->blocked_lock->holder) { 
         recalculate_priority(t->blocked_lock->holder);
     }
 
