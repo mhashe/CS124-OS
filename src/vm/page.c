@@ -21,8 +21,8 @@ inline mapid_t sup_inc_mapid(void);
 static void sup_set_entry(void *vaddr, struct sup_entry *** sup_pagedir, 
     struct sup_entry *entry);
 
-static void sup_remove_entry(void *upage, struct sup_entry *** 
-    sup_pagedir);
+static void sup_remove_entry(int i, int j, struct sup_entry ***sup_pagedir,
+                            struct sup_entry *entry, uint32_t *pd);
 
 /* Functions from syscall. TODO: how to not reimplement them here? */
 static int filesize(struct file *file);
@@ -246,8 +246,6 @@ TODO: Deal with multiple maps to single frame!
 void sup_remove_map(mapid_t mapid) {
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
     struct sup_entry *entry;
-    void *temp_swap_frame = NULL;
-    uint32_t temp_swap_frame_no;
 
     for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
         if (!sup_pagedir[i]) {
@@ -258,43 +256,13 @@ void sup_remove_map(mapid_t mapid) {
             if (!entry || entry->mapid != mapid) {
                 continue;
             }
-            void *vaddr = sup_index_to_vaddr(i, j);
+            sup_remove_entry(i, j, sup_pagedir, 
+                entry, thread_current()->pagedir);
 
-            if (entry->loaded) {
-                if (entry->slot == SUP_NO_SWAP) {
-                    /* Write frame to disk and free frame. */
-
-                    // TODO: check if dirty
-                    if (entry->writable && !entry->all_zero) {
-                        frame_write(entry->f, ftov(entry->frame_no), 
-                            entry->page_end, entry->file_ofs);
-                    }
-                    pagedir_clear_page(thread_current()->pagedir, vaddr);
-                    free_frame(entry->frame_no);
-                } else {
-                    /* Write swap to frame, write frame to disk, delloc swap */
-
-                    // TODO: check if dirty
-                    if (entry->writable && !entry->all_zero) {
-                        if (!temp_swap_frame) {
-                            temp_swap_frame_no = get_frame(true);
-                            temp_swap_frame = ftov(temp_swap_frame_no);
-                        }
-                        swap_read(entry->slot, temp_swap_frame);
-                        frame_write(entry->f, temp_swap_frame, 
-                            entry->page_end, entry->file_ofs);
-                    }
-                    swap_free(entry->slot);
-                }
-            }
-
-            sup_remove_entry(vaddr, sup_pagedir);
+            
         }
     }
 
-    if (temp_swap_frame) {
-        free_frame(temp_swap_frame_no);
-    }
 }
 
 
@@ -303,8 +271,6 @@ TODO: Deal with multiple maps to single frame!
 */
 void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
     struct sup_entry *entry;
-    void *temp_swap_frame = NULL;
-    uint32_t temp_swap_frame_no;
 
     for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
         if (!sup_pagedir[i]) {
@@ -315,59 +281,60 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
             if (!entry) {
                 continue;
             }
-            void *vaddr = sup_index_to_vaddr(i, j);
-
-            if (entry->loaded) {
-                if (entry->slot == SUP_NO_SWAP) {
-                    /* Write frame to disk and free frame if want to save. */
-
-                    // TODO: check if dirty
-                    if (entry->writable && !entry->all_zero) {
-                        frame_write(entry->f, ftov(entry->frame_no), 
-                            entry->page_end, entry->file_ofs);
-                    }
-                    pagedir_clear_page(pd, vaddr);
-                    free_frame(entry->frame_no);
-                } else {
-                    // Write swap to frame, write frame to disk, delloc swap 
-                    
-                    // TODO: check if dirty
-                    if (entry->writable && !entry->all_zero) {
-                        if (!temp_swap_frame) {
-                            temp_swap_frame_no = get_frame(true);
-                            temp_swap_frame = ftov(temp_swap_frame_no);
-                        }
-                        swap_read(entry->slot, temp_swap_frame);
-                        frame_write(entry->f, temp_swap_frame, 
-                            entry->page_end, entry->file_ofs);
-                    }
-                    swap_free(entry->slot);
-                }
-            }
-            sup_remove_entry(vaddr, sup_pagedir);
+            sup_remove_entry(i, j, sup_pagedir, 
+                entry, thread_current()->pagedir);
+            
         }
         palloc_free_page(sup_pagedir[i]);
         sup_pagedir[i] = NULL;
-    }
-    if (temp_swap_frame) {
-        free_frame(temp_swap_frame_no);
     }
     palloc_free_page(sup_pagedir);
     sup_pagedir = NULL;
 }
 
 
-/* Removes supplemental entry from sup_pagedir at upage, which must be 
-page-aligned. Assumes enty exists. */
-static void sup_remove_entry(void *upage, struct sup_entry 
-    *** sup_pagedir) {
-    // TODO: make this computationally more efficient with local vars
-    struct sup_entry *sup_pte = sup_pagedir[pd_no(upage)][pt_no(upage)];
-    sup_pagedir[pd_no(upage)][pt_no(upage)] = NULL;
-    if(sup_pte->f) {
-        file_close(sup_pte->f);
+/* We want to get rid of this entry from the page table so write it to disk if
+   appropriate. Removes supplemental entry from sup_pagedir at upage, which must
+   be page-aligned. Assumes enty exists.*/
+static void sup_remove_entry(int i, int j, struct sup_entry ***sup_pagedir,
+                            struct sup_entry *entry, uint32_t *pd) {
+    void *vaddr = sup_index_to_vaddr(i, j);
+    // TODO: Can we make this more efficient?
+    void *temp_swap_frame = NULL;
+    uint32_t temp_swap_frame_no;
+
+    if (entry->loaded) {
+        if (entry->slot == SUP_NO_SWAP) {
+            /* Write frame to disk and free frame if want to save. */
+
+            // TODO: check if dirty
+            if (entry->writable && !entry->all_zero) {
+                frame_write(entry->f, ftov(entry->frame_no), 
+                    entry->page_end, entry->file_ofs);
+            }
+            pagedir_clear_page(pd, vaddr);
+            free_frame(entry->frame_no);
+        } else {
+            // Write swap to frame, write frame to disk, delloc swap 
+            
+            // TODO: check if dirty
+            if (entry->writable && !entry->all_zero) {
+                temp_swap_frame_no = get_frame(true);
+                temp_swap_frame = ftov(temp_swap_frame_no);
+                swap_read(entry->slot, temp_swap_frame);
+                frame_write(entry->f, temp_swap_frame, 
+                    entry->page_end, entry->file_ofs);
+                free_frame(temp_swap_frame_no);
+            }
+            swap_free(entry->slot);
+        }
     }
-    free(sup_pte);
+
+    sup_pagedir[i][j] = NULL;
+    if(entry->f) {
+        file_close(entry->f);
+    }
+    free(entry);
     // TODO: free entire table if nothing is left?
 }
 
