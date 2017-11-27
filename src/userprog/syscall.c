@@ -134,6 +134,7 @@ static void syscall_handler(struct intr_frame *f) {
         thread_exit();
     }
 
+#ifdef VM
     /* Expand stack if necessary. */
     uint32_t np = thread_current()->num_stack_pages;
     int diff = (int) (f->esp - (PHYS_BASE - np*PGSIZE));
@@ -152,6 +153,7 @@ static void syscall_handler(struct intr_frame *f) {
             diff = (int) (f->esp - (PHYS_BASE - np*PGSIZE));    
         }
     }
+#endif
 
     /* Dispatch syscall to appropriate handler. */
     int syscall_num =  *(stack);
