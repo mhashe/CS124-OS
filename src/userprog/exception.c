@@ -180,11 +180,11 @@ static void page_fault(struct intr_frame *f) {
 #endif
 
     /* Else, the invalid access terminates the process. */
-    printf("Page fault at %p: %s error %s page in %s context.\n",
-         fault_addr,
-         not_present ? "not present" : "rights violation",
-         write ? "writing" : "reading",
-         user ? "user" : "kernel");
+    // printf("Page fault at %p: %s error %s page in %s context.\n",
+    //      fault_addr,
+    //      not_present ? "not present" : "rights violation",
+    //      write ? "writing" : "reading",
+    //      user ? "user" : "kernel");
     exit(-1);
 }
 
