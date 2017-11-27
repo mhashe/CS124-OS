@@ -68,6 +68,9 @@ static inline struct sup_entry *sup_get_entry(void *upage,
     if (sup_pagedir[pd] == NULL) {
         return NULL;
     }
+    if (pd == 0) {
+        printf("BAD GET!\n");
+    }
     return sup_pagedir[pd][pt_no(upage)];
 }
 

@@ -94,6 +94,7 @@ int sup_alloc_all_zeros(void * vaddr, bool user) {
     spe->slot = SUP_NO_SWAP;
     spe->frame_no = frame_no;
     spe->mapid = MAP_FAILED;
+    lock_init(&spe->spe_lock);
 
     sup_set_entry(vaddr, cur->sup_pagedir, spe);
     // lock_release(&frame_table[frame_no]->fte_lock);
@@ -181,6 +182,7 @@ void sup_alloc_segment(void *addr, struct file *file, bool writable,
     spe->mapid = mapid;
     spe->all_zero = false;
     spe->slot = SUP_NO_SWAP;
+    lock_init(&spe->spe_lock);
 
     sup_set_entry(addr, sup_pagedir, spe);
 }
@@ -195,17 +197,23 @@ int sup_load_page(void *vaddr, bool user, bool write) {
 
     /* If entry in supplementary page table does not exist, then failure. */
     if (spe == NULL) {
+        printf("LOAD ERR: 1:: %p, %d, %d\n", vaddr, user, write);
         return -1;
     }
+    lock_acquire(&spe->spe_lock);
 
     /* Unknown page fault since data has been loaded from disk already and isn't
        in memory or swap. */
     if (spe->loaded && (spe->slot == SUP_NO_SWAP)) {
+        printf("LOAD ERR: 2\n");
+        lock_release(&spe->spe_lock);
         return -1;
     }
 
     /* Invalid access if page fault was due to write attempt on r/only page. */
     if (write && (!spe->writable)) {
+        printf("LOAD ERR: 3\n");
+        lock_release(&spe->spe_lock);
         return -1;
     }
 
@@ -218,7 +226,9 @@ int sup_load_page(void *vaddr, bool user, bool write) {
     /* If not present in swap, load one page of the file at file_ofs into the frame. */
     if (spe->slot == SUP_NO_SWAP) {
         if (frame_read(spe->f, kpage, spe->page_end, spe->file_ofs) == -1) {
+            printf("LOAD ERR: 4\n");
             free_frame(frame_no);
+            lock_release(&spe->spe_lock);
             return -1;
         }
     } else {
@@ -231,17 +241,20 @@ int sup_load_page(void *vaddr, bool user, bool write) {
     /* Linking frame to virtual address failed, so remove and deallocate the 
     page instantiated for it. */
     if (!pagedir_set_page(cur->pagedir, upage, kpage, spe->writable)) {
+        printf("LOAD ERR: 5\n");
         free_frame(frame_no);
+        lock_release(&spe->spe_lock);
         return -1;
     }
-    lock_release(&frame_table[frame_no]->fte_lock);
 
     spe->frame_no = frame_no;
     spe->loaded = true;
+    lock_release(&frame_table[frame_no]->fte_lock);
 
     /* Release victim frame. */
     // lock_release(&frame_table[frame_no]->fte_lock);
 
+    lock_release(&spe->spe_lock);
     return 0;
 }
 
@@ -264,19 +277,21 @@ void sup_remove_map(mapid_t mapid) {
             if (!entry || entry->mapid != mapid) {
                 continue;
             }
+            lock_acquire(&entry->spe_lock);
             void *vaddr = sup_index_to_vaddr(i, j);
 
             if (entry->loaded) {
                 if (entry->slot == SUP_NO_SWAP) {
                     /* Write frame to disk and free frame. */
 
+                    lock_acquire(&frame_table[entry->frame_no]->fte_lock);
                     // TODO: check if dirty
                     if (entry->writable && !entry->all_zero) {
                         frame_write(entry->f, ftov(entry->frame_no), 
                             entry->page_end, entry->file_ofs);
                     }
                     pagedir_clear_page(thread_current()->pagedir, vaddr);
-                    lock_acquire(&frame_table[entry->frame_no]->fte_lock);
+                    entry->loaded = false;
                     free_frame(entry->frame_no);
                     lock_release(&frame_table[entry->frame_no]->fte_lock);
                 } else {
@@ -288,14 +303,17 @@ void sup_remove_map(mapid_t mapid) {
                             temp_swap_frame_no = get_frame(true);
                             temp_swap_frame = ftov(temp_swap_frame_no);
                         }
+                        lock_acquire(&frame_table[temp_swap_frame_no]->fte_lock);
                         swap_read(entry->slot, temp_swap_frame);
                         frame_write(entry->f, temp_swap_frame, 
                             entry->page_end, entry->file_ofs);
+                        lock_release(&frame_table[temp_swap_frame_no]->fte_lock);
                     }
                     swap_free(entry->slot);
                 }
             }
 
+            lock_release(&entry->spe_lock);
             sup_remove_entry(vaddr, sup_pagedir);
         }
     }
@@ -314,6 +332,7 @@ TODO: Deal with multiple maps to single frame!
 void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
     struct sup_entry *entry;
     void *temp_swap_frame = NULL;
+
     uint32_t temp_swap_frame_no;
 
     for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
@@ -325,6 +344,7 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
             if (!entry) {
                 continue;
             }
+            lock_acquire(&entry->spe_lock);
             void *vaddr = sup_index_to_vaddr(i, j);
 
             if (entry->loaded) {
@@ -332,30 +352,37 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
                     /* Write frame to disk and free frame if want to save. */
 
                     // TODO: check if dirty
+                    lock_acquire(&frame_table[entry->frame_no]->fte_lock);
                     if (entry->writable && !entry->all_zero) {
                         frame_write(entry->f, ftov(entry->frame_no), 
                             entry->page_end, entry->file_ofs);
                     }
-                    lock_acquire(&frame_table[entry->frame_no]->fte_lock);
                     pagedir_clear_page(pd, vaddr);
-                    free_frame(entry->frame_no);
+                    entry->loaded = false;
+                    if (frame_table[entry->frame_no]->page) {
+                        free_frame(entry->frame_no);
+                    }
                     lock_release(&frame_table[entry->frame_no]->fte_lock);
                 } else {
                     // Write swap to frame, write frame to disk, delloc swap 
-                    
+                    ASSERT(entry->frame_no == FRAME_NONE);
+
                     // TODO: check if dirty
                     if (entry->writable && !entry->all_zero) {
                         if (!temp_swap_frame) {
                             temp_swap_frame_no = get_frame(true);
                             temp_swap_frame = ftov(temp_swap_frame_no);
                         }
+                        lock_acquire(&frame_table[temp_swap_frame_no]->fte_lock);
                         swap_read(entry->slot, temp_swap_frame);
                         frame_write(entry->f, temp_swap_frame, 
                             entry->page_end, entry->file_ofs);
+                        lock_release(&frame_table[temp_swap_frame_no]->fte_lock);
                     }
                     swap_free(entry->slot);
                 }
             }
+            lock_release(&entry->spe_lock);
             sup_remove_entry(vaddr, sup_pagedir);
         }
         palloc_free_page(sup_pagedir[i]);

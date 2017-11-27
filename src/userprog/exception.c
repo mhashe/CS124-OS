@@ -13,6 +13,9 @@
 /*! Number of page faults processed. */
 static long long page_fault_cnt;
 
+#include "threads/synch.h"
+struct lock fault_lock;
+
 static void kill(struct intr_frame *);
 static void page_fault(struct intr_frame *);
 static void exit(int status);
@@ -30,6 +33,7 @@ static void exit(int status);
     Refer to [IA32-v3a] section 5.15 "Exception and Interrupt Reference" for a
     description of each of these exceptions. */
 void exception_init(void) {
+    lock_init(&fault_lock);
     /* These exceptions can be raised explicitly by a user program,
        e.g. via the INT, INT3, INTO, and BOUND instructions.  Thus,
        we set DPL==3, meaning that user programs are allowed to
@@ -120,6 +124,7 @@ static void page_fault(struct intr_frame *f) {
     bool write;        /* True: access was write, false: access was read. */
     bool user;         /* True: access by user, false: access by kernel. */
     void *fault_addr;  /* Fault address. */
+    lock_acquire(&fault_lock);
 
     /* Obtain faulting address, the virtual address that was accessed to cause
        the fault.  It may point to code or to data.  It is not necessarily the
@@ -164,6 +169,7 @@ static void page_fault(struct intr_frame *f) {
             np = thread_current()->num_stack_pages;
             diff = (int) (f->esp - (PHYS_BASE - np*PGSIZE));    
         }
+        lock_release(&fault_lock);
         return;
     }
 
@@ -174,18 +180,21 @@ static void page_fault(struct intr_frame *f) {
         was made to read-only page, this returns -1 such that we don't return
         normally without exiting the process. */
         if (sup_load_page(fault_addr, user, write) != -1) {
+          lock_release(&fault_lock);
             return;
         }
     }
 #endif
 
     /* Else, the invalid access terminates the process. */
-    // printf("Page fault at %p: %s error %s page in %s context.\n",
-    //      fault_addr,
-    //      not_present ? "not present" : "rights violation",
-    //      write ? "writing" : "reading",
-    //      user ? "user" : "kernel");
+    printf("Page fault at %p: %s error %s page in %s context.\n",
+         fault_addr,
+         not_present ? "not present" : "rights violation",
+         write ? "writing" : "reading",
+         user ? "user" : "kernel");
+    debug_backtrace();
     exit(-1);
+    lock_release(&fault_lock);
 }
 
 

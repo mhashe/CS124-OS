@@ -173,7 +173,6 @@ static uint32_t evict(bool user) {
                 /* Free victim from user page directory */
                 pagedir_clear_page(pd, sup_index_to_vaddr(i, j));
             }
-
         }
     }
     // }
@@ -234,6 +233,7 @@ uint32_t get_frame(bool user) {
 void free_frame(uint32_t frame_number) {
     ASSERT(frame_number < init_ram_pages);
 
+    lock_acquire(&ft_lock);
 
     if (frame_table[frame_number]->page) {
         palloc_free_page(frame_table[frame_number]->page);
@@ -244,6 +244,7 @@ void free_frame(uint32_t frame_number) {
     frame_table[frame_number]->page = NULL;
     frame_table[frame_number]->acc = 0;
     frame_table[frame_number]->dirty = 0;
+    lock_release(&ft_lock);
 }
 
 
@@ -255,7 +256,12 @@ int frame_read(struct file* f, void* buffer, unsigned size, unsigned offset) {
     /* Return number of bytes read. */
     int bytes;
 
+    if (buffer == 0) {
+        printf("BAD BUFFER!\n");
+    }
+
     ASSERT(is_kernel_vaddr(buffer));
+    lock_acquire(&ft_lock);
 
     if (f) {
         // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
@@ -265,6 +271,7 @@ int frame_read(struct file* f, void* buffer, unsigned size, unsigned offset) {
         /* Can't read invalid file. */
         bytes = -1;
     }
+    lock_release(&ft_lock);
 
     return bytes;
 }
@@ -276,6 +283,11 @@ int frame_read(struct file* f, void* buffer, unsigned size, unsigned offset) {
 int frame_write(struct file* f, void* buffer, unsigned size, unsigned offset) {
     /* Return number of bytes read. */
     int bytes;
+    lock_acquire(&ft_lock);
+
+    if (buffer == 0) {
+        printf("BAD BUFFER!\n");
+    }
 
     if (f) {
         // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
@@ -285,6 +297,7 @@ int frame_write(struct file* f, void* buffer, unsigned size, unsigned offset) {
         /* Can't read invalid file. */
         bytes = -1;
     }
+    lock_release(&ft_lock);
 
     return bytes;
 }
