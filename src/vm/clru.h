@@ -9,5 +9,6 @@ uint32_t clru_evict(void);
 
 void clru_timer_tick(void);
 
+void set_bits(void);
 
 #endif

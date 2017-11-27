@@ -6,6 +6,7 @@
 #include "vm/page.h"
 #include "vm/frame.h"
 #include "vm/swap.h"
+#include "vm/clru.h"
 #include "threads/palloc.h"
 #include "threads/malloc.h"
 #include "threads/vaddr.h"
@@ -13,6 +14,7 @@
 #include "threads/thread.h"
 #include "filesys/file.h"     /* For file ops. */
 #include "userprog/pagedir.h"
+
 // #include "filesys/filesys.h"  /* For filesys ops. */
 // #include "userprog/syscall.h"
 
@@ -249,6 +251,8 @@ void sup_remove_map(mapid_t mapid) {
     void *temp_swap_frame = NULL;
     uint32_t temp_swap_frame_no;
 
+    set_bits();
+
     for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
         if (!sup_pagedir[i]) {
             continue;
@@ -304,6 +308,8 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
     struct sup_entry *entry;
     void *temp_swap_frame = NULL;
     uint32_t temp_swap_frame_no;
+
+    set_bits();
 
     for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
         if (!sup_pagedir[i]) {
