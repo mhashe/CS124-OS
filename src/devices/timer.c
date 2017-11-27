@@ -12,7 +12,10 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
+
+#ifdef VM
 #include "vm/clru.h"
+#endif
   
 #if TIMER_FREQ < 19
 #error 8254 timer requires TIMER_FREQ >= 19
@@ -157,8 +160,10 @@ void timer_print_stats(void) {
 static void timer_interrupt(struct intr_frame *args UNUSED) {
     ticks++;
     
+#ifdef VM
     /* Handles page replacement updating. */
     clru_timer_tick();
+#endif
 
     thread_tick();
 }
