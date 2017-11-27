@@ -232,10 +232,12 @@ the number of the swap slot process Q now occupies.
 >> invalid virtual address should cause the stack to be extended into
 >> the page that faulted.
 
-We check if the page fault is below the stack pointer. If it is, we 
+We check if the page fault is below the stack pointer, or within the 
+32-byte limit at which pusha might fault. We also check that the write
+is within our 8MB-per-process stack limit. If it is, we 
 allocate pages onto the stack until we either include a page covering
-the faulted address or hit our 8MB-per-process stack depth limit, at
-which point the access would cause an uncaught page fault.
+the faulted address or hit our stack depth limit, at which point the 
+access would cause an uncaught page fault.
 
 
 ---- SYNCHRONIZATION ----

@@ -135,8 +135,8 @@ static void syscall_handler(struct intr_frame *f) {
     /* Check if need to allocate more memory. */
     if (np >= MAX_PAGES) {
          /* Can't allocate any more memory, this is a page fault. */
-    } else if (diff <= 64) {
-        while (diff <= 64 && np < MAX_PAGES) {    
+    } else if (diff <= 32 && f->esp >= PHYS_BASE - MAX_PAGES*PGSIZE) {
+        while (diff <= 32 && np < MAX_PAGES) {    
             sup_alloc_all_zeros(PHYS_BASE - (np + 1)*PGSIZE, true);
             thread_current()->num_stack_pages++;
     
