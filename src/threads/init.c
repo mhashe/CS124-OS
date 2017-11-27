@@ -42,6 +42,7 @@
 #include "vm/frame.h"
 #include "vm/page.h"
 #include "vm/swap.h"
+#include "vm/clru.h"
 
 #endif
 
@@ -145,6 +146,7 @@ int main(void) {
     frame_init(user_page_limit);
     sup_init();
     swap_init();
+    clru_init();
 #endif
 
     printf("Boot complete.\n");
