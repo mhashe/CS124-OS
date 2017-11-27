@@ -263,7 +263,8 @@ void sup_remove_map(mapid_t mapid) {
 
                     if (entry->writable 
                         && !entry->all_zero 
-                        && frame_table[entry->frame_no]->dirty) {
+                        && frame_table[entry->frame_no]->dirty
+                        && entry->page_end != 0) {
                         frame_write(entry->f, ftov(entry->frame_no), 
                             entry->page_end, entry->file_ofs);
                     }
@@ -272,7 +273,9 @@ void sup_remove_map(mapid_t mapid) {
                 } else {
                     /* Write swap to frame, write frame to disk, delloc swap */
 
-                    if (entry->writable && !entry->all_zero) {
+                    if (entry->writable 
+                        && !entry->all_zero 
+                        && entry->page_end != 0) {
                         if (!temp_swap_frame) {
                             temp_swap_frame_no = get_frame(true);
                             temp_swap_frame = ftov(temp_swap_frame_no);
@@ -322,7 +325,8 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
 
                     if (entry->writable 
                         && !entry->all_zero 
-                        && frame_table[entry->frame_no]->dirty) {
+                        && frame_table[entry->frame_no]->dirty
+                        && entry->page_end != 0) {
                         frame_write(entry->f, ftov(entry->frame_no), 
                             entry->page_end, entry->file_ofs);
                     }
@@ -331,7 +335,9 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
                 } else {
                     /* Write swap to frame, write frame to disk, delloc swap */
                     
-                    if (entry->writable && !entry->all_zero) {
+                    if (entry->writable 
+                        && !entry->all_zero
+                        && entry->page_end != 0) {
                         if (!temp_swap_frame) {
                             temp_swap_frame_no = get_frame(true);
                             temp_swap_frame = ftov(temp_swap_frame_no);
