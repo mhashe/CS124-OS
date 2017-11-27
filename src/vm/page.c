@@ -159,7 +159,8 @@ void sup_alloc_segment(void *addr, struct file *file, bool writable,
     
     ASSERT(sup_get_entry(addr, sup_pagedir) == NULL);
 
-    struct sup_entry *spe = (struct sup_entry *) malloc(sizeof(struct sup_entry));
+    struct sup_entry *spe = (struct sup_entry *) 
+                                malloc(sizeof(struct sup_entry));
     ASSERT(spe != NULL);
 
     /* Validity of a mapped file is independent of the original file so create
@@ -328,7 +329,7 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
                     pagedir_clear_page(pd, vaddr);
                     free_frame(entry->frame_no);
                 } else {
-                    // Write swap to frame, write frame to disk, delloc swap 
+                    /* Write swap to frame, write frame to disk, delloc swap */
                     
                     if (entry->writable && !entry->all_zero) {
                         if (!temp_swap_frame) {
