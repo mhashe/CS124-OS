@@ -463,36 +463,8 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage,
         size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
         size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-        /* Get a page of memory. */
-        // uint8_t *kpage;
-
-        // // kpage = frame_table[frame_entry]->page;
-        // kpage = palloc_get_page(PAL_USER);
-
-        // // Needs to be commented in for multi-oom to pass
-        // if (kpage == NULL)
-        //     return false;
-
-        // /* This should not happen, if the frame table is working. */
-        // ASSERT(kpage != NULL);
-
-        // /* Load this page. */
-        // if (file_read(file, kpage, page_read_bytes) != (int) page_read_bytes) {
-        //     palloc_free_page(kpage);
-        //     return false;
-        // }
-        // memset(kpage + page_read_bytes, 0, page_zero_bytes);
-
-        // /* Add the page to the process's address space. */
-        // if (!install_page(upage, kpage, writable)) {
-        //     palloc_free_page(kpage);
-        //     return false; 
-        // }
-
-        // printf("READ %d %d\n", read_bytes, page_read_bytes);
         sup_alloc_segment(upage, file, writable, (unsigned) ofs, 
             (unsigned) page_read_bytes, (mapid_t) last_mapid);
-        // printf("OFS: %d\n", ofs);
         ofs += PGSIZE;
 
         /* Advance. */

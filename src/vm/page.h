@@ -7,9 +7,11 @@
 
 #include <debug.h>
 #include <stdint.h>
+// #include <list.h>
 #include "userprog/syscall.h"
 #include "threads/pte.h"
 #include "vm/swap.h"
+
 
 #define SUP_NO_SWAP (size_t) -1
 
@@ -36,6 +38,9 @@ struct sup_entry {
     bool writable;       /* Whether the page is writable. */
     bool loaded;         /* Whether data has been successfully loaded. */
     mapid_t mapid;       /* Map id if mapped with mmap. */
+
+    /* List-elem. */
+    // struct list_elem elem; /* For vm lists. */
 };
 
 void sup_init(void);

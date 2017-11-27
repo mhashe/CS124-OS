@@ -319,11 +319,9 @@ be page-aligned. */
 static inline void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir, 
                                 struct sup_entry *entry) {
     uintptr_t pd = pd_no(upage);
-    // printf("SET\n");
     if (sup_pagedir[pd] == NULL) {
         sup_pagedir[pd] = palloc_get_page(PAL_ASSERT | PAL_ZERO);
     }
-    // printf("SET %p[%d]\n", sup_pagedir, pd);
     sup_pagedir[pd][pt_no(upage)] = entry;
 }
 

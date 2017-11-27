@@ -7,9 +7,14 @@
 
 #include <debug.h>
 #include <stdint.h>
+// #include <list.h>
+
 #include "threads/vaddr.h"
 #include "threads/loader.h"
 #include "filesys/file.h"
+
+#define FRAME_NONE (uint32_t) -1
+
 
 #define FRAME_NONE (uint32_t) -1
 
@@ -19,8 +24,20 @@ struct frame_table_entry {
     bool dirty;     /* Bit indicating the page has been modified. */
     bool user;      /* Set if allocated from user pool. */
     bool valid;     /* If frame is a valid place in memory. */
+
+    // struct list *sup_entries; /* List of entries in sup_page table 
+                                // referencing this frame. */
 };
 
+// struct id_to_sup_entries {
+//     uint32_t id;
+//     bool id_is_frame_or_swap;
+//     struct list sup_entries;
+// }
+
+// struct swap_id_to_entries {
+//     struct list *sup_entries;
+// }
 
 struct frame_table_entry** frame_table;
 

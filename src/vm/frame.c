@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "vm/frame.h"
+#include "vm/swap.h"
 #include "threads/malloc.h"
 #include "threads/loader.h"
 #include "threads/palloc.h"
@@ -13,7 +14,7 @@
 #include "threads/thread.h"
 #include "vm/page.h"
 #include "userprog/pagedir.h"
-
+#include "threads/interrupt.h"
 
 /* TODO : verify init_ram_pages is the right number. */
 struct frame_table_entry** frame_table;
@@ -47,6 +48,8 @@ void init_frame_table(void) {
         } else {
             PANIC("Magic numbers have failed us.");
         }
+
+        // list_init(&frame_table[i]->sup_entries);
     }
 }
 
@@ -86,27 +89,77 @@ static void set_bits(void) {
 /* Select an empty frame if available, otherwise choose a page
    to evict and evict it. */
 static uint32_t evict(bool user) {
-	/* Set accessed/dirty bits in all frame table entries. */
-	set_bits();
+    // TODO: remove this?
+    ASSERT(user);
 
-    uint32_t vic = 0;
+    /* Set accessed/dirty bits in all frame table entries. */
+    set_bits();
 
-    /* See if empty frame exists. */
+    uint32_t victim = 0;
+
+    /* No empty frame exists. */
     for (uint32_t i = 0; i < init_ram_pages; i++) {
         if (!frame_table[i]->page && frame_table[i]->valid && 
             frame_table[i]->user == user) {
-            return i;
+            ASSERT(0);
         }
     }
 
     /* If not, evict a page. */
     /* TODO: evict into the swap */
 
+
     // Temp; just free last page.
-    vic = init_ram_pages - 1;
-    free_frame(vic);
-    return vic;
+    victim = init_ram_pages - 1;
+
+    /* Allocate swap, write frame to swap, and then free frame. */
+    swapslot_t new_swap = swap_alloc();
+    swap_write(new_swap, ftov(victim));
+
+    // struct list_elem *e;
+
+    // intr_disable();
+
+    // for (e = list_begin(&all_list); e != list_end(&all_list);
+    //      e = list_next(e)) {
+    //     struct thread *t = list_entry(e, struct thread, allelem);
+
+    /* Find all entries that use victim and redirect them to swap. */
+    struct thread *t = thread_current();
+    struct sup_entry ***sup_pagedir = t->sup_pagedir;
+    uint32_t *pd = t->pagedir;
+
+    for (uint32_t i = 0; i < PGSIZE / sizeof(struct sup_entry **); i++) {
+        if (!sup_pagedir[i]) {
+            continue;
+        }
+
+        for (uint32_t j = 0; j < PGSIZE / sizeof(struct sup_entry *); j++) {
+            struct sup_entry* entry = sup_pagedir[i][j];
+
+            /* If entry is a victim entry, set redirect it to swap. */
+            if (entry && (entry->frame_no == victim)) {
+                
+                ASSERT(entry->slot == SUP_NO_SWAP);
+
+                entry->slot = new_swap;
+                entry->frame_no = FRAME_NONE;
+
+                /* Free victim from user page directory */
+                pagedir_clear_page(pd, sup_index_to_vaddr(i, j));
+            }
+
+        }
+    }
+    // }
+
+    free_frame(victim);
+
+    // intr_enable();
+
+    return victim;
 }
+
 
 /* Gets the first free frame in the frame table. Returns an index. 
    page is the virtual memory pointer to a page that is occupying this frame. */
@@ -128,7 +181,7 @@ uint32_t get_frame(bool user) {
 
     if (frame == NULL) {
         // TODO: evict then palloc again
-        // PANIC("frame table full\n");
+        PANIC("frame table full %d from thread %s\n", user, thread_current()->name);
         evict(user);
 
         // TODO : streamline this code
@@ -137,7 +190,7 @@ uint32_t get_frame(bool user) {
         } else {
         	frame = palloc_get_page(PAL_ZERO);
         }
-    } 
+    }
     ASSERT(frame);
 
     uint32_t frame_number = vtof(frame);
@@ -145,6 +198,8 @@ uint32_t get_frame(bool user) {
     ASSERT(frame_number < init_ram_pages);
 
     frame_table[frame_number]->page = frame;
+
+    // frame_table[frame_number]->sup 
 
     return frame_number;
 }
