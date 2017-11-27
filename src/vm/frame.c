@@ -64,6 +64,8 @@ void frame_init(size_t user_page_limit) {
 
         lock_init(&frame_table[i]->fte_lock);
     }
+
+    lock_init(&ft_lock);
 }
 
 static void set_bits(void) {
@@ -191,6 +193,8 @@ uint32_t get_frame(bool user) {
     // }
     void *frame;
 
+    lock_acquire(&ft_lock);
+
     if (user) {
         frame = palloc_get_page(PAL_ZERO | PAL_USER);
     }
@@ -216,6 +220,9 @@ uint32_t get_frame(bool user) {
     ASSERT(frame_number < init_ram_pages);
 
     frame_table[frame_number]->page = frame;
+
+    lock_acquire(&frame_table[frame_number]->fte_lock);
+    lock_release(&ft_lock);
 
     // frame_table[frame_number]->sup 
 

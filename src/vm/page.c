@@ -61,12 +61,14 @@ int sup_alloc_all_zeros(void * vaddr, bool user) {
     int offset = pg_ofs(vaddr);
     if (offset != 0) {
         free_frame(frame_no);
+        lock_release(&frame_table[frame_no]->fte_lock);
         return -1;
     }
 
     /* If the page specified by vaddr is already occupied, return failure. */
     if (sup_get_entry(vaddr, cur->sup_pagedir) != NULL) {
         free_frame(frame_no);
+        lock_release(&frame_table[frame_no]->fte_lock);
         return -1;
     }
  
@@ -74,6 +76,7 @@ int sup_alloc_all_zeros(void * vaddr, bool user) {
     page instantiated for it. */
     if (!pagedir_set_page(cur->pagedir, vaddr, kpage, true)) {
         free_frame(frame_no);
+        lock_release(&frame_table[frame_no]->fte_lock);
         return -1;
     }
 
@@ -90,6 +93,7 @@ int sup_alloc_all_zeros(void * vaddr, bool user) {
     spe->mapid = MAP_FAILED;
 
     sup_set_entry(vaddr, cur->sup_pagedir, spe);
+    lock_release(&frame_table[frame_no]->fte_lock);
 
     return 0;
 }
@@ -211,7 +215,7 @@ int sup_load_page(void *vaddr, bool user, bool write) {
     if (spe->slot == SUP_NO_SWAP) {
         if (frame_read(spe->f, kpage, spe->page_end, spe->file_ofs) == -1) {
             free_frame(frame_no);
-            // lock_release(&frame_table[frame_no]->fte_lock);
+            lock_release(&frame_table[frame_no]->fte_lock);
             return -1;
         }
     } else {
@@ -226,7 +230,7 @@ int sup_load_page(void *vaddr, bool user, bool write) {
     page instantiated for it. */
     if (!pagedir_set_page(cur->pagedir, upage, kpage, spe->writable)) {
         free_frame(frame_no);
-        // lock_release(&frame_table[frame_no]->fte_lock);
+        lock_release(&frame_table[frame_no]->fte_lock);
         return -1;
     }
 
@@ -234,7 +238,7 @@ int sup_load_page(void *vaddr, bool user, bool write) {
     spe->loaded = true;
 
     /* Release victim frame. */
-    // lock_release(&frame_table[frame_no]->fte_lock);
+    lock_release(&frame_table[frame_no]->fte_lock);
 
     return 0;
 }
@@ -294,6 +298,7 @@ void sup_remove_map(mapid_t mapid) {
 
     if (temp_swap_frame) {
         free_frame(temp_swap_frame_no);
+        lock_release(&frame_table[temp_swap_frame_no]->fte_lock);
     }
 }
 
@@ -351,6 +356,7 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
     }
     if (temp_swap_frame) {
         free_frame(temp_swap_frame_no);
+        lock_release(&frame_table[temp_swap_frame_no]->fte_lock);
     }
     palloc_free_page(sup_pagedir);
     sup_pagedir = NULL;

@@ -30,6 +30,9 @@ struct frame_table_entry {
     struct lock fte_lock;
 };
 
+/* Global frame table lock. */
+struct lock ft_lock;
+
 // struct id_to_sup_entries {
 //     uint32_t id;
 //     bool id_is_frame_or_swap;
