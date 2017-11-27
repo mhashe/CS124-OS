@@ -39,7 +39,7 @@ int sup_load_page(void *vaddr, bool user, bool write);
 void sup_remove_map(mapid_t mapid);
 void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd);
 int sup_alloc_all_zeros(void * vaddr, bool user);
-void sup_alloc_segment(void *addr, struct file *file, bool writable, 
+void sup_alloc_segment(void *upage, struct file *file, bool writable, 
         unsigned offset, unsigned page_end, mapid_t mapid);
 mapid_t sup_inc_mapid(void);
 

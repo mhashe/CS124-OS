@@ -23,7 +23,6 @@ static void sup_set_entry(void *vaddr, struct sup_entry *** sup_pagedir,
 static void sup_remove_entry(void *upage, struct sup_entry *** 
     sup_pagedir);
 
-/* Functions from syscall. TODO: how to not reimplement them here? */
 static int filesize(struct file *file);
 
 
@@ -122,9 +121,7 @@ int sup_alloc_file(void * vaddr, struct file *file, bool writable) {
     for (int page = 0; page < num_pages; page++) {
         void* addr = (vaddr + (PGSIZE * page));
         struct sup_entry* spe = sup_get_entry(addr, sup_pagedir);
-
-        // TODO: If this address is not a valid address for other reasons, return -1
-
+        
         /* There are not enough free pages to allocate the file, so fail. */
         if (spe != NULL) {
             return MAP_FAILED;
@@ -151,13 +148,13 @@ int sup_alloc_file(void * vaddr, struct file *file, bool writable) {
     return last_mapid;
 }
 
-void sup_alloc_segment(void *addr, struct file *file, bool writable, 
+void sup_alloc_segment(void *upage, struct file *file, bool writable, 
         unsigned offset, unsigned page_end, mapid_t mapid) {
 
     /* Current thread's supplemental page directory. */
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
     
-    ASSERT(sup_get_entry(addr, sup_pagedir) == NULL);
+    ASSERT(sup_get_entry(upage, sup_pagedir) == NULL);
 
     struct sup_entry *spe = (struct sup_entry *) 
                                 malloc(sizeof(struct sup_entry));
@@ -235,9 +232,8 @@ int sup_load_page(void *vaddr, bool user, bool write) {
 }
 
 
-/* Deallocate and remove file from supplementary page table. 
-TODO: Deal with multiple maps to single frame!
-*/
+/* Deallocate and remove file from supplementary page table. To implement 
+sharing, this needs to be modified to handle multiple maps to a single frame. */
 void sup_remove_map(mapid_t mapid) {
     struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
     struct sup_entry *entry;
@@ -298,9 +294,8 @@ void sup_remove_map(mapid_t mapid) {
 }
 
 
-/* Free all allocated pages and entries in the supplementary page table. 
-TODO: Deal with multiple maps to single frame! 
-*/
+/* Free all allocated pages and entries in the supplementary page table. To 
+implement sharing, this needs to handle multiple maps to a single frame. */
 void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
     struct sup_entry *entry;
     void *temp_swap_frame = NULL;
@@ -366,14 +361,17 @@ void sup_free_table(struct sup_entry ***sup_pagedir, uint32_t *pd) {
 page-aligned. Assumes enty exists. */
 static void sup_remove_entry(void *upage, struct sup_entry 
     *** sup_pagedir) {
-    // TODO: make this computationally more efficient with local vars
-    struct sup_entry *sup_pte = sup_pagedir[pd_no(upage)][pt_no(upage)];
-    sup_pagedir[pd_no(upage)][pt_no(upage)] = NULL;
+    unsigned pde = pd_no(upage);
+    unsigned pte = pt_no(upage);
+    struct sup_entry *sup_pte = sup_pagedir[pde][pte];
+    
+    sup_pagedir[pde][pte] = NULL;
+    
     if(sup_pte->f) {
         file_close(sup_pte->f);
     }
+    
     free(sup_pte);
-    // TODO: free entire table if nothing is left?
 }
 
 
@@ -390,7 +388,8 @@ static void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir,
 
 
 
-/* Returns the size, in bytes, of the file. */
+/* Returns the size, in bytes, of the file. Mirrors filesize() from syscall 
+(without using an interrupt frame).*/
 static int filesize(struct file* file) {
     int filesize;
 

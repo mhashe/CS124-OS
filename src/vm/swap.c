@@ -16,10 +16,15 @@ inline static block_sector_t swap_slot_to_sector(swapslot_t swap_slot);
 /* Initialize bitmap used to check which swap-slots are available. */
 void swap_init(void) {
     swap_block = block_get_role(BLOCK_SWAP);
-    // TODO: handle case that swap block doesn't exist
+
+    /* If we want to use the block the device correctly, we need to assume 
+    the following. */
+    ASSERT(swap_block != NULL); // the block swap device exists
+    ASSERT(BLOCK_SECTOR_SIZE < PGSIZE);
+    ASSERT(PGSIZE % BLOCK_SECTOR_SIZE == 0);
+
     swap_num_slots = block_size(swap_block) / SECTORS_PER_PAGE;
     swap_slots = bitmap_create(swap_num_slots);
-
 }
 
 
@@ -28,8 +33,6 @@ void swap_write(swapslot_t swap_slot, void *addr) {
     block_sector_t first_sec = swap_slot_to_sector(swap_slot);
 
     for (int s = 0; s < SECTORS_PER_PAGE; s++) {
-        // TODO: this assumes that BLOCK_SECTOR_SIZE < PGSIZE (which is true)
-        // TODO: this also assumes that PGSIZE is a multiple of BLOCK_SECTOR_SIZE
         block_write(swap_block, first_sec + s, addr + (BLOCK_SECTOR_SIZE * s));
     }
 }
@@ -40,8 +43,6 @@ void swap_read(swapslot_t swap_slot, void *addr) {
     block_sector_t first_sec = swap_slot_to_sector(swap_slot);
 
     for (int s = 0; s < SECTORS_PER_PAGE; s++) {
-        // TODO: this assumes that BLOCK_SECTOR_SIZE < PGSIZE (which is true)
-        // TODO: this also assumes that PGSIZE is a multiple of BLOCK_SECTOR_SIZE
         block_read(swap_block, first_sec + s, addr + (BLOCK_SECTOR_SIZE * s));
     }
 }
