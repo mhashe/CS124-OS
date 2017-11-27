@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "filesys/file.h"     /* For file ops. */
 #include "threads/interrupt.h"
@@ -116,8 +117,6 @@ static uint32_t evict(bool user) {
         }
     }
 
-    free_frame(victim);
-
     return victim;
 }
 
@@ -126,6 +125,7 @@ static uint32_t evict(bool user) {
    page is the virtual memory pointer to a page that is occupying this frame. */
 uint32_t get_frame(bool user) {
     void *frame;
+    uint32_t frame_number;
 
     if (user) {
         frame = palloc_get_page(PAL_ZERO | PAL_USER);
@@ -135,23 +135,23 @@ uint32_t get_frame(bool user) {
     }
 
     if (frame == NULL) {
-        // TODO: evict then palloc again
-        evict(user);
+        frame_number = evict(user);
+        frame = ftov(frame_number);
 
-        // TODO : streamline this code
-        if (user) {
-            frame = palloc_get_page(PAL_ZERO | PAL_USER);
-        } else {
-            frame = palloc_get_page(PAL_ZERO);
-        }
+        memset(frame, 0, PGSIZE);
     }
     ASSERT(frame);
 
-    uint32_t frame_number = vtof(frame);
+    frame_number = vtof(frame);
 
     ASSERT(frame_number < init_ram_pages);
+    ASSERT(frame_table[frame_number]->user == user);
+    ASSERT(frame_table[frame_number]->valid);
 
-    frame_table[frame_number]->page = frame;
+
+    frame_table[frame_number]->page  = frame;
+    frame_table[frame_number]->acc   = 0;
+    frame_table[frame_number]->dirty = 0;
 
     /* Keep track of new frame in clru. */
     if (user) {
