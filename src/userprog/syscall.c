@@ -23,6 +23,10 @@
 #include "vm/page.h"
 #endif
 
+#ifndef FILESYS
+#include "userprog/fs_lock.h"
+#endif
+
 /* Handler function. */
 static void syscall_handler(struct intr_frame *);
 
@@ -314,7 +318,13 @@ static void create(struct intr_frame *f) {
     verify_pointer((uint32_t *) file);
 
     /* Create file, return boolean value. */
+#ifndef FILESYS
+    lock_acquire(&fs_lock);
+#endif
     f->eax = filesys_create(file, initial_size);
+#ifndef FILESYS
+    lock_release(&fs_lock);
+#endif
 }
 
 
@@ -329,7 +339,13 @@ static void remove(struct intr_frame *f) {
     verify_pointer((uint32_t *) file);
 
     /* Remove file. */
+#ifndef FILESYS
+    lock_acquire(&fs_lock);
+#endif
     f->eax = filesys_remove(file);
+#ifndef FILESYS
+    lock_release(&fs_lock);
+#endif
 }
 
 
@@ -360,7 +376,13 @@ static void open(struct intr_frame *f) {
 
     if (file_name) {
         /* Try to open file. */
+#ifndef FILESYS
+        lock_acquire(&fs_lock);
+#endif
         struct file* file = filesys_open(file_name);
+#ifndef FILESYS
+        lock_release(&fs_lock);
+#endif
 
         if (file) {
             /* File opened! Create a file descriptor, add to list. */
@@ -420,7 +442,13 @@ static void filesize(struct intr_frame *f) {
     /* Return file size. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
+#ifndef FILESYS
+    	lock_acquire(&fs_lock);
+#endif
         f->eax = file_length(file);
+#ifndef FILESYS
+        lock_release(&fs_lock);
+#endif
     } else {
         /* Invalid file has no size. */
         thread_exit();
@@ -462,7 +490,13 @@ static void read(struct intr_frame *f) {
     /* Return number of bytes read. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
+#ifndef FILESYS
+    	lock_acquire(&fs_lock);
+#endif
         f->eax = file_read(file, buffer, size);
+#ifndef FILESYS
+        lock_release(&fs_lock);
+#endif
     } else {
         /* Can't read invalid file. */
         f->eax = -1;
@@ -511,7 +545,13 @@ static void write(struct intr_frame *f) {
     /* Return number of bytes written. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
+#ifndef FILESYS
+    	lock_acquire(&fs_lock);
+#endif
         int written = file_write(file, buffer, size);
+#ifndef FILESYS
+        lock_release(&fs_lock);
+#endif
         f->eax = written;
     } else {
         /* Can't write to file. */
@@ -543,7 +583,13 @@ static void seek(struct intr_frame *f) {
     /* Seek file. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
+#ifndef FILESYS
+    	lock_acquire(&fs_lock);
+#endif
         file_seek(file, position);
+#ifndef FILESYS
+        lock_release(&fs_lock);
+#endif
     } else {
         /* Can't seek invalid file. */
         thread_exit();
@@ -565,7 +611,13 @@ static void tell(struct intr_frame *f) {
     /* Tell file. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
+#ifndef FILESYS
+    	lock_acquire(&fs_lock);
+#endif
         f->eax = file_tell(file);
+#ifndef FILESYS
+        lock_release(&fs_lock);
+#endif
     } else {
         /* Can't tell invalid file. */
         thread_exit();
@@ -587,8 +639,13 @@ static void close(struct intr_frame *f) {
     /* Tell file. */
     struct file_des* file_des = file_from_fd(fd);
     if (file_des) {
+#ifndef FILESYS
+    	lock_acquire(&fs_lock);
+#endif
         file_close(file_des->file);
-
+#ifndef FILESYS
+        lock_release(&fs_lock);
+#endif
         /* Free memory, remove from list. */
         list_remove(&file_des->elem);
         free(file_des);
