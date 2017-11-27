@@ -140,11 +140,6 @@ static void page_fault(struct intr_frame *f) {
     write = (f->error_code & PF_W) != 0;
     user = (f->error_code & PF_U) != 0;
 
-    // TODO: delete this comment
-    /* To implement virtual memory, delete the rest of the function
-       body, and replace it with code that brings in the page to
-       which fault_addr refers. */
-
     /* If access to virtual address valid, load data that goes into the page. */ 
 #ifdef VM
     uint32_t np = thread_current()->num_stack_pages;
@@ -177,14 +172,15 @@ static void page_fault(struct intr_frame *f) {
             return;
         }
     }
+#else
+    /* Else, the invalid access terminates the process. */
+    printf("Page fault at %p: %s error %s page in %s context.\n",
+         fault_addr,
+         not_present ? "not present" : "rights violation",
+         write ? "writing" : "reading",
+         user ? "user" : "kernel");
 #endif
 
-    /* Else, the invalid access terminates the process. */
-    // printf("Page fault at %p: %s error %s page in %s context.\n",
-    //      fault_addr,
-    //      not_present ? "not present" : "rights violation",
-    //      write ? "writing" : "reading",
-    //      user ? "user" : "kernel");
     exit(-1);
 }
 
