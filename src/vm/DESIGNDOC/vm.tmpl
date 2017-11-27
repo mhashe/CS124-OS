@@ -57,7 +57,7 @@ Michael:
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
 
-Vaibhav: Supplementary Page Table, sync, swap table
+Vaibhav: supplementary page table, sync, swap table
 Nikhil : mmap, frame table, sync, paging
 Michael: eviction, sync, dirty bits, stack growth, paging
 
@@ -118,7 +118,7 @@ access on the stack (discussed later) or something else.
 
 If it is something else, the address is checked against the supplementary page
 table. This supplementary page table maintains all the information about the
-location of the data, whether it is in disk, swap, or memory.
+location of the data: whether it is in a frame, the disk, swap slot, or memory.
 
 
 >> A3: How does your code coordinate accessed and dirty bits between
@@ -137,16 +137,19 @@ accessed and dirty bits in each frame table entry.
 >> A4: When two user processes both need a new frame at the same time,
 >> how are races avoided?
 
-We were unable to get our locks to work, and in particular adding in locks broke
-a few of the other tests. Our idea for managing this (which is not implemented
-in the current code, but is likely in the repo somewhere) was to have two locks;
-one global lock on the frame table (say, ft_lock) and one lock for each of the
-frame table entries. Whenever a process requests a frame, it enters get_frame.
-At the top of this function, the process would then acquire ft_lock. Once it
-does, it would select a frame that is currently unlocked, acquire its lock and
-then free ft_lock. Once the frame is added into the new page directory, it can
-be released; after this point, it serves as a normal, evictable, frame.
+We were unable to use our locks to prevent all races. In particular, adding 
+locks broke a few of the other tests. Our idea for managing this (which is 
+not implemented in the current code, but is likely in one of the repo's old 
+commits) was to have two locks; one global lock on the frame table (say, 
+ft_lock) and one lock for each of the frame table entries. Whenever a process 
+requests a frame, it enters get_frame. At the top of this function, the 
+process would then acquire ft_lock. Once it does, it would select a frame 
+that is currently unlocked, acquire its lock and then free ft_lock. Once the 
+frame is added into the new supplemental page directory in page.c, the lock 
+can be released; after this point, it serves as a normal, evictable, frame.
 
+We also considered (and in an old commit implemented) placing locks on swap 
+operations, disk i/o operations, and/or supplemental page table entries.
 
 ---- RATIONALE ----
 
@@ -156,9 +159,9 @@ be released; after this point, it serves as a normal, evictable, frame.
 We used a supplementary page table that exactly shadowed the original page
 table. This allowed us to have easy logic in keeping the two in sync.
 Additionally, this means that we do not use an excessive amount of space because
-we can keep nested tables as NULL. Each entry in the supplementary page table is
-a struct which allows us to add as much information as we need for any given
-entry.
+we can keep the tables nested in the directory as NULL until they were 
+required. Each entry in the supplementary page table is a sup_entry struct 
+which allows us to add as much information as we need for any given entry.
 
 		       PAGING TO AND FROM DISK
 		       =======================
@@ -286,11 +289,13 @@ initialization is finished.
 >> into physical memory, or do you use some other design?  How do you
 >> gracefully handle attempted accesses to invalid virtual addresses?
 
-We rely on page faults; our current design has no mechanism for pinning because
-we didn't see a need for it in our design. For syscalls at least, accessed to
+We rely on page faults. Our current design has no mechanism for pinning because
+we didn't see a need for it in our design, but essentially all virtual pages 
+are pinned since we only evict user pages. For syscalls at least, accesses to
 invalid virtual addresses are caught before access, when all pointers are
 verified. If an invalid address is passed, the offending process is then
-terminated.
+terminated. All other invalid accesses terminate the process as well in page 
+faulting, which checks the validity of the fualting address.
 
 ---- RATIONALE ----
 
@@ -329,7 +334,7 @@ struct sup_entry {
 >> memory subsystem.  Explain how the page fault and eviction
 >> processes differ between swap pages and other pages.
 
-When a file is memory mapped, is lazily loaded such that supplemental 
+When a file is memory mapped, it is lazily loaded such that supplemental 
 table entries at the approriate addresses are created with the appropriate 
 offsets in the file map. Then, when an address in the mapped region 
 has a fault, the related entry is used to load the file's data from disk 
@@ -342,20 +347,19 @@ the swap table, it is loaded into an empty frame. Else, the file for the entry
 is loaded from disk into an empty frame. The empty frame is then linked to the
 faulting virtual address.
 
-The only pages that are evicted are pages installed in the frame table 
-(and not in the swap table).
+The only pages that are evicted are user pages installed in the frame table 
+(in memory and not in the swap table).
 
 
 >> C3: Explain how you determine whether a new file mapping overlaps
 >> any existing segment.
 
-Upon the load of a memory mapped file, we attempt to allocate all necessary
-segments in the supplemental page table (without actually loading the file into
-memory). Since this table maintains the state of all potentially mapped objects
-for the process, if any of the necessary segments are occupied, we know that the
-new file overlaps an existing segment. In particular, before we actually
-allocate any segment, we check to see that all the necessary segments are
-unallocated.
+Upon the mapping a file to memory, we verify that all pages in the supplemental 
+page table that would be required by the file's size and the virtual address 
+are available; we return a mapping fail if any are occupied. Since this 
+table maintains the state of all mapped objects for the process, if any of 
+the necessary segments are occupied, we know that the new file overlaps an 
+existing segment.
 
 
 ---- RATIONALE ----
