@@ -68,7 +68,6 @@ void frame_init(size_t user_page_limit) {
 /* Select an empty frame if available, otherwise choose a page
    to evict and evict it. */
 static uint32_t evict(bool user) {
-    // TODO: remove this?
     ASSERT(user);
 
     uint32_t victim = 0;

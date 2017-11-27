@@ -663,16 +663,13 @@ static void mmap(struct intr_frame *f) {
     
     verify_user_pointer((uint32_t *) addr);
 
-    /* TODO: Function, more error checking. */
-    // TODO: should it always be writable?
+    /* Load file into memory at vaddr with write permission. */
     mapid_t mapid = sup_alloc_file(addr, file_from_fd(fd)->file, true);
     if (mapid == MAP_FAILED) {
         f->eax = MAP_FAILED;
     } else {
         f->eax = mapid;
     }
-
-    /* TODO: fail pages overlap existing mapped pages (stack or otherwise) */
 }
 
 
@@ -683,17 +680,9 @@ static void munmap(struct intr_frame *f) {
     (void)f;
     /* Parse arguments. */
     mapid_t mapid = get_arg(f, 1);
+
+    /* Remove the map from the supplementary page table and memory. */
     sup_remove_map(mapid);
-
-    /* TODO : include definition for mapid_t.
-       Used in lib/user/syscall.c */
-
-    /* Verify arguments. */
-    /* TODO : what parameters can mapid_t take? */
-
-    /* TODO : unmap. */
-
-    /* no return. */
 }
 #endif
 

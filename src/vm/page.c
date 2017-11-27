@@ -172,7 +172,7 @@ void sup_alloc_segment(void *upage, struct file *file, bool writable,
     spe->all_zero = false;
     spe->slot = SUP_NO_SWAP;
 
-    sup_set_entry(addr, sup_pagedir, spe);
+    sup_set_entry(upage, sup_pagedir, spe);
 }
 
 
