@@ -40,6 +40,7 @@
 #ifdef VM
 
 #include "vm/frame.h"
+#include "vm/page.h"
 
 #endif
 
@@ -141,6 +142,7 @@ int main(void) {
 
 #ifdef VM
     init_frame_table();
+    sup_init();
 #endif
 
     printf("Boot complete.\n");

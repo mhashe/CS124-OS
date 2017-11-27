@@ -17,6 +17,7 @@
 // #include "userprog/syscall.h"
 
 
+inline mapid_t sup_inc_mapid(void);
 static inline void sup_set_entry(void *vaddr, struct sup_entry *** sup_pagedir, 
     struct sup_entry *entry);
 
@@ -30,6 +31,20 @@ static int filesize(struct file *file);
 /* Allocates and returns a pointer to an empty supplementary table. */
 struct sup_entry *** sup_pagedir_create(void) {
     return (struct sup_entry ***) palloc_get_page(PAL_ASSERT | PAL_ZERO);
+}
+
+static mapid_t last_mapid;
+
+
+/* Initialize the first mapid (representing mapping of file) as 0. */
+void sup_init(void) {
+    last_mapid = 0;
+}
+
+
+/* Increments mapid so that it is unique and returns it. */
+inline mapid_t sup_inc_mapid(void) {
+    return last_mapid++;
 }
 
 

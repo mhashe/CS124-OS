@@ -38,6 +38,7 @@ struct sup_entry {
     mapid_t mapid;       /* Map id if mapped with mmap. */
 };
 
+void sup_init(void);
 struct sup_entry *** sup_pagedir_create(void);
 int sup_alloc_file(void * vaddr, struct file *file, bool writable);
 int sup_load_page(void *vaddr, bool user, bool write);
@@ -46,17 +47,11 @@ void sup_free_table(struct sup_entry ***sup_pagedir);
 int sup_alloc_all_zeros(void * vaddr, bool user);
 void sup_alloc_segment(void *addr, struct file *file, bool writable, 
         unsigned offset, unsigned page_end, mapid_t mapid);
+mapid_t sup_inc_mapid(void);
 
 /* Convert a directory index and table index to a virtual address of a page. */
 static inline void* sup_index_to_vaddr(uint32_t di, uint32_t ti) {
     return (void *) (((uintptr_t)di << PDSHIFT) | ((uintptr_t)ti << PTSHIFT));
-}
-
-
-static inline mapid_t sup_inc_mapid(void) {
-    static mapid_t last_mapid = 0;
-    last_mapid++;
-    return last_mapid;
 }
 
 /* Retreives supplemental entry from sup_pagedir at upage, which must be 

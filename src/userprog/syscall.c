@@ -648,7 +648,6 @@ static void mmap(struct intr_frame *f) {
     }
     
     verify_user_pointer((uint32_t *) addr);
-      
 
     /* TODO: Function, more error checking. */
     // TODO: should it always be writable?
@@ -670,9 +669,7 @@ static void munmap(struct intr_frame *f) {
     (void)f;
     /* Parse arguments. */
     mapid_t mapid = get_arg(f, 1);
-    printf("MUNMAP\n");
     sup_remove_map(mapid);
-    printf("!MUNMAP\n");
 
     /* TODO : include definition for mapid_t.
        Used in lib/user/syscall.c */
