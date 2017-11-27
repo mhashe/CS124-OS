@@ -7,8 +7,9 @@
 struct lock fs_lock;
 
 /* Init the lock. */
-static void fs_lock_init(void) {
+static inline void fs_lock_init(void) {
 	lock_init(&fs_lock);
 }
 
 #endif
+
