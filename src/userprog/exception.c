@@ -148,10 +148,22 @@ static void page_fault(struct intr_frame *f) {
     /* If access to virtual address valid, load data that goes into the page. */ 
 #ifdef VM
     uint32_t np = thread_current()->num_stack_pages;
-    int diff = (int) (f->esp - PHYS_BASE + np*PGSIZE);
-    if (diff <= 64) {
-        sup_alloc_all_zeros(PHYS_BASE - (np + 1)*PGSIZE, true);
-        thread_current()->num_stack_pages++;
+    int diff = (int) (f->esp - (PHYS_BASE - np*PGSIZE));
+
+    /* Check if need to allocate more memory. */
+    if (np >= MAX_PAGES) {
+         /* Can't allocate any more memory, this is a page fault. */
+        printf("Max number of stack pages allocated!\n");
+    } else if (diff <= 64) {
+        while (diff <= 64 && np < MAX_PAGES) {    
+            sup_alloc_all_zeros(PHYS_BASE - (np + 1)*PGSIZE, true);
+            thread_current()->num_stack_pages++;
+    
+            ASSERT(thread_current()->num_stack_pages > np);
+    
+            np = thread_current()->num_stack_pages;
+            diff = (int) (f->esp - (PHYS_BASE - np*PGSIZE));    
+        }
         return;
     }
 

@@ -134,12 +134,24 @@ static void syscall_handler(struct intr_frame *f) {
         thread_exit();
     }
 
-    // printf("%p %p\n", f->esp, ((uint8_t *) PHYS_BASE) - PGSIZE);
-    //  If we're running out of stack space, allocate some more. 
-    // if (!verify_pointer((uint32_t*)f->esp-128)) {
-    //     printf("    Extend!\n");
-    //     extend_stack();
-    // }
+    /* Expand stack if necessary. */
+    uint32_t np = thread_current()->num_stack_pages;
+    int diff = (int) (f->esp - (PHYS_BASE - np*PGSIZE));
+
+    /* Check if need to allocate more memory. */
+    if (np >= MAX_PAGES) {
+         /* Can't allocate any more memory, this is a page fault. */
+    } else if (diff <= 64) {
+        while (diff <= 64 && np < MAX_PAGES) {    
+            sup_alloc_all_zeros(PHYS_BASE - (np + 1)*PGSIZE, true);
+            thread_current()->num_stack_pages++;
+    
+            ASSERT(thread_current()->num_stack_pages > np);
+    
+            np = thread_current()->num_stack_pages;
+            diff = (int) (f->esp - (PHYS_BASE - np*PGSIZE));    
+        }
+    }
 
     /* Dispatch syscall to appropriate handler. */
     int syscall_num =  *(stack);
