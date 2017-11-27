@@ -23,7 +23,7 @@ struct sup_entry {
     swapslot_t slot;     /* Swap slot index if mapped into a swap slot. */
     bool all_zero;       /* If an initially all-zero page. Else, a file. */
 
-    /* File-specific fields */  // TODO: Potentially make a sup_file_entry struct?
+    /* File-specific fields */ 
     struct file * f;     /* Pointer to file to be opened. */
     unsigned file_ofs;   /* File loaded into page at fd's offset. */
     unsigned page_end;   /* File ends at this location in page. */

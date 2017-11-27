@@ -32,11 +32,13 @@ We implemented an eviction policy using a timer (Clock-LRU).
 Many of the commits for this assignment correspond to team members 
 working on other team members computers.
 
+
 >> Please cite any offline or online sources you consulted while
 >> preparing your submission, other than the Pintos documentation, course
 >> text, lecture notes, and course instructors.
 
 Stack overflow.
+
 
 ---- LOGISTICS ----
 
@@ -51,12 +53,14 @@ Vaibhav:
 Nikhil : 
 Michael: 
 
+
 >> L2: What did each team member focus on for this assignment?  Keep
    descriptions to 25-30 words or less.
 
 Vaibhav: Supplementary Page Table, sync, swap table
 Nikhil : mmap, frame table, sync, paging
 Michael: eviction, sync, dirty bits, stack growth, paging
+
 
 Note that this design document is a bit long.  Most of the questions can be
 answered pretty briefly.  Don't feel a need to write a long answer if it is
@@ -75,20 +79,38 @@ struct thread {
     struct sup_entry ***sup_pagedir;    /*!< Supplemental page directory. */
 };
 
+/* Mapid identifier. */
+typedef int mapid_t;
+
+struct sup_entry {
+    uint32_t frame_no;   /* Frame number which data was loaded into. */
+    swapslot_t slot;     /* Swap slot index if mapped into a swap slot. */
+    bool all_zero;       /* If an initially all-zero page. Else, a file. */
+
+    /* File-specific fields */
+    struct file * f;     /* Pointer to file to be opened. */
+    unsigned file_ofs;   /* File loaded into page at fd's offset. */
+    unsigned page_end;   /* File ends at this location in page. */
+    bool writable;       /* Whether the page is writable. */
+    bool loaded;         /* Whether data has been successfully loaded. */
+    mapid_t mapid;       /* Map id if mapped with mmap. */
+};
+
+
 ---- ALGORITHMS ----
 
 >> A2: In a few paragraphs, describe your code for locating the frame,
 >> if any, that contains the data of a given page.
 
-First of all, if the data is already loaded into memory, it is already
+If the data is already loaded into memory, it is already
 loaded into the process's page table. As such, it will not page fault
 and we will have nothing to handle. 
 
-The way it does it through a one to one mapping. Given a virtual 
-address, you can get a kernel virtual address through the process's 
-page table. This kernel virtual address is in a one to one mapping 
-with the frame table. The frame number is just some of the upper bits 
-of the kernel virtual address.
+We obtain the fram through a one to one mapping that we maintain. Given 
+a virtual address, you can get a kernel virtual address through the 
+process's page table. This kernel virtual address is in a one to one 
+mapping with the frame table. The frame number is just some of the upper 
+bits of the kernel virtual address.
 
 If the frame is not currently loaded, the process will page fault
 on an attempted load. The handler will check if the fault was due to 
@@ -108,12 +130,26 @@ Whenever the accessed or dirty bits are needed, they are reconciled.
 In particular, this means that we loop through all the elements in 
 the supplementary page tables and check each of their accessed and 
 dirty bits from the actual page table. These values are then or'ed 
-with the corresponding accessed and dirty bit in the frame table. 
+with the corresponding accessed and dirty bits in each frame table
+entry.
+
 
 ---- SYNCHRONIZATION ----
 
 >> A4: When two user processes both need a new frame at the same time,
 >> how are races avoided?
+
+We were unable to get our locks to work, and in particular adding in locks
+broke a few of the other tests. Our idea for managing this (which is not
+implemented in the current code, but is likely in the repo somewhere) was to
+have two locks; one global lock on the frame table (say, ft_lock) and one
+lock for each of the frame table entries. Whenever a process requests a 
+frame, it enters get_frame. At the top of this function, the process would
+then acquire ft_lock. Once it does, it would select a frame that is currently
+unlocked and then free ft_lock. Once the frame is added into the new
+page directory, it can be released; after this point, it serves as a normal,
+evictable, frame.
+
 
 ---- RATIONALE ----
 
@@ -141,11 +177,49 @@ struct thread {
     uint32_t num_stack_pages;           /*!< Number of pages in stack. */
 };
 
+/* Last_mapid is a global count of the number of file mappings. Used to
+   ensure unique mapids for all files. */
+static mapid_t last_mapid;
+
+/* Used internally by swap block device; included here for consistency. */
+typedef size_t swapslot_t;
+
+/* Constants used to maintain swap state. */
+static struct bitmap *swap_slots;  /* 1 if allocated/in-use, 0 if available. */
+static int swap_num_slots;    /* Number of slots in swap_slots */
+
+/* Block device defined in devices. */
+static struct block *swap_block;   /* Swap block device */
+
+struct frame_table_entry {
+    void* page;     /* pointer to page currently occupying entry */
+    bool acc;       /* Bit indicating the page has been accessed. */
+    bool dirty;     /* Bit indicating the page has been modified. */
+    bool user;      /* Set if allocated from user pool. */
+    bool valid;     /* If frame is a valid place in memory. */
+};
+
+/* Global frame table. */
+struct frame_table_entry** frame_table;
+
+/* Clock-LRU list. Modified by timer interrupts. */
+static struct list lru;
+
 
 ---- ALGORITHMS ----
 
 >> B2: When a frame is required but none is free, some frame must be
 >> evicted.  Describe your code for choosing a frame to evict.
+
+We implement the Clock-LRU policy. In particular, we keep track of
+all frames currently used, and maintain a queue (roughly) ordering them
+from most recently to least recently used. This queue is refreshed at
+every timer interrupt, during which the access bit in each frame table
+entry is recalculated (as described above); if the access bit is set,
+the frame is sent to the end of the queue. Whenever a frame is evicted,
+the frame at the front of the queue (roughly the least recently used)
+is chosen.
+
 
 >> B3: When a process P obtains a frame that was previously used by a
 >> process Q, how do you adjust the page table (and any other data
@@ -162,6 +236,12 @@ the number of the swap slot process Q now occupies.
 >> invalid virtual address should cause the stack to be extended into
 >> the page that faulted.
 
+We check if the page fault is below the stack pointer. If it is, we 
+allocate pages onto the stack until we either include a page covering
+the faulted address or hit our 8MB-per-process stack depth limit, at
+which point the access would cause an uncaught page fault.
+
+
 ---- SYNCHRONIZATION ----
 
 >> B5: Explain the basics of your VM synchronization design.  In
@@ -169,21 +249,48 @@ the number of the swap slot process Q now occupies.
 >> textbook for an explanation of the necessary conditions for
 >> deadlock.)
 
+As mentioned above, we had some ideas about how to approach synchronization,
+but were unable to get it to work. Our idea for frame table locks could
+easily prevent deadlock; all that needs to be ensured is that no process
+holding the global lock is permanently blocked on obtaining a frame (the
+reverse case never occurs; if we are at the part of the code where we are
+obtaining a frame, we necessarily have the global lock). This is easy
+enough to ensure; all paths out of get_frame immediately release the
+frame table entry lock after adding it to a page directory (or failing).
+Thus, a process waiting to obtain that frame must simply wait until it is
+finished being initialized, and a process waiting on the global lock must 
+simply wait until the first process obtains that lock.
+
+
 >> B6: A page fault in process P can cause another process Q's frame
 >> to be evicted.  How do you ensure that Q cannot access or modify
 >> the page during the eviction process?  How do you avoid a race
 >> between P evicting Q's frame and Q faulting the page back in?
+
+Global locks around the frame table; only one evictable frame is chosen 
+at any given time.
+
 
 >> B7: Suppose a page fault in process P causes a page to be read from
 >> the file system or swap.  How do you ensure that a second process Q
 >> cannot interfere by e.g. attempting to evict the frame while it is
 >> still being read in?
 
+Individual locks around each frame table entry; this lock is initialized
+whenever that frame is chosen to be evicted, and only released once 
+initialization is finished.
+
+
 >> B8: Explain how you handle access to paged-out pages that occur
 >> during system calls.  Do you use page faults to bring in pages (as
 >> in user programs), or do you have a mechanism for "locking" frames
 >> into physical memory, or do you use some other design?  How do you
 >> gracefully handle attempted accesses to invalid virtual addresses?
+
+We rely on page faults; our current design has no mechanism for pinning.
+For syscalls at least, accessed to invalid virtual addresses are caught 
+before access, when all pointers are verified. If an invalid address is
+passed, the offending process is then terminated.
 
 ---- RATIONALE ----
 
@@ -192,6 +299,13 @@ the number of the swap slot process Q now occupies.
 >> complicates synchronization and raises the possibility for deadlock
 >> but allows for high parallelism.  Explain where your design falls
 >> along this continuum and why you chose to design it this way.
+
+Our design is fairly compact; this is a combination of a.) not actually
+being implemented (we'd probably have to add in additional locks for 
+paging), and b.) a reflection of the fact that a global lock on the 
+frame table is unnecessarily limiting; so long as we limit access to
+frames being changed, all other accesses shouldn't cause problems.
+
 
 			 MEMORY MAPPED FILES
 			 ===================
@@ -202,6 +316,13 @@ the number of the swap slot process Q now occupies.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+struct sup_entry {
+    ...
+    /* Used to maintain a global index of mmap'ed files. */
+    mapid_t mapid;       /* Map id if mapped with mmap. */
+};
+
+
 ---- ALGORITHMS ----
 
 >> C2: Describe how memory mapped files integrate into your virtual
@@ -209,8 +330,8 @@ the number of the swap slot process Q now occupies.
 >> processes differ between swap pages and other pages.
 
 When a file is memory mapped, is lazily loaded such that supplemental 
-table entries at the approriate addresses are create with the appropriate 
-offsets in the file mapped. Then, when an address in the mapped region 
+table entries at the approriate addresses are created with the appropriate 
+offsets in the file map. Then, when an address in the mapped region 
 has a fault, the related entry is used to load the file's data from disk 
 into an empty frame, which is then linked to the faulting virtual address.
 
@@ -224,6 +345,7 @@ frame is then linked to the faulting virtual address.
 The only pages that are evicted are pages installed in the frame table 
 (and not in the swap table).
 
+
 >> C3: Explain how you determine whether a new file mapping overlaps
 >> any existing segment.
 
@@ -235,6 +357,7 @@ file overlaps an existing segment. In particular, before we actually
 allocate any segment, we check to see that all the necessary segments
 are unallocated.
 
+
 ---- RATIONALE ----
 
 >> C4: Mappings created with "mmap" have similar semantics to those of
@@ -243,6 +366,8 @@ are unallocated.
 >> that much of their implementation can be shared.  Explain why your
 >> implementation either does or does not share much of the code for
 >> the two situations.
+
+TODO
 
 			   SURVEY QUESTIONS
 			   ================
