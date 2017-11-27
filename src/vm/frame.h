@@ -9,6 +9,9 @@
 #include <stdint.h>
 #include "threads/vaddr.h"
 #include "threads/loader.h"
+#include "filesys/file.h"
+
+#define FRAME_NONE (uint32_t) -1
 
 struct frame_table_entry {
     void* page;     /* pointer to page currently occupying entry */
@@ -24,8 +27,8 @@ struct frame_table_entry** frame_table;
 void init_frame_table(void);
 uint32_t get_frame(bool user);
 void free_frame(uint32_t frame_number);
-int frame_read(int fd, void* buffer, unsigned size, unsigned offset);
-int frame_write(int fd, void* buffer, unsigned size, unsigned offset);
+int frame_read(struct file *f, void* buffer, unsigned size, unsigned offset);
+int frame_write(struct file *f, void* buffer, unsigned size, unsigned offset);
 
 /*! Returns frame number at which kernel virtual address VADDR
     is mapped. */

@@ -17,9 +17,6 @@
 // #include "userprog/syscall.h"
 
 
-static inline struct sup_entry *sup_get_entry(void *vaddr, 
-    struct sup_entry ***sup_pagedir);
-
 static inline void sup_set_entry(void *vaddr, struct sup_entry *** sup_pagedir, 
     struct sup_entry *entry);
 
@@ -27,7 +24,7 @@ static inline void sup_remove_entry(void *upage, struct sup_entry ***
     sup_pagedir);
 
 /* Functions from syscall. TODO: how to not reimplement them here? */
-static int filesize(int fd);
+static int filesize(struct file *file);
 
 
 /* Allocates and returns a pointer to an empty supplementary table. */
@@ -67,7 +64,7 @@ int sup_alloc_all_zeros(void * vaddr, bool user) {
 
     /* Create supplmentary entry corresponding to an initially all zero page. */
     spe = (struct sup_entry *) malloc(sizeof(struct sup_entry));
-    spe->fd = -1;
+    spe->f = NULL;
     spe->file_ofs = 0;
     spe->page_end = PGSIZE;
     spe->writable = true;
@@ -84,13 +81,11 @@ int sup_alloc_all_zeros(void * vaddr, bool user) {
 
 
 /* Allocates entire file in as many pages as needed in supplementary page table.
-   The file is given by "int fd" and it is writable if "writeable". To be called
+   The file is given by "file" and it is writable if "writeable". To be called
    in mmap. Returns entry on success, NULL on failure. Note this function does
    not actually load the pages into memory. That is done on subsequent page
    faults. */
-int sup_alloc_mmap_file(void * vaddr, int fd, bool writable) {
-    static mapid_t last_mapid = 0;
-
+int sup_alloc_file(void * vaddr, struct file *file, bool writable) {
     /* The provided address must be page aligned. */
     int offset = pg_ofs(vaddr);
     if (offset != 0) {
@@ -102,7 +97,7 @@ int sup_alloc_mmap_file(void * vaddr, int fd, bool writable) {
     
 
     /* Calculate the number of pages required to allocate file. */
-    int file_size = filesize(fd);
+    int file_size = filesize(file);
     int num_pages = file_size / PGSIZE;
     num_pages += ((file_size % PGSIZE) != 0);
 
@@ -122,32 +117,48 @@ int sup_alloc_mmap_file(void * vaddr, int fd, bool writable) {
         }
     }
 
-    last_mapid++;
+    mapid_t last_mapid = sup_inc_mapid();
 
+    unsigned page_end;
 
     /* Add the needed pages to the supplemental table with correct file. */
     for (int page = 0; page < num_pages; page ++) {
         void *addr = (vaddr + (PGSIZE * page));
-        struct sup_entry* spe = sup_get_entry(addr, sup_pagedir);
-
-        spe = (struct sup_entry *) malloc(sizeof(struct sup_entry));
-        spe->fd = fd;
-        spe->file_ofs = (unsigned) (PGSIZE * page);
         if (page == num_pages - 1) {
-            spe->page_end = file_size % PGSIZE;
+            page_end = file_size % PGSIZE;
         } else {
-            spe->page_end = PGSIZE;
+            page_end = PGSIZE;
         }
-        spe->writable = writable;
-        spe->loaded = false;
-        spe->frame_no = (uint32_t) -1;
-        spe->mapid = last_mapid;
-        spe->all_zero = false;
-        spe->slot = SUP_NO_SWAP;
-        sup_set_entry(addr, sup_pagedir, spe);
+        sup_alloc_segment(addr, file, writable, (unsigned) (PGSIZE * page), 
+            page_end, last_mapid);
+        
     }
 
     return last_mapid;
+}
+
+void sup_alloc_segment(void *addr, struct file *file, bool writable, 
+        unsigned offset, unsigned page_end, mapid_t mapid) {
+
+    /* Current thread's supplemental page directory. */
+    struct sup_entry ***sup_pagedir = thread_current()->sup_pagedir;
+    
+    ASSERT(sup_get_entry(addr, sup_pagedir) == NULL);
+
+    struct sup_entry *spe = (struct sup_entry *) malloc(sizeof(struct sup_entry));
+    ASSERT(spe != NULL);
+
+    spe->f = file;
+    spe->file_ofs = offset;
+    spe->page_end = page_end;
+    spe->writable = writable;
+    spe->loaded = false;
+    spe->frame_no = FRAME_NONE;
+    spe->mapid = mapid;
+    spe->all_zero = false;
+    spe->slot = SUP_NO_SWAP;
+
+    sup_set_entry(addr, sup_pagedir, spe);
 }
 
 
@@ -163,7 +174,7 @@ int sup_load_page(void *vaddr, bool user, bool write) {
         return -1;
     }
 
-    /* Unknown page fault since data has been loaded into memory already. */
+    /* Unknown page fault since data has been loaded from disk already. */
     if ((spe->loaded) && (spe->slot != SUP_NO_SWAP)) {
         return -1;
     }
@@ -180,7 +191,7 @@ int sup_load_page(void *vaddr, bool user, bool write) {
 
     /* If not present in swap, load one page of the file at file_ofs into the frame. */
     if (spe->slot == SUP_NO_SWAP) {
-        if (frame_read(spe->fd, kpage, spe->page_end, spe->file_ofs) == -1) {
+        if (frame_read(spe->f, kpage, spe->page_end, spe->file_ofs) == -1) {
             free_frame(frame_no);
             return -1;
         }
@@ -188,6 +199,7 @@ int sup_load_page(void *vaddr, bool user, bool write) {
     /* Else if in swap, just load the page from swap into the frame. */
     else {
         swap_read(spe->slot, kpage);
+        swap_free(spe->slot);
     }
 
     /* Linking frame to virtual address failed, so remove and deallocate the 
@@ -226,7 +238,7 @@ void sup_remove_map(mapid_t mapid) {
             if (entry->loaded) {
                 if (entry->slot == SUP_NO_SWAP) {
                     /* Write frame to disk and free frame. */
-                    frame_write(entry->fd, ftov(entry->frame_no), 
+                    frame_write(entry->f, ftov(entry->frame_no), 
                         entry->page_end, entry->file_ofs);
                     free_frame(entry->frame_no);
                 } else {
@@ -236,7 +248,7 @@ void sup_remove_map(mapid_t mapid) {
                         temp_swap_frame = ftov(temp_swap_frame_no); // TODO: remove magic true?
                     }
                     swap_read(entry->slot, temp_swap_frame);
-                    frame_write(entry->fd, temp_swap_frame, 
+                    frame_write(entry->f, temp_swap_frame, 
                         entry->page_end, entry->file_ofs);
                     swap_free(entry->slot);
                 }
@@ -287,41 +299,26 @@ static inline void sup_remove_entry(void *upage, struct sup_entry
 }
 
 
-/* Retreives supplemental entry from sup_pagedir at upage, which must be 
-page-aligned. */
-static inline struct sup_entry *sup_get_entry(void *upage, 
-                                            struct sup_entry ***sup_pagedir) {
-    uintptr_t pd = pd_no(upage);
-    if (sup_pagedir[pd] == NULL) {
-        return NULL;
-    }
-    return sup_pagedir[pd][pt_no(upage)];
-}
-
-
 /* Sets supplemental entry from sup_pagedir at upage to be entry. upage must 
 be page-aligned. */
 static inline void sup_set_entry(void *upage, struct sup_entry ***sup_pagedir, 
                                 struct sup_entry *entry) {
     uintptr_t pd = pd_no(upage);
+    // printf("SET\n");
     if (sup_pagedir[pd] == NULL) {
         sup_pagedir[pd] = palloc_get_page(PAL_ASSERT | PAL_ZERO);
     }
+    // printf("SET %p[%d]\n", sup_pagedir, pd);
     sup_pagedir[pd][pt_no(upage)] = entry;
 }
 
 
 
-/* Returns the size, in bytes, of the file open as fd. */
-static int filesize(int fd) {
+/* Returns the size, in bytes, of the file. */
+static int filesize(struct file* file) {
     int filesize;
-    /* Special cases. */
-    if (fd == STDIN_FILENO || fd == STDOUT_FILENO) {
-        thread_exit();
-    }
 
     /* Return file size. */
-    struct file* file = file_from_fd(fd)->file;
     if (file) {
         // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
         filesize = file_length(file);

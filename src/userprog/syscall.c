@@ -20,6 +20,7 @@
 
 #ifdef VM
 #include "vm/frame.h"
+#include "vm/page.h"
 #endif
 
 /* Handler function. */
@@ -73,7 +74,11 @@ void syscall_init(void) {
 
 /* Checks if given pointer is in user space and in a mapped address. */
 uint32_t* verify_pointer(uint32_t* p) {
+#ifdef VM
+    if (is_user_vaddr(p) && sup_get_entry(p, thread_current()->sup_pagedir)) {
+#else
     if (is_user_vaddr(p) && pagedir_get_page(thread_current()->pagedir, p)) {
+#endif
         /* Valid pointer, continue. */
         return p;
     }
@@ -647,7 +652,7 @@ static void mmap(struct intr_frame *f) {
 
     /* TODO: Function, more error checking. */
     // TODO: should it always be writable?
-    mapid_t mapid = sup_alloc_mmap_file(addr, fd, true); // 
+    mapid_t mapid = sup_alloc_file(addr, file_from_fd(fd)->file, true);
     if (mapid == MAP_FAILED) {
         f->eax = MAP_FAILED;
     } else {

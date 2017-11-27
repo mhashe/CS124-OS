@@ -169,17 +169,15 @@ void free_frame(uint32_t frame_number) {
    bytes actually read (0 at end of file), or -1 if the file could not be read
    (due to a condition other than end of file). Fd 0 reads from the keyboard
    using input_getc(). */
-int frame_read(int fd, void* buffer, unsigned size, unsigned offset) {
+int frame_read(struct file* f, void* buffer, unsigned size, unsigned offset) {
+    /* Return number of bytes read. */
     int bytes;
 
-    ASSERT(fd > 1);
     ASSERT(is_kernel_vaddr(buffer));
 
-    /* Return number of bytes read. */
-    struct file* file = file_from_fd(fd)->file;
-    if (file) {
+    if (f) {
         // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
-        bytes = file_read_at(file, buffer, size, offset);
+        bytes = file_read_at(f, buffer, size, offset);
         // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
     } else {
         /* Can't read invalid file. */
@@ -193,14 +191,13 @@ int frame_read(int fd, void* buffer, unsigned size, unsigned offset) {
 /* Writes size bytes from buffer to the open file fd. Returns the number of 
    bytes actually written, which may be less than size if some bytes could not 
    be written. */
-int frame_write(int fd, void* buffer, unsigned size, unsigned offset) {
+int frame_write(struct file* f, void* buffer, unsigned size, unsigned offset) {
+    /* Return number of bytes read. */
     int bytes;
 
-    /* Return number of bytes read. */
-    struct file* file = file_from_fd(fd)->file;
-    if (file) {
+    if (f) {
         // lock_acquire(&filesys_io);                // LOCKS HAVE BEEN REMOVED
-        bytes = file_write_at(file, buffer, size, offset);
+        bytes = file_write_at(f, buffer, size, offset);
         // lock_release(&filesys_io);               // LOCKS HAVE BEEN REMOVED
     } else {
         /* Can't read invalid file. */

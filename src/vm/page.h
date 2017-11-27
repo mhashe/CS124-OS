@@ -22,6 +22,8 @@ typedef int mapid_t;
 //     SUP_FILE,                 /* Represents a page to a file on disk. */
 //     SUP_SWAP                  /* Comment. */
 // };
+// 
+static mapid_t last_mapid = 0;
 
 struct sup_entry {
     uint32_t frame_no;   /* Frame number which data was loaded into. */
@@ -29,7 +31,7 @@ struct sup_entry {
     bool all_zero;       /* If an initially all-zero page. Else, a file. */
 
     /* File-specific fields */  // TODO: Potentially make a sup_file_entry struct?
-    int fd;              /* Pointer to file to be opened. */
+    struct file * f;     /* Pointer to file to be opened. */
     unsigned file_ofs;   /* File loaded into page at fd's offset. */
     unsigned page_end;   /* File ends at this location in page. */
     bool writable;       /* Whether the page is writable. */
@@ -38,15 +40,32 @@ struct sup_entry {
 };
 
 struct sup_entry *** sup_pagedir_create(void);
-int sup_alloc_mmap_file(void * vaddr, int fd, bool writable);
+int sup_alloc_file(void * vaddr, struct file *file, bool writable);
 int sup_load_page(void *vaddr, bool user, bool write);
 void sup_remove_map(mapid_t mapid);
 void sup_free_table(struct sup_entry ***sup_pagedir);
 int sup_alloc_all_zeros(void * vaddr, bool user);
+void sup_alloc_segment(void *addr, struct file *file, bool writable, 
+        unsigned offset, unsigned page_end, mapid_t mapid);
 
 /* Convert a directory index and table index to a virtual address of a page. */
 static inline void* sup_index_to_vaddr(uint32_t di, uint32_t ti) {
     return (void *) (((uintptr_t)di << PDSHIFT) | ((uintptr_t)ti << PTSHIFT));
+}
+
+static inline mapid_t sup_inc_mapid(void) {
+    return last_mapid++;
+}
+
+/* Retreives supplemental entry from sup_pagedir at upage, which must be 
+page-aligned. */
+static inline struct sup_entry *sup_get_entry(void *upage, 
+                                            struct sup_entry ***sup_pagedir) {
+    uintptr_t pd = pd_no(upage);
+    if (sup_pagedir[pd] == NULL) {
+        return NULL;
+    }
+    return sup_pagedir[pd][pt_no(upage)];
 }
 
 #endif /* vm/page.h */
