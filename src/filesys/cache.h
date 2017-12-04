@@ -11,8 +11,7 @@
 
 
 /* Number of sectors in buffer cache. */
-// #define CACHE_SIZE 64
-#define CACHE_SIZE 128
+#define CACHE_SIZE 64
 #define CACHE_SECTOR_EMPTY -1
 
 void cache_init(void);

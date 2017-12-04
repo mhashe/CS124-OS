@@ -14,7 +14,7 @@ static struct cache_entry sector_cache[CACHE_SIZE];
 
 static struct cache_entry * sector_to_cache(block_sector_t sector);
 static struct cache_entry * get_free_cache(block_sector_t sector);
-static struct cache_entry * cache_evict(void);
+static struct cache_entry * cache_evict(block_sector_t sector);
 
 /* Initialize. */
 void cache_init(void) {
@@ -74,15 +74,23 @@ static struct cache_entry * get_free_cache(block_sector_t sector) {
         }
     }
 
-    return cache_evict();
+    return cache_evict(sector);
 }
 
 
 /* Comment */
-static struct cache_entry * cache_evict(void) {
-    ASSERT(0); // not implemented
+static struct cache_entry * cache_evict(block_sector_t sector) {
+    // TODO: something better
+    // TODO: only if dirty
+    struct cache_entry *cache = &sector_cache[0];
 
-    return NULL;
+    block_write(fs_device, cache->sector, &cache->data);
+
+    cache->sector = sector;
+    cache->dirty = false;
+    memset(&cache->data, 0, BLOCK_SECTOR_SIZE);
+
+    return cache;
 }
 
 
