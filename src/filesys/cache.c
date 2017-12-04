@@ -122,18 +122,49 @@ void cache_read(struct block * fs_device, block_sector_t sector, void * buffer) 
     lock_release(&cache->cache_lock);
 }
 
-/* Reads from buffer into cache data at "cache". */
+/* Reads from buffer into cache data at "cache". 
+   Write sector SECTOR to CACHE from BUFFER, which must contain
+   BLOCK_SECTOR_SIZE bytes.*/
 void cache_write(block_sector_t sector, const void * buffer) {
-    struct cache_entry *cache = sector_to_cache(sector);
+    /* Bool; we only need to load data if it isn't already loaded. */
+    struct cache_entry *cache = NULL;
 
-    /* If data is not in the cache, get free cache entry. */
-    if (!cache) {
-        lock_acquire(&global_fs_lock); // TODO : temp
-        cache = get_free_cache(sector);
-        lock_release(&cache->cache_lock); // TODO : tmep
+    while (1) {
+        /* Acquire global lock and cache entry. */
+        lock_acquire(&global_fs_lock);
+        cache = sector_to_cache(sector);
+        lock_release(&global_fs_lock);
+
+        if (!cache) {
+            lock_acquire(&global_fs_lock);
+            cache = get_free_cache(sector);
+        } else {
+            lock_acquire(&cache->cache_lock);
+        }
+
+        /* Should've switched locks. */
+        ASSERT(!lock_held_by_current_thread(&global_fs_lock));
+        ASSERT(lock_held_by_current_thread(&cache->cache_lock));
+        
+        /* Ensure that this is still the correct sector. */
+        if (cache->sector == (int) sector) {
+            /* We gud. */
+            break;
+        } else {
+            /* We not gud. */
+            lock_release(&cache->cache_lock);
+        }
+
+        /* If data is not in the cache, get free cache entry and load into it. */
     }
 
+    /* Really shouldn't be null. */
+    ASSERT(cache);
+
     memcpy((void *) &cache->data, buffer, (size_t) BLOCK_SECTOR_SIZE);
+
+    /* We done, we release. */
+    lock_release(&cache->cache_lock);
 }
 
 static struct cache_entry * get_free_cache(block_sector_t sector) {
@@ -146,6 +177,7 @@ static struct cache_entry * get_free_cache(block_sector_t sector) {
             /* If this is actually free, no one holds this lock. */
             ASSERT(lock_try_acquire(&sector_cache[i].cache_lock));
             lock_release(&global_fs_lock);
+            memset(&sector_cache[i].data, 0, BLOCK_SECTOR_SIZE);
             return &sector_cache[i];
         }
     }
