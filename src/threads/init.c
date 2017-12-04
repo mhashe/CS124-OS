@@ -54,6 +54,8 @@
 #include "filesys/fsutil.h"
 #include "userprog/fs_lock.h"
 
+#include "filesys/cache.h"
+
 #endif
 
 /*! Page directory with kernel mappings only. */
@@ -144,6 +146,8 @@ int main(void) {
     ide_init();
     locate_block_devices();
     filesys_init(format_filesys);
+
+    cache_init();
 #endif
 
 #ifdef VM
