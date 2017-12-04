@@ -41,7 +41,7 @@ static struct cache_entry * sector_to_cache(block_sector_t sector) {
 /* Reads cache data at "cache" into buffer. Returns false if sector is not 
 in the cache. */
 void cache_read(struct block * fs_device, block_sector_t sector, void * buffer) {
-    struct cache_entry * cache = sector_to_cache(sector);
+    struct cache_entry *cache = sector_to_cache(sector);
 
     /* If data is not in the cache, get free cache entry and load into it. */
     if (!cache) {
@@ -49,26 +49,26 @@ void cache_read(struct block * fs_device, block_sector_t sector, void * buffer) 
         block_read(fs_device, sector, cache->data);
     }
 
-    memcpy(buffer, (void *) cache->data, (size_t) BLOCK_SECTOR_SIZE);
+    memcpy(buffer, (void *) &cache->data, (size_t) BLOCK_SECTOR_SIZE);
 
 }
 
 /* Reads from buffer into cache data at "cache". Returns false if sector is 
 not in the cache. */
 void cache_write(block_sector_t sector, const void * buffer) {
-    struct cache_entry * cache = sector_to_cache(sector);
+    struct cache_entry *cache = sector_to_cache(sector);
 
     /* If data is not in the cache, get free cache entry. */
     if (!cache) {
         cache = get_free_cache(sector);
     }
 
-    memcpy((void *) cache->data, buffer, (size_t) BLOCK_SECTOR_SIZE);
+    memcpy((void *) &cache->data, buffer, (size_t) BLOCK_SECTOR_SIZE);
 }
 
 static struct cache_entry * get_free_cache(block_sector_t sector) {
     for (int i = 0; i < CACHE_SIZE; i++) {
-        if (sector_cache[i].sector != CACHE_SECTOR_EMPTY) {
+        if (sector_cache[i].sector == CACHE_SECTOR_EMPTY) {
             sector_cache[i].sector = sector;
             return &sector_cache[i];
         }
