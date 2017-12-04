@@ -12,16 +12,18 @@
 
 /* Number of sectors in buffer cache. */
 #define CACHE_SIZE 64
+#define CACHE_SECTOR_EMPTY -1
 
 void cache_init(void);
 
 struct cache_entry {
     int sector;
+    bool dirty;
     char data[BLOCK_SECTOR_SIZE];
 };
 
-bool cache_read(block_sector_t sector, void * buffer);
-bool cache_write(block_sector_t sector, void * buffer);
+void cache_read(block_sector_t sector, void * buffer);
+void cache_write(block_sector_t sector, void * buffer);
 
 #endif /* vm/cache.h */
 

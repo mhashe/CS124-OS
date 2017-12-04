@@ -6,27 +6,31 @@
 // #include <stdint.h>
 
 #include "devices/block.h"
+#include "filesys/filesys.h"
 #include "cache.h"
 
 /* Cache of data */
 static struct cache_entry sector_cache[CACHE_SIZE];
 
-static char * sector_to_cache_data(block_sector_t sector);
+static struct cache_entry * sector_to_cache(block_sector_t sector);
+static struct cache_entry * get_free_cache(block_sector_t sector);
 
 /* Initialize. */
 void cache_init(void) {
-
+    for (int i = 0; i < CACHE_SIZE; i++) {
+        sector_cache[i].sector = CACHE_SECTOR_EMPTY;
+    }
 }
 
 
-/* Returns NULL if sector is not in the cache. Else, it returns a pointer to 
-the sector's data in the cache. */
-static char * sector_to_cache_data(block_sector_t sector) {
+/* Returns a pointer to the sector's cache entry in the cache. Returns NULL if 
+sector is not in the cache. */
+static struct cache_entry * sector_to_cache(block_sector_t sector) {
     int target_sector = (int) sector;
 
     for (int i = 0; i < CACHE_SIZE; i++) {
         if (sector_cache[i].sector == target_sector) {
-            return sector_cache[i].data;
+            return &sector_cache[i];
         }
     }
 
@@ -35,31 +39,43 @@ static char * sector_to_cache_data(block_sector_t sector) {
 
 /* Reads cache data at "cache" into buffer. Returns false if sector is not 
 in the cache. */
-bool cache_read(block_sector_t sector, void * buffer) {
-    char * cache_data = sector_to_cache_data(sector);
+void cache_read(block_sector_t sector, void * buffer) {
+    struct cache_entry * cache = sector_to_cache(sector);
 
-    if (!cache_data) {
-        return false;
+    /* If data is not in the cache, get free cache entry and load into it. */
+    if (!cache) {
+        cache = get_free_cache(sector);
+        block_read(fs_device, sector, cache->data);
     }
 
-    memcpy(buffer, (void *) cache_data, (size_t) BLOCK_SECTOR_SIZE);
-    return true;
+    memcpy(buffer, (void *) cache->data, (size_t) BLOCK_SECTOR_SIZE);
+
 }
 
 /* Reads from buffer into cache data at "cache". Returns false if sector is 
 not in the cache. */
-bool cache_write(block_sector_t sector, void * buffer) {
-    char * cache_data = sector_to_cache_data(sector);
+void cache_write(block_sector_t sector, void * buffer) {
+    struct cache_entry * cache = sector_to_cache(sector);
 
-    if (!cache_data) {
-        return false;
+    /* If data is not in the cache, get free cache entry. */
+    if (!cache) {
+        cache = get_free_cache(sector);
     }
 
-    memcpy((void *) cache_data, buffer, (size_t) BLOCK_SECTOR_SIZE);
-    return true;
+    memcpy((void *) cache->data, buffer, (size_t) BLOCK_SECTOR_SIZE);
 }
 
+static struct cache_entry * get_free_cache(block_sector_t sector) {
+    for (int i = 0; i < CACHE_SIZE; i++) {
+        if (sector_cache[i].sector != CACHE_SECTOR_EMPTY) {
+            sector_cache[i].sector = sector;
+            return &sector_cache[i];
+        }
+    }
 
+    // TODO: EVICT!
+
+}
 
 
 
