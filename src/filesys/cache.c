@@ -14,6 +14,7 @@ static struct cache_entry sector_cache[CACHE_SIZE];
 
 static struct cache_entry * sector_to_cache(block_sector_t sector);
 static struct cache_entry * get_free_cache(block_sector_t sector);
+static struct cache_entry * cache_evict(void);
 
 /* Initialize. */
 void cache_init(void) {
@@ -39,7 +40,7 @@ static struct cache_entry * sector_to_cache(block_sector_t sector) {
 
 /* Reads cache data at "cache" into buffer. Returns false if sector is not 
 in the cache. */
-void cache_read(block_sector_t sector, void * buffer) {
+void cache_read(struct block * fs_device, block_sector_t sector, void * buffer) {
     struct cache_entry * cache = sector_to_cache(sector);
 
     /* If data is not in the cache, get free cache entry and load into it. */
@@ -54,7 +55,7 @@ void cache_read(block_sector_t sector, void * buffer) {
 
 /* Reads from buffer into cache data at "cache". Returns false if sector is 
 not in the cache. */
-void cache_write(block_sector_t sector, void * buffer) {
+void cache_write(block_sector_t sector, const void * buffer) {
     struct cache_entry * cache = sector_to_cache(sector);
 
     /* If data is not in the cache, get free cache entry. */
@@ -73,9 +74,15 @@ static struct cache_entry * get_free_cache(block_sector_t sector) {
         }
     }
 
-    // TODO: EVICT!
-
+    return cache_evict();
 }
 
+
+/* Comment */
+static struct cache_entry * cache_evict(void) {
+    ASSERT(0); // not implemented
+
+    return NULL;
+}
 
 
