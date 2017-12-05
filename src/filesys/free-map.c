@@ -7,7 +7,6 @@
 #include "filesys/inode.h"
 #include "threads/malloc.h"
 
-static struct file *free_map_file;   /*!< Free map file. */
 
 /*! Initializes the free map. */
 void free_map_init(void) {
@@ -39,7 +38,7 @@ block_sector_t free_map_allocate_single(void) {
     block_sector_t sector = bitmap_scan_and_flip(free_map, 0, 1, false);
     if (sector != BITMAP_ERROR && free_map_file != NULL &&
         !bitmap_write(free_map, free_map_file)) {
-        bitmap_set_multiple(free_map, sector, cnt, false); 
+        bitmap_reset(free_map, sector);
         sector = BITMAP_ERROR;
     }
     return sector;

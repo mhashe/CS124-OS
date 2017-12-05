@@ -120,6 +120,18 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
         }
     }
 
+    /* Perists our changes in free_map to its file. */
+    if (free_map_file != NULL && !bitmap_write(free_map, free_map_file)) {
+        /* If failed, free temporary buffers and undo changes to the free_map. */
+        free(dir);
+        free(ind);
+        for (i = 0; i < num_found; i++) {
+            bitmap_reset(free_map, available_sectors[i]);
+        }
+        ASSERT(0); // TODO: remove? we should never have reached here anyways
+        return false;
+    }
+
     /* Make sure that we were able to allocate all blocks that we needed to. */
     ASSERT(num_found == new_sectors);
 
