@@ -23,7 +23,6 @@
 #include "vm/page.h"
 #endif
 
-#include "userprog/fs_lock.h"
 
 /* Handler function. */
 static void syscall_handler(struct intr_frame *);
@@ -316,9 +315,7 @@ static void create(struct intr_frame *f) {
     verify_pointer((uint32_t *) file);
 
     /* Create file, return boolean value. */
-    lock_acquire(&fs_lock);
     f->eax = filesys_create(file, initial_size);
-    lock_release(&fs_lock);
 }
 
 
@@ -333,9 +330,7 @@ static void remove(struct intr_frame *f) {
     verify_pointer((uint32_t *) file);
 
     /* Remove file. */
-    lock_acquire(&fs_lock);
     f->eax = filesys_remove(file);
-    lock_release(&fs_lock);
 }
 
 
@@ -366,9 +361,7 @@ static void open(struct intr_frame *f) {
 
     if (file_name) {
         /* Try to open file. */
-        lock_acquire(&fs_lock);
         struct file* file = filesys_open(file_name);
-        lock_release(&fs_lock);
 
         if (file) {
             /* File opened! Create a file descriptor, add to list. */
@@ -428,9 +421,7 @@ static void filesize(struct intr_frame *f) {
     /* Return file size. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-    	lock_acquire(&fs_lock);
         f->eax = file_length(file);
-        lock_release(&fs_lock);
     } else {
         /* Invalid file has no size. */
         thread_exit();
@@ -472,9 +463,7 @@ static void read(struct intr_frame *f) {
     /* Return number of bytes read. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-    	lock_acquire(&fs_lock);
         f->eax = file_read(file, buffer, size);
-        lock_release(&fs_lock);
     } else {
         /* Can't read invalid file. */
         f->eax = -1;
@@ -523,9 +512,7 @@ static void write(struct intr_frame *f) {
     /* Return number of bytes written. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-    	lock_acquire(&fs_lock);
         int written = file_write(file, buffer, size);
-        lock_release(&fs_lock);
 
         f->eax = written;
     } else {
@@ -558,9 +545,7 @@ static void seek(struct intr_frame *f) {
     /* Seek file. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-    	lock_acquire(&fs_lock);
         file_seek(file, position);
-        lock_release(&fs_lock);
     } else {
         /* Can't seek invalid file. */
         thread_exit();
@@ -582,9 +567,7 @@ static void tell(struct intr_frame *f) {
     /* Tell file. */
     struct file* file = file_from_fd(fd)->file;
     if (file) {
-    	lock_acquire(&fs_lock);
         f->eax = file_tell(file);
-        lock_release(&fs_lock);
     } else {
         /* Can't tell invalid file. */
         thread_exit();
@@ -606,9 +589,7 @@ static void close(struct intr_frame *f) {
     /* Tell file. */
     struct file_des* file_des = file_from_fd(fd);
     if (file_des) {
-    	lock_acquire(&fs_lock);
         file_close(file_des->file);
-        lock_release(&fs_lock);
 
         /* Free memory, remove from list. */
         list_remove(&file_des->elem);
