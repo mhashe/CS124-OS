@@ -2,10 +2,11 @@
 #include <debug.h>
 #include <stdio.h>
 #include <string.h>
+#include "filesys/cache.h"
+#include "filesys/directory.h"
 #include "filesys/file.h"
 #include "filesys/free-map.h"
 #include "filesys/inode.h"
-#include "filesys/directory.h"
 
 /*! Partition that contains the file system. */
 struct block *fs_device;
@@ -30,6 +31,7 @@ void filesys_init(bool format) {
 
 /*! Shuts down the file system module, writing any unwritten data to disk. */
 void filesys_done(void) {
+    flush_cache();
     free_map_close();
 }
 

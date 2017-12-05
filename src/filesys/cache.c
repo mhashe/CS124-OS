@@ -1,16 +1,17 @@
+#include "cache.h"
+
 #include <debug.h>
+#include <kernel/hash.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <kernel/hash.h>
 #include <string.h>
-// #include <stdint.h>
 
 #include "devices/block.h"
+#include "devices/timer.h"
 #include "filesys/filesys.h" /* fs_device */
-#include "cache.h"
+#include "filesys/off_t.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
-#include "devices/timer.h"
 
 struct lock cache_table_lock;
 
@@ -336,6 +337,27 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
             block_read(fs_device, sector, cache->data); 
         }
         return cache;
+    }
+}
+
+/* Called when filesystem is closed. We want to write all dirty block to disk.*/
+void flush_cache(void) {
+    struct cache_entry *cache = NULL;
+
+    for (int i = 0; i < CACHE_SIZE; i++) {
+        cache = &sector_cache[i];
+
+        if (cache->sector == CACHE_SECTOR_EMPTY) {
+            continue;
+        }
+
+        if (cache->dirty) {
+            ASSERT(lock_try_acquire(&cache->cache_entry_lock))
+            block_write(fs_device, cache->sector, &cache->data);
+            cache->dirty = false;
+            lock_release(&cache->cache_entry_lock);
+        }
+
     }
 }
 
