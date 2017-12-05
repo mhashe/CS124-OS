@@ -9,6 +9,8 @@
 #include "filesys/filesys.h" /* fs_device */
 #include "cache.h"
 #include "threads/synch.h"
+#include "threads/thread.h"
+#include "devices/timer.h"
 
 struct lock cache_table_lock;
 
@@ -18,14 +20,26 @@ static int victim;
 /* Cache of data */
 static struct cache_entry sector_cache[CACHE_SIZE];
 
+/* Read-ahead queue, clock-like index. */
+static int read_ahead_buffer[CACHE_SIZE];
+volatile int read_ahead_head;
+volatile int read_ahead_tail;
+
 /* Helper functions. */
 static struct cache_entry *sector_to_cache(block_sector_t sector);
 static struct cache_entry *get_free_cache(block_sector_t sector, bool writing);
 static struct cache_entry *cache_evict(block_sector_t sector, bool writing);
 
+static void read_ahead(void *arg_ UNUSED);
+static void write_behind(void *arg_ UNUSED);
+
+
+
 /* Initialize. */
 void cache_init(void) {
     victim = 0;
+    read_ahead_head = 0;
+    read_ahead_tail = 0;
 
     lock_init(&cache_table_lock);
 
@@ -46,7 +60,15 @@ void cache_init(void) {
         sector_cache[i].writer_waiting = 0;
         
         sector_cache[i].mode = UNLOCK;
+
+        /* Also, the read_ahead_buffer. */
+        read_ahead_buffer[i] = CACHE_SECTOR_EMPTY;
     }
+}
+
+void cache_kernel_thread_init(void) {
+    thread_create("cache-read-ahead",   PRI_DEFAULT, read_ahead, NULL);
+    thread_create("cache-write-behind", PRI_DEFAULT, write_behind, NULL);
 }
 
 /* Returns a pointer to the sector's cache entry in the cache. Returns NULL if 
@@ -131,6 +153,10 @@ void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) 
     cache->access = true;
     cache->reader_active--;
 
+    /* Line up read ahead. */
+    read_ahead_buffer[read_ahead_tail] = (sector + 1) % block_size(fs_device);
+    read_ahead_tail = (read_ahead_tail + 1) % CACHE_SIZE;
+
     /* If we're done reading, reset state. */
     if (cache->reader_active == 0 && cache->writer_waiting > 0) {
         /* No more readers, but there is a writer. */
@@ -201,6 +227,10 @@ void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t o
     cache->access = true;
     cache->dirty = true;
 
+    /* Line up read ahead. */
+    read_ahead_buffer[read_ahead_tail] = (sector + 1) % block_size(fs_device);
+    read_ahead_tail = (read_ahead_tail + 1) % CACHE_SIZE;
+
     /* Once we're done, signal the next threads. */
     if (cache->reader_waiting > 0) {
         /* Grant file to readers.*/
@@ -253,7 +283,6 @@ static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
 /* Comment */
 static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
     // TODO: something better
-    // TODO: only if dirty
     ASSERT(lock_held_by_current_thread(&cache_table_lock));
 
     /* Choose victim, set for next time. TODO : better policy. */
@@ -307,6 +336,76 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
             block_read(fs_device, sector, cache->data); 
         }
         return cache;
+    }
+}
+
+/* Reads data into cache, but not into buffer. */
+static void read_ahead(void *arg_ UNUSED) {
+    struct cache_entry *cache = NULL;
+    
+    while (1) {
+        while (read_ahead_head == read_ahead_tail) {
+            /* Nothing to do, sleep. */
+            timer_msleep(CACHE_KERNEL_SLEEP);
+        }
+
+        /* Something to read ahead. */
+        int rah = read_ahead_head;
+
+
+        /* Acquire global lock and cache entry. */
+        lock_acquire(&cache_table_lock);
+        cache = sector_to_cache(read_ahead_buffer[rah]);
+        lock_release(&cache_table_lock);
+
+        /* Sector is not currently in cache- switch it in. */
+        if (!cache) {
+            lock_acquire(&cache_table_lock);
+            cache = get_free_cache(rah, false);
+
+            /* Really shouldn't be null. */
+            ASSERT(cache);
+
+            /* Should've switched locks. */
+            ASSERT(!lock_held_by_current_thread(&cache_table_lock));
+            ASSERT(lock_held_by_current_thread(&cache->cache_entry_lock));
+            
+            /* We done, we release. */
+            lock_release(&cache->cache_entry_lock);
+        }
+
+        /* Move to next entry in read ahead buffer. */
+        read_ahead_head = (read_ahead_head + 1) % CACHE_SIZE;
+        cache = NULL;
+        timer_msleep(CACHE_KERNEL_SLEEP);
+    }
+}
+
+static void write_behind(void *arg_ UNUSED) {
+    struct cache_entry *cache = NULL;
+
+    int i = 0;
+    while (1) {
+        cache = &sector_cache[i];
+
+        /* Cache is filled from the front; if we ever hit
+           empty entries, everything past that is also empty. */
+        if (cache->sector == CACHE_SECTOR_EMPTY) {
+            i = 0;
+        }
+
+        if (cache->dirty) {
+            if (lock_try_acquire(&cache->cache_entry_lock)) {
+                block_write(fs_device, cache->sector, &cache->data);
+                cache->dirty = false;
+                lock_release(&cache->cache_entry_lock);
+            }
+        }
+
+        /* Move to next entry in cache. */
+        i = (i + 1) % CACHE_SIZE;
+        cache = NULL;
+        timer_msleep(CACHE_KERNEL_SLEEP);
     }
 }
 

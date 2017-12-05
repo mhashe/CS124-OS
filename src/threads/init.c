@@ -141,6 +141,7 @@ int main(void) {
     ide_init();
     locate_block_devices();
     cache_init();
+    cache_kernel_thread_init();
     filesys_init(format_filesys);
 
 #endif
