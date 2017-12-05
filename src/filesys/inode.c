@@ -18,7 +18,11 @@
 struct inode_disk {
     block_sector_t start;               /*!< First data sector. */
     off_t length;                       /*!< File size in bytes. */
+    // TODO: add multilevel indirection details
+
     unsigned magic;                     /*!< Magic number. */
+    // TODO: we should actually make use of this number by asserting it in 
+    // different places
     uint32_t unused[125];               /*!< Not used. */
 };
 
@@ -36,6 +40,7 @@ struct inode {
     bool removed;                       /*!< True if deleted, false otherwise. */
     int deny_write_cnt;                 /*!< 0: writes ok, >0: deny writes. */
     struct inode_disk data;             /*!< Inode content. */
+    // TODO: remove this data attribute and set it to be a pointer to data that is read by the cache (and casted into inode_disk *) from the sector of inode_disk given by inode.sector
 };
 
 /*! Returns the block device sector that contains byte offset POS
@@ -43,6 +48,7 @@ struct inode {
     Returns -1 if INODE does not contain data for a byte at offset
     POS. */
 static block_sector_t byte_to_sector(const struct inode *inode, off_t pos) {
+    // TODO: change this to use indexing instead of assuming continguous data sectors
     ASSERT(inode != NULL);
     if (pos < inode->data.length)
         return inode->data.start + pos / BLOCK_SECTOR_SIZE;
@@ -79,6 +85,9 @@ bool inode_create(block_sector_t sector, off_t length) {
         size_t sectors = bytes_to_sectors(length);
         disk_inode->length = length;
         disk_inode->magic = INODE_MAGIC;
+
+        // TODO: initialize multilevel indirection details
+
         if (free_map_allocate(sectors, &disk_inode->start)) {
             cache_write(sector, disk_inode);
             if (sectors > 0) {
@@ -101,7 +110,7 @@ bool inode_create(block_sector_t sector, off_t length) {
     and returns a `struct inode' that contains it.
     Returns a null pointer if memory allocation fails. */
 struct inode * inode_open(block_sector_t sector) {
-    struct list_elem *e;
+    struct list_elem *e; 
     struct inode *inode;
 
     /* Check whether this inode is already open. */

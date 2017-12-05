@@ -68,3 +68,8 @@ void free_map_create(void) {
         PANIC("can't write free map");
 }
 
+// TODO: create a free_map_allocate() that doesn't allocate continguous values in the bitmap
+// instead, it finds total number free. if total free are enough, then set each 
+// individually to not free. or just use bitmap_test() all the way.
+// Note: obviously this entire process of allocating is something that needs to 
+// be locked down
