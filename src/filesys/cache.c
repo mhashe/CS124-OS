@@ -6,7 +6,7 @@
 // #include <stdint.h>
 
 #include "devices/block.h"
-#include "filesys/filesys.h"
+#include "filesys/filesys.h" /* fs_device */
 #include "cache.h"
 #include "threads/synch.h"
 
@@ -15,9 +15,10 @@ struct lock global_fs_lock;
 /* Cache of data */
 static struct cache_entry sector_cache[CACHE_SIZE];
 
-static struct cache_entry * sector_to_cache(block_sector_t sector);
-static struct cache_entry * get_free_cache(block_sector_t sector, enum lock_mode mode);
-static struct cache_entry * cache_evict(block_sector_t sector, enum lock_mode mode);
+/* Helper functions. */
+static struct cache_entry *sector_to_cache(block_sector_t sector);
+static struct cache_entry *get_free_cache(block_sector_t sector);
+static struct cache_entry *cache_evict(block_sector_t sector);
 
 /* Initialize. */
 void cache_init(void) {
@@ -26,39 +27,21 @@ void cache_init(void) {
     for (int i = 0; i < CACHE_SIZE; i++) {
         sector_cache[i].sector = CACHE_SECTOR_EMPTY;
 
+        sector_cache[i].dirty = 0;
+        memset(&sector_cache[i].data, 0, BLOCK_SECTOR_SIZE);
+
         lock_init(&sector_cache[i].cache_lock);
+
         cond_init(&sector_cache[i].readers);
         cond_init(&sector_cache[i].writers);
-
-        sector_cache[i].mode = UNLOCK;
 
         sector_cache[i].reader_active = 0;
         sector_cache[i].reader_waiting = 0;
         sector_cache[i].writer_waiting = 0;
+        
+        sector_cache[i].mode = UNLOCK;
     }
 }
-
-// /* Acquire lock for an entry as a reader. */
-// void read_acquire(struct cache_entry *cache) {
-//     cache->readers++;
-
-//     while (1) {
-//         /* Some other reader got the lock. */
-//         if (cache->mode == READ_LOCKED && cache->writer_waiting == 0) {
-//             break;
-//         }
-
-//          We got control of the lock. 
-//         if (lock_try_acquire(&cache->cache_lock)) {
-//             cache->mode = READ_LOCKED;
-//             break;
-//         }
-
-//         /* Else, wait for thread to relinquish lock. */
-//         cond_wait(&cache->readers, &cache->cache_lock);
-//     }
-//     cache->readers--;
-// }
 
 /* Returns a pointer to the sector's cache entry in the cache. Returns NULL if 
 sector is not in the cache. */
@@ -75,7 +58,7 @@ static struct cache_entry * sector_to_cache(block_sector_t sector) {
 }
 
 /* Reads cache data at "cache" into buffer. */
-void cache_read(struct block * fs_device UNUSED, block_sector_t sector, void * buffer) {
+void cache_read(block_sector_t sector, void * buffer) {
     struct cache_entry *cache = NULL;
 
     while (1) {
@@ -86,7 +69,7 @@ void cache_read(struct block * fs_device UNUSED, block_sector_t sector, void * b
 
         if (!cache) {
             lock_acquire(&global_fs_lock);
-            cache = get_free_cache(sector, READ_LOCK);
+            cache = get_free_cache(sector);
         } else {
             lock_acquire(&cache->cache_lock);
         }
@@ -155,7 +138,6 @@ void cache_write(block_sector_t sector, const void * buffer) {
     // TODO don't need to read from disk when we load from disk because we
     // necessarily overwrite the whole sector
 
-
     while (1) {
         /* Acquire global lock and cache entry. */
         lock_acquire(&global_fs_lock);
@@ -164,7 +146,7 @@ void cache_write(block_sector_t sector, const void * buffer) {
 
         if (!cache) {
             lock_acquire(&global_fs_lock);
-            cache = get_free_cache(sector, WRITE_LOCK);
+            cache = get_free_cache(sector);
         } else {
             lock_acquire(&cache->cache_lock);
         }
@@ -217,7 +199,7 @@ void cache_write(block_sector_t sector, const void * buffer) {
     lock_release(&cache->cache_lock);
 }
 
-static struct cache_entry *get_free_cache(block_sector_t sector, enum lock_mode mode) {
+static struct cache_entry *get_free_cache(block_sector_t sector) {
     ASSERT(lock_held_by_current_thread(&global_fs_lock));
 
     for (int i = 0; i < CACHE_SIZE; i++) {
@@ -230,9 +212,6 @@ static struct cache_entry *get_free_cache(block_sector_t sector, enum lock_mode 
             ASSERT(sector_cache[i].reader_active == 0);
             ASSERT(sector_cache[i].writer_waiting == 0);
 
-            /* Lock is acquired, mark is as being r/w. */
-            // sector_cache[i].mode = mode;
-
             /* Relinquish control of cache table. */
             lock_release(&global_fs_lock);
 
@@ -244,12 +223,12 @@ static struct cache_entry *get_free_cache(block_sector_t sector, enum lock_mode 
         }
     }
 
-    return cache_evict(sector, mode);
+    return cache_evict(sector);
 }
 
 
 /* Comment */
-static struct cache_entry *cache_evict(block_sector_t sector, enum lock_mode mode) {
+static struct cache_entry *cache_evict(block_sector_t sector) {
     // TODO: something better
     // TODO: only if dirty
     ASSERT(lock_held_by_current_thread(&global_fs_lock));
