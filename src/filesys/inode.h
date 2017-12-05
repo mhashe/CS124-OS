@@ -5,6 +5,12 @@
 #include "filesys/off_t.h"
 #include "devices/block.h"
 
+/* Number of direct, indirect, and double indirect inodes. */
+#define NUM_DIRECT 100
+#define NUM_INDIRECT 20
+#define NUM_DOUBLE_INDIRECT 1 // only one is ever needed
+
+
 struct bitmap;
 
 void inode_init(void);

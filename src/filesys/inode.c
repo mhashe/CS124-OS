@@ -16,14 +16,19 @@
 /*! On-disk inode.
     Must be exactly BLOCK_SECTOR_SIZE bytes long. */
 struct inode_disk {
+    // TODO: delete start
     block_sector_t start;               /*!< First data sector. */
     off_t length;                       /*!< File size in bytes. */
+
     // TODO: add multilevel indirection details
+    block_sector_t direct[NUM_DIRECT];
+    block_sector_t indirect[NUM_INDIRECT];
+    block_sector_t double_indirect[NUM_DOUBLE_INDIRECT];
 
     unsigned magic;                     /*!< Magic number. */
     // TODO: we should actually make use of this number by asserting it in 
     // different places
-    uint32_t unused[125];               /*!< Not used. */
+    uint32_t unused[4];               /*!< Not used. */
 };
 
 /*! Returns the number of sectors to allocate for an inode SIZE
