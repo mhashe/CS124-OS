@@ -23,7 +23,7 @@ struct inode_disk {
     // TODO: add multilevel indirection details
     block_sector_t direct[NUM_DIRECT];
     block_sector_t indirect[NUM_INDIRECT];
-    block_sector_t double_indirect[NUM_DOUBLE_INDIRECT];
+    block_sector_t double_indirect;
 
     unsigned magic;                     /*!< Magic number. */
     // TODO: we should actually make use of this number by asserting it in 
