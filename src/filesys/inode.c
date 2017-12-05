@@ -101,8 +101,8 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
         free(dir);
         return false;
     }
-    cache_read(data->double_indirect, ind);
-    cache_read(ind[ind_idx], dir);
+    cache_read(data->double_indirect, ind, BLOCK_SECTOR_SIZE, 0);
+    cache_read(ind[ind_idx], dir, BLOCK_SECTOR_SIZE, 0);
 
     // TODO: perhaps don't statically allocate all sectors initially?
     block_sector_t available_sectors[new_sectors];
@@ -129,7 +129,7 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
         dir_idx++;
 
         if (dir_idx == NUM_ENTRIES_IN_INDIRECT) {
-            cache_write(ind[ind_idx], dir);
+            cache_write(ind[ind_idx], dir, BLOCK_SECTOR_SIZE, 0);
             dir_idx = 0;
             ind_idx++;
             ind[ind_idx] = available_sectors[i];
@@ -143,8 +143,8 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
     }
 
     /* Finish persisting to disk our changes and free temporary buffers. */
-    cache_write(ind[ind_idx], dir);
-    cache_write(data->double_indirect, ind);
+    cache_write(ind[ind_idx], dir, BLOCK_SECTOR_SIZE, 0);
+    cache_write(data->double_indirect, ind, BLOCK_SECTOR_SIZE, 0);
     free(dir);
     free(ind);
 
