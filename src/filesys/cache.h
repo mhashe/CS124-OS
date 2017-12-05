@@ -18,9 +18,9 @@
 void cache_init(void);
 
 enum lock_mode {
-    UNLOCKED,
-    READ_LOCKED,
-    WRITE_LOCKED
+    UNLOCK,
+    READ_LOCK,
+    WRITE_LOCK
 };
 
 struct cache_entry {

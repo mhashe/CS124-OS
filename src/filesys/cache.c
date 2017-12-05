@@ -16,8 +16,8 @@ struct lock global_fs_lock;
 static struct cache_entry sector_cache[CACHE_SIZE];
 
 static struct cache_entry * sector_to_cache(block_sector_t sector);
-static struct cache_entry * get_free_cache(block_sector_t sector);
-static struct cache_entry * cache_evict(block_sector_t sector);
+static struct cache_entry * get_free_cache(block_sector_t sector, enum lock_mode mode);
+static struct cache_entry * cache_evict(block_sector_t sector, enum lock_mode mode);
 
 /* Initialize. */
 void cache_init(void) {
@@ -30,7 +30,7 @@ void cache_init(void) {
         cond_init(&sector_cache[i].readers);
         cond_init(&sector_cache[i].writers);
 
-        sector_cache[i].mode = UNLOCKED;
+        sector_cache[i].mode = UNLOCK;
 
         sector_cache[i].reader_count = 0;
         sector_cache[i].writer_count = 0;
@@ -87,7 +87,7 @@ void cache_read(struct block * fs_device, block_sector_t sector, void * buffer) 
 
         if (!cache) {
             lock_acquire(&global_fs_lock);
-            cache = get_free_cache(sector);
+            cache = get_free_cache(sector, READ_LOCK);
             loaded = true;
         } else {
             lock_acquire(&cache->cache_lock);
@@ -137,7 +137,7 @@ void cache_write(block_sector_t sector, const void * buffer) {
 
         if (!cache) {
             lock_acquire(&global_fs_lock);
-            cache = get_free_cache(sector);
+            cache = get_free_cache(sector, WRITE_LOCK);
         } else {
             lock_acquire(&cache->cache_lock);
         }
@@ -167,27 +167,36 @@ void cache_write(block_sector_t sector, const void * buffer) {
     lock_release(&cache->cache_lock);
 }
 
-static struct cache_entry * get_free_cache(block_sector_t sector) {
+static struct cache_entry *get_free_cache(block_sector_t sector, enum lock_mode mode) {
     ASSERT(lock_held_by_current_thread(&global_fs_lock));
-    // TODO assert that we hold global lock
+
     for (int i = 0; i < CACHE_SIZE; i++) {
         if (sector_cache[i].sector == CACHE_SECTOR_EMPTY) {
             sector_cache[i].sector = sector;
 
             /* If this is actually free, no one holds this lock. */
             ASSERT(lock_try_acquire(&sector_cache[i].cache_lock));
+            ASSERT(sector_cache[i].mode == UNLOCK);
+            ASSERT(sector_cache[i].reader_count == 0);
+            ASSERT(sector_cache[i].writer_count == 0);
+
+            /* Lock is acquire, mark is as being r/w. */
+            sector_cache[i].mode = mode;
+
+            /* Relinquish control of cache table. */
             lock_release(&global_fs_lock);
             memset(&sector_cache[i].data, 0, BLOCK_SECTOR_SIZE);
+
             return &sector_cache[i];
         }
     }
-    
-    return cache_evict(sector);
+
+    return cache_evict(sector, mode);
 }
 
 
 /* Comment */
-static struct cache_entry * cache_evict(block_sector_t sector) {
+static struct cache_entry *cache_evict(block_sector_t sector, enum lock_mode mode) {
     // TODO: something better
     // TODO: only if dirty
     ASSERT(lock_held_by_current_thread(&global_fs_lock));
@@ -197,15 +206,43 @@ static struct cache_entry * cache_evict(block_sector_t sector) {
 
     /* Switch locks. */
     lock_release(&global_fs_lock);
+
+    /* For now at least, we just leave all currently waiting threads waiting.
+       The idea is that when they wake up at some point, they acquire the lock,
+       realize that this is no longer the data that they want, and then
+       relinquish it. */
     lock_acquire(&cache->cache_lock);
 
-    block_write(fs_device, cache->sector, &cache->data);
+    /* We relock the cache table here to ensure that processes cannot 
+       concurrently load the same sector into cache memory twice. */
+    lock_acquire(&global_fs_lock);
 
-    cache->sector = sector;
-    cache->dirty = false;
-    memset(&cache->data, 0, BLOCK_SECTOR_SIZE);
+    struct cache_entry *loaded_cache = sector_to_cache(sector);
+    if (loaded_cache) {
+        /* If it's already loaded, we only need to lock that cache entry. */
+        lock_release(&global_fs_lock);
+        lock_release(&cache->cache_lock);
+        lock_acquire(&loaded_cache->cache_lock);
 
-    return cache;
+        block_write(fs_device, loaded_cache->sector, &loaded_cache->data);
+        return loaded_cache;
+    } else {
+        /* Keep track of old sector, for writing to disk. */
+        int old_sector = cache->sector;
+
+        /* Still need to load it; mark it here so that everyone
+           blocks on it. */
+        cache->sector = sector;
+        cache->dirty = false;
+
+        /* Now that everyone knows where the sector will be loaded, we can
+           release global. Anyone trying to access this (half-loaded) sector
+           will block until we release the lock later. */
+        lock_release(&global_fs_lock);
+
+        block_write(fs_device, old_sector, &cache->data);
+        memset(&cache->data, 0, BLOCK_SECTOR_SIZE);
+        return cache;
+    }
 }
-
 
