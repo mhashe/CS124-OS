@@ -52,8 +52,6 @@
 #include "devices/ide.h"
 #include "filesys/filesys.h"
 #include "filesys/fsutil.h"
-#include "userprog/fs_lock.h"
-
 #include "filesys/cache.h"
 
 #endif
@@ -122,9 +120,6 @@ int main(void) {
     tss_init();
     gdt_init();
 #endif
-
-    /* Global fs lock. */
-    fs_lock_init();
 
     /* Initialize interrupt handlers. */
     intr_init();

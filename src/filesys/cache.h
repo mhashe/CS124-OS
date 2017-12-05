@@ -30,7 +30,7 @@ struct cache_entry {
     char data[BLOCK_SECTOR_SIZE];
 
     /* Implement read/write lock. */
-    struct lock cache_lock;
+    struct lock cache_entry_lock;
 
     struct condition readers;
     struct condition writers;

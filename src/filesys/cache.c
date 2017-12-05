@@ -10,7 +10,7 @@
 #include "cache.h"
 #include "threads/synch.h"
 
-struct lock global_fs_lock;
+struct lock cache_table_lock;
 
 /* Victim. */
 static int victim;
@@ -27,7 +27,7 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing);
 void cache_init(void) {
     victim = 0;
 
-    lock_init(&global_fs_lock);
+    lock_init(&cache_table_lock);
 
     for (int i = 0; i < CACHE_SIZE; i++) {
         sector_cache[i].sector = CACHE_SECTOR_EMPTY;
@@ -36,7 +36,7 @@ void cache_init(void) {
         sector_cache[i].dirty = false;
         memset(&sector_cache[i].data, 0, BLOCK_SECTOR_SIZE);
 
-        lock_init(&sector_cache[i].cache_lock);
+        lock_init(&sector_cache[i].cache_entry_lock);
 
         cond_init(&sector_cache[i].readers);
         cond_init(&sector_cache[i].writers);
@@ -73,22 +73,22 @@ void cache_read(block_sector_t sector, void * buffer) {
        correct sector. */
     while (1) {
         /* Acquire global lock and cache entry. */
-        lock_acquire(&global_fs_lock);
+        lock_acquire(&cache_table_lock);
         cache = sector_to_cache(sector);
-        lock_release(&global_fs_lock);
+        lock_release(&cache_table_lock);
 
         if (!cache) {
             /* Sector is not currently in cache- switch it in. */
-            lock_acquire(&global_fs_lock);
+            lock_acquire(&cache_table_lock);
             cache = get_free_cache(sector, false);
         } else {
             /* Lock cache until we finish reading from it. */
-            lock_acquire(&cache->cache_lock);
+            lock_acquire(&cache->cache_entry_lock);
         }
 
         /* Should've switched locks. */
-        ASSERT(!lock_held_by_current_thread(&global_fs_lock));
-        ASSERT(lock_held_by_current_thread(&cache->cache_lock));
+        ASSERT(!lock_held_by_current_thread(&cache_table_lock));
+        ASSERT(lock_held_by_current_thread(&cache->cache_entry_lock));
         
         /* Ensure that this is still the correct sector. */
         if (cache->sector == (int) sector) {
@@ -96,7 +96,7 @@ void cache_read(block_sector_t sector, void * buffer) {
             break;
         } else {
             /* We not gud. */
-            lock_release(&cache->cache_lock);
+            lock_release(&cache->cache_entry_lock);
         }
     }
 
@@ -113,7 +113,7 @@ void cache_read(block_sector_t sector, void * buffer) {
            1) WRITE_LOCK'ed, let the writer finish.
            2) Writer waiting, let him get a turn. */
         cache->reader_waiting++;
-        cond_wait(&cache->readers, &cache->cache_lock);
+        cond_wait(&cache->readers, &cache->cache_entry_lock);
         cache->reader_waiting--;
 
         /* Passing around the lock between waiters shouldn't change the 
@@ -134,14 +134,14 @@ void cache_read(block_sector_t sector, void * buffer) {
     if (cache->reader_active == 0 && cache->writer_waiting > 0) {
         /* No more readers, but there is a writer. */
         cache->mode = WRITE_LOCK;
-        cond_signal(&cache->writers, &cache->cache_lock);
+        cond_signal(&cache->writers, &cache->cache_entry_lock);
     } else if (cache->reader_active == 0 && cache->writer_waiting == 0) {
         /* Just set to unlock. */
         cache->mode = UNLOCK;
     } /* else: More readers, let them take care of cleanup. */
 
     /* We done, we release. */
-    lock_release(&cache->cache_lock);
+    lock_release(&cache->cache_entry_lock);
 }
 
 /* Reads from buffer into cache data at "cache". 
@@ -154,20 +154,20 @@ void cache_write(block_sector_t sector, const void * buffer) {
 
     while (1) {
         /* Acquire global lock and cache entry. */
-        lock_acquire(&global_fs_lock);
+        lock_acquire(&cache_table_lock);
         cache = sector_to_cache(sector);
-        lock_release(&global_fs_lock);
+        lock_release(&cache_table_lock);
 
         if (!cache) {
-            lock_acquire(&global_fs_lock);
+            lock_acquire(&cache_table_lock);
             cache = get_free_cache(sector, true);
         } else {
-            lock_acquire(&cache->cache_lock);
+            lock_acquire(&cache->cache_entry_lock);
         }
 
         /* Should've switched locks. */
-        ASSERT(!lock_held_by_current_thread(&global_fs_lock));
-        ASSERT(lock_held_by_current_thread(&cache->cache_lock));
+        ASSERT(!lock_held_by_current_thread(&cache_table_lock));
+        ASSERT(lock_held_by_current_thread(&cache->cache_entry_lock));
         
         /* Ensure that this is still the correct sector. */
         if (cache->sector == (int) sector) {
@@ -175,7 +175,7 @@ void cache_write(block_sector_t sector, const void * buffer) {
             break;
         } else {
             /* We not gud. */
-            lock_release(&cache->cache_lock);
+            lock_release(&cache->cache_entry_lock);
         }
     }
 
@@ -187,7 +187,7 @@ void cache_write(block_sector_t sector, const void * buffer) {
     } else {
         /* We need to wait - signal this to other threads with writer count. */
         cache->writer_waiting++;
-        cond_wait(&cache->writers, &cache->cache_lock);
+        cond_wait(&cache->writers, &cache->cache_entry_lock);
         cache->writer_waiting--;
     }
 
@@ -203,34 +203,34 @@ void cache_write(block_sector_t sector, const void * buffer) {
     if (cache->reader_waiting > 0) {
         /* Grant file to readers.*/
         cache->mode = READ_LOCK;
-        cond_broadcast(&cache->readers, &cache->cache_lock);
+        cond_broadcast(&cache->readers, &cache->cache_entry_lock);
     } else if (cache->reader_waiting == 0 && cache->writer_waiting > 0) {
         /* Signal some writer. */
-        cond_signal(&cache->writers, &cache->cache_lock);
+        cond_signal(&cache->writers, &cache->cache_entry_lock);
     } else {
         /* No one waiting. */
         cache->mode = UNLOCK;
     }
 
     /* We done, we release. */
-    lock_release(&cache->cache_lock);
+    lock_release(&cache->cache_entry_lock);
 }
 
 static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
-    ASSERT(lock_held_by_current_thread(&global_fs_lock));
+    ASSERT(lock_held_by_current_thread(&cache_table_lock));
 
     for (int i = 0; i < CACHE_SIZE; i++) {
         if (sector_cache[i].sector == CACHE_SECTOR_EMPTY) {
             sector_cache[i].sector = sector;
 
             /* If this is actually free, no one holds this lock. */
-            ASSERT(lock_try_acquire(&sector_cache[i].cache_lock));
+            ASSERT(lock_try_acquire(&sector_cache[i].cache_entry_lock));
             ASSERT(sector_cache[i].mode == UNLOCK);
             ASSERT(sector_cache[i].reader_active == 0);
             ASSERT(sector_cache[i].writer_waiting == 0);
 
             /* Relinquish control of cache table. */
-            lock_release(&global_fs_lock);
+            lock_release(&cache_table_lock);
 
             /* Read in new memory, unless we're immediately going to 
                overwrite it. */
@@ -252,7 +252,7 @@ static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
 static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
     // TODO: something better
     // TODO: only if dirty
-    ASSERT(lock_held_by_current_thread(&global_fs_lock));
+    ASSERT(lock_held_by_current_thread(&cache_table_lock));
 
     /* Choose victim, set for next time. TODO : better policy. */
     int cur_vic = victim;
@@ -261,24 +261,24 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
     struct cache_entry *cache = &sector_cache[cur_vic];
 
     /* Switch locks. */
-    lock_release(&global_fs_lock);
+    lock_release(&cache_table_lock);
 
     /* For now at least, we just leave all currently waiting threads waiting.
        The idea is that when they wake up at some point, they acquire the lock,
        realize that this is no longer the data that they want, and then
        relinquish it. */
-    lock_acquire(&cache->cache_lock);
+    lock_acquire(&cache->cache_entry_lock);
 
     /* We relock the cache table here to ensure that processes cannot 
        concurrently load the same sector into cache memory twice. */
-    lock_acquire(&global_fs_lock);
+    lock_acquire(&cache_table_lock);
 
     struct cache_entry *loaded_cache = sector_to_cache(sector);
     if (loaded_cache) {
         /* If it's already loaded, we only need to lock that cache entry. */
-        lock_release(&global_fs_lock);
-        lock_release(&cache->cache_lock);
-        lock_acquire(&loaded_cache->cache_lock);
+        lock_release(&cache_table_lock);
+        lock_release(&cache->cache_entry_lock);
+        lock_acquire(&loaded_cache->cache_entry_lock);
 
         return loaded_cache;
     } else {
@@ -292,7 +292,7 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
         /* Now that everyone knows where the sector will be loaded, we can
            release global. Anyone trying to access this (half-loaded) sector
            will block until we release the lock later. */
-        lock_release(&global_fs_lock);
+        lock_release(&cache_table_lock);
 
         /* Read in new memory, write out old (if it's dirty). */
         if (cache->dirty) {
