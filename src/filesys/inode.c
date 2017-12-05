@@ -72,16 +72,18 @@ static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx) {
 
 
 static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
-    // Get correct cnt of inodes we need
+    /* Get the correct count of sectors we need. */
     size_t i;
     size_t dir_idx_f, ind_idx_f, dir_idx, ind_idx;
     indices_from_offset(data->length + cnt, &dir_idx_f, &ind_idx_f);
     indices_from_offset(data->length, &dir_idx, &ind_idx);
 
     size_t file_sectors = (ind_idx_f - ind_idx) * NUM_ENTRIES_IN_INDIRECT + dir_idx;
+
+    /* Add number of sectors needed for the growth of the multi-level inode. */
     size_t new_sectors = file_sectors + (ind_idx_f - ind_idx);
 
-    /* If that are not available free sectors for allocation, return false. */
+    /* If there are not available free sectors for allocation, return false. */
     size_t num_sectors = bitmap_size(free_map);
     if (bitmap_count(free_map, 0, num_sectors, false) < new_sectors) {
         return false;
@@ -128,11 +130,11 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
 
         if (dir_idx == NUM_ENTRIES_IN_INDIRECT) {
             cache_write(ind[ind_idx], dir);
-            ind_idx++;
             dir_idx = 0;
+            ind_idx++;
             ind[ind_idx] = available_sectors[i];
             i++;
-            memset(ind, 0, BLOCK_SECTOR_SIZE);
+            memset(dir, 0, BLOCK_SECTOR_SIZE);
         }
 
         dir[dir_idx] = available_sectors[i];
