@@ -12,22 +12,27 @@
 
 struct lock global_fs_lock;
 
+/* Victim. */
+static int victim;
+
 /* Cache of data */
 static struct cache_entry sector_cache[CACHE_SIZE];
 
 /* Helper functions. */
 static struct cache_entry *sector_to_cache(block_sector_t sector);
-static struct cache_entry *get_free_cache(block_sector_t sector);
-static struct cache_entry *cache_evict(block_sector_t sector);
+static struct cache_entry *get_free_cache(block_sector_t sector, bool writing);
+static struct cache_entry *cache_evict(block_sector_t sector, bool writing);
 
 /* Initialize. */
 void cache_init(void) {
+    victim = 0;
+
     lock_init(&global_fs_lock);
 
     for (int i = 0; i < CACHE_SIZE; i++) {
         sector_cache[i].sector = CACHE_SECTOR_EMPTY;
 
-        sector_cache[i].dirty = 0;
+        sector_cache[i].dirty = false;
         memset(&sector_cache[i].data, 0, BLOCK_SECTOR_SIZE);
 
         lock_init(&sector_cache[i].cache_lock);
@@ -61,6 +66,10 @@ static struct cache_entry * sector_to_cache(block_sector_t sector) {
 void cache_read(block_sector_t sector, void * buffer) {
     struct cache_entry *cache = NULL;
 
+    /* Looping is done to avoid situations where we obtain a cache,
+       switch to a thread that changes our cache, and then switch
+       back- here, we ensure that our cache still contains the
+       correct sector. */
     while (1) {
         /* Acquire global lock and cache entry. */
         lock_acquire(&global_fs_lock);
@@ -68,9 +77,11 @@ void cache_read(block_sector_t sector, void * buffer) {
         lock_release(&global_fs_lock);
 
         if (!cache) {
+            /* Sector is not currently in cache- switch it in. */
             lock_acquire(&global_fs_lock);
-            cache = get_free_cache(sector);
+            cache = get_free_cache(sector, false);
         } else {
+            /* Lock cache until we finish reading from it. */
             lock_acquire(&cache->cache_lock);
         }
 
@@ -146,7 +157,7 @@ void cache_write(block_sector_t sector, const void * buffer) {
 
         if (!cache) {
             lock_acquire(&global_fs_lock);
-            cache = get_free_cache(sector);
+            cache = get_free_cache(sector, true);
         } else {
             lock_acquire(&cache->cache_lock);
         }
@@ -199,7 +210,7 @@ void cache_write(block_sector_t sector, const void * buffer) {
     lock_release(&cache->cache_lock);
 }
 
-static struct cache_entry *get_free_cache(block_sector_t sector) {
+static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
     ASSERT(lock_held_by_current_thread(&global_fs_lock));
 
     for (int i = 0; i < CACHE_SIZE; i++) {
@@ -215,26 +226,33 @@ static struct cache_entry *get_free_cache(block_sector_t sector) {
             /* Relinquish control of cache table. */
             lock_release(&global_fs_lock);
 
-            /* Read in new memory. */
-            memset(&sector_cache[i].data, 0, BLOCK_SECTOR_SIZE);
-            block_read(fs_device, sector, &sector_cache[i].data); 
+            /* Read in new memory, unless we're immediately going to 
+               overwrite it. */
+            // TODO : review memset policy
+            // memset(&sector_cache[i].data, 0, BLOCK_SECTOR_SIZE);
+            if (!writing) {
+                block_read(fs_device, sector, &sector_cache[i].data); 
+            }
 
             return &sector_cache[i];
         }
     }
 
-    return cache_evict(sector);
+    return cache_evict(sector, writing);
 }
 
 
 /* Comment */
-static struct cache_entry *cache_evict(block_sector_t sector) {
+static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
     // TODO: something better
     // TODO: only if dirty
     ASSERT(lock_held_by_current_thread(&global_fs_lock));
-    int victim = 0;
 
-    struct cache_entry *cache = &sector_cache[victim];
+    /* Choose victim, set for next time. TODO : better policy. */
+    int cur_vic = victim;
+    victim = (victim + 1) % CACHE_SIZE;
+
+    struct cache_entry *cache = &sector_cache[cur_vic];
 
     /* Switch locks. */
     lock_release(&global_fs_lock);
@@ -273,8 +291,11 @@ static struct cache_entry *cache_evict(block_sector_t sector) {
 
         /* Read in new memory, write out old. */
         block_write(fs_device, old_sector, &cache->data);
-        memset(&cache->data, 0, BLOCK_SECTOR_SIZE);
-        block_read(fs_device, sector, cache->data); 
+        // TODO : review memset policy
+        // memset(&cache->data, 0, BLOCK_SECTOR_SIZE);
+        if (!writing) {
+            block_read(fs_device, sector, cache->data); 
+        }
         return cache;
     }
 }
