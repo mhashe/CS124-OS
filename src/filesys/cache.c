@@ -32,6 +32,7 @@ void cache_init(void) {
     for (int i = 0; i < CACHE_SIZE; i++) {
         sector_cache[i].sector = CACHE_SECTOR_EMPTY;
 
+        sector_cache[i].access = false;
         sector_cache[i].dirty = false;
         memset(&sector_cache[i].data, 0, BLOCK_SECTOR_SIZE);
 
@@ -122,9 +123,11 @@ void cache_read(block_sector_t sector, void * buffer) {
 
     /* Begin reading. */
     cache->reader_active++;
-
     ASSERT(cache->mode == READ_LOCK);
+
+    /* Carry out actual read. */
     memcpy(buffer, (void *) &cache->data, (size_t) BLOCK_SECTOR_SIZE);
+    cache->access = true;
     cache->reader_active--;
 
     /* If we're done reading, reset state. */
@@ -191,7 +194,10 @@ void cache_write(block_sector_t sector, const void * buffer) {
     ASSERT(cache->mode == WRITE_LOCK);
     ASSERT(cache->reader_active == 0);
 
+    /* Carry out actual write operation. */
     memcpy((void *) &cache->data, buffer, (size_t) BLOCK_SECTOR_SIZE);
+    cache->access = true;
+    cache->dirty = true;
 
     /* Once we're done, signal the next threads. */
     if (cache->reader_waiting > 0) {
@@ -282,15 +288,17 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
         /* Still need to load it; mark it here so that everyone
            blocks on it. */
         cache->sector = sector;
-        cache->dirty = false;
 
         /* Now that everyone knows where the sector will be loaded, we can
            release global. Anyone trying to access this (half-loaded) sector
            will block until we release the lock later. */
         lock_release(&global_fs_lock);
 
-        /* Read in new memory, write out old. */
-        block_write(fs_device, old_sector, &cache->data);
+        /* Read in new memory, write out old (if it's dirty). */
+        if (cache->dirty) {
+            block_write(fs_device, old_sector, &cache->data); 
+        }
+        cache->dirty = false;
         // TODO : review memset policy
         // memset(&cache->data, 0, BLOCK_SECTOR_SIZE);
         if (!writing) {
