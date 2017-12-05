@@ -74,11 +74,18 @@ static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx) {
 static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
     /* Get the correct count of sectors we need. */
     size_t i;
-    size_t dir_idx_f, ind_idx_f, dir_idx, ind_idx;
-    indices_from_offset(data->length + cnt, &dir_idx_f, &ind_idx_f);
-    indices_from_offset(data->length, &dir_idx, &ind_idx);
 
-    size_t file_sectors = (ind_idx_f - ind_idx) * NUM_ENTRIES_IN_INDIRECT + dir_idx;
+    /* Calculate initial and final directed and indirected sector indices 
+    after appending cnt bytes. */
+    size_t dir_idx_f, ind_idx_f, dir_idx, ind_idx;
+
+    /* Subtract 1 because indices are 0-indexed (byte 1 is at index 0). */
+    indices_from_offset(data->length + cnt - 1, &dir_idx_f, &ind_idx_f);
+    /* Note that if data->length is 0, dir_idx is 0, which is correct. */
+    indices_from_offset(data->length - 1, &dir_idx, &ind_idx);
+
+    size_t file_sectors = ((ind_idx_f - ind_idx) * NUM_ENTRIES_IN_INDIRECT + 
+        (dir_idx_f - dir_idx));
 
     /* Add number of sectors needed for the growth of the multi-level inode. */
     size_t new_sectors = file_sectors + (ind_idx_f - ind_idx);
@@ -92,19 +99,6 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
     /* Else, we allocate the sectors and fill them into the inode_disk data. */
     size_t num_found = 0;
     
-    /* Allocate temporary buffers to hold the indexed sector data. */
-    block_sector_t *dir = malloc(BLOCK_SECTOR_SIZE);
-    if (dir == NULL) {
-        return false;
-    }
-    block_sector_t *ind = malloc(BLOCK_SECTOR_SIZE);
-    if (ind == NULL) {
-        free(dir);
-        return false;
-    }
-    cache_read(data->double_indirect, ind, BLOCK_SECTOR_SIZE, 0);
-    cache_read(ind[ind_idx], dir, BLOCK_SECTOR_SIZE, 0);
-
     // TODO: perhaps don't statically allocate all sectors initially?
     block_sector_t available_sectors[new_sectors];
 
@@ -122,26 +116,46 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
         }
     }
 
-    /* Perists our changes in free_map to its file. */
-    if (free_map_file != NULL && !bitmap_write(free_map, free_map_file)) {
-        /* If failed, free temporary buffers and undo changes to the free_map. */
-        free(dir);
-        free(ind);
+    /* If we were not able to allocate all blocks that we needed or we fail 
+    to persist our changes in free_map to its file, undo our changes and 
+    return false. */
+    if ((num_found != new_sectors) || (free_map_file != NULL && !bitmap_write(free_map, free_map_file))) {
         for (i = 0; i < num_found; i++) {
             bitmap_reset(free_map, available_sectors[i]);
         }
-        ASSERT(0); // TODO: remove? we should never have reached here anyways
+        ASSERT(0); // TODO: remove later, but we should really never get here
         return false;
     }
 
-    /* Make sure that we were able to allocate all blocks that we needed to. */
-    ASSERT(num_found == new_sectors);
+    /* Allocate temporary buffers to hold the indexed sector data. */
+    block_sector_t *dir = malloc(BLOCK_SECTOR_SIZE);
+    if (dir == NULL) {
+        return false;
+    }
+    block_sector_t *ind = malloc(BLOCK_SECTOR_SIZE);
+    if (ind == NULL) {
+        free(dir);
+        return false;
+    }
+
+    /* Allocate temporary buffer to hold zeros for appended file data. */
+    void *zeros = calloc(1, BLOCK_SECTOR_SIZE);
+    if (zeros == NULL) {
+        free(dir);
+        free(ind);
+        return false;
+    }
+
+    cache_read(data->double_indirect, ind, BLOCK_SECTOR_SIZE, 0);
+    cache_read(ind[ind_idx], dir, BLOCK_SECTOR_SIZE, 0);
 
     /* Write all new entries into the indirected sectors. */
     i = 0;
     while (i < new_sectors) {
         dir_idx++;
 
+        /* If we have consumed of all the current indirected sector, allocate 
+        and start using a new one. */
         if (dir_idx == NUM_ENTRIES_IN_INDIRECT) {
             cache_write(ind[ind_idx], dir, BLOCK_SECTOR_SIZE, 0);
             dir_idx = 0;
@@ -151,7 +165,11 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
             memset(dir, 0, BLOCK_SECTOR_SIZE);
         }
 
+        /* Give the file a new sector for use. */
         dir[dir_idx] = available_sectors[i];
+
+        /* Set newly appended sector to be all zeros. */
+        cache_write(available_sectors[i], zeros, BLOCK_SECTOR_SIZE, 0);
 
         i++;
     }
@@ -161,6 +179,7 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
     cache_write(data->double_indirect, ind, BLOCK_SECTOR_SIZE, 0);
     free(dir);
     free(ind);
+    free(zeros);
 
     /* Set the new file length accordingly. */
     data->length += cnt;
