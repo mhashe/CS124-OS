@@ -34,14 +34,16 @@ bool free_map_allocate(size_t cnt, block_sector_t *sectorp) {
     return sector != BITMAP_ERROR;
 }
 
-block_sector_t free_map_allocate_single(void) {
+bool free_map_allocate_single(block_sector_t *sectorp) {
     block_sector_t sector = bitmap_scan_and_flip(free_map, 0, 1, false);
     if (sector != BITMAP_ERROR && free_map_file != NULL &&
         !bitmap_write(free_map, free_map_file)) {
         bitmap_reset(free_map, sector);
         sector = BITMAP_ERROR;
     }
-    return sector;
+    if (sector != BITMAP_ERROR)
+        *sectorp = sector;
+    return sector != BITMAP_ERROR;
 }
 
 /*! Makes CNT sectors starting at SECTOR available for use. */
