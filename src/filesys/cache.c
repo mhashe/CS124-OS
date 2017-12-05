@@ -32,8 +32,9 @@ void cache_init(void) {
 
         sector_cache[i].mode = UNLOCK;
 
-        sector_cache[i].reader_count = 0;
-        sector_cache[i].writer_count = 0;
+        sector_cache[i].reader_active = 0;
+        sector_cache[i].reader_waiting = 0;
+        sector_cache[i].writer_waiting = 0;
     }
 }
 
@@ -43,7 +44,7 @@ void cache_init(void) {
 
 //     while (1) {
 //         /* Some other reader got the lock. */
-//         if (cache->mode == READ_LOCKED && cache->writer_count == 0) {
+//         if (cache->mode == READ_LOCKED && cache->writer_waiting == 0) {
 //             break;
 //         }
 
@@ -74,9 +75,7 @@ static struct cache_entry * sector_to_cache(block_sector_t sector) {
 }
 
 /* Reads cache data at "cache" into buffer. */
-void cache_read(struct block * fs_device, block_sector_t sector, void * buffer) {
-    /* Bool; we only need to load data if it isn't already loaded. */
-    bool loaded = false;
+void cache_read(struct block * fs_device UNUSED, block_sector_t sector, void * buffer) {
     struct cache_entry *cache = NULL;
 
     while (1) {
@@ -88,10 +87,8 @@ void cache_read(struct block * fs_device, block_sector_t sector, void * buffer) 
         if (!cache) {
             lock_acquire(&global_fs_lock);
             cache = get_free_cache(sector, READ_LOCK);
-            loaded = true;
         } else {
             lock_acquire(&cache->cache_lock);
-            loaded = false;
         }
 
         /* Should've switched locks. */
@@ -106,17 +103,45 @@ void cache_read(struct block * fs_device, block_sector_t sector, void * buffer) 
             /* We not gud. */
             lock_release(&cache->cache_lock);
         }
-
-        /* If data is not in the cache, get free cache entry and load into it. */
     }
 
     /* Really shouldn't be null. */
     ASSERT(cache);
 
-    if (loaded) {
-        block_read(fs_device, sector, cache->data); 
+    if (cache->mode == UNLOCK) {
+        /* Don't need to wait. */
+        cache->mode = READ_LOCK;
+    } else if (cache->mode == READ_LOCK && cache->writer_waiting == 0) {
+        /* Just keep reading. */
+    } else {
+        /* Need to wait; either
+           1) WRITE_LOCK'ed, let the writer finish.
+           2) Writer waiting, let him get a turn. */
+        cache->reader_waiting++;
+        cond_wait(&cache->readers, &cache->cache_lock);
+        cache->reader_waiting--;
+
+        /* Passing around the lock between waiters shouldn't change the 
+           cache sector. */
+        ASSERT(cache->sector == (int) sector);
     }
+
+    /* Begin reading. */
+    cache->reader_active++;
+
+    ASSERT(cache->mode == READ_LOCK);
     memcpy(buffer, (void *) &cache->data, (size_t) BLOCK_SECTOR_SIZE);
+    cache->reader_active--;
+
+    /* If we're done reading, reset state. */
+    if (cache->reader_active == 0 && cache->writer_waiting > 0) {
+        /* No more readers, but there is a writer. */
+        cache->mode = WRITE_LOCK;
+        cond_signal(&cache->writers, &cache->cache_lock);
+    } else if (cache->reader_active == 0 && cache->writer_waiting == 0) {
+        /* Just set to unlock. */
+        cache->mode = UNLOCK;
+    } /* else: More readers, let them take care of cleanup. */
 
     /* We done, we release. */
     lock_release(&cache->cache_lock);
@@ -126,8 +151,10 @@ void cache_read(struct block * fs_device, block_sector_t sector, void * buffer) 
    Write sector SECTOR to CACHE from BUFFER, which must contain
    BLOCK_SECTOR_SIZE bytes.*/
 void cache_write(block_sector_t sector, const void * buffer) {
-    /* Bool; we only need to load data if it isn't already loaded. */
     struct cache_entry *cache = NULL;
+    // TODO don't need to read from disk when we load from disk because we
+    // necessarily overwrite the whole sector
+
 
     while (1) {
         /* Acquire global lock and cache entry. */
@@ -154,14 +181,37 @@ void cache_write(block_sector_t sector, const void * buffer) {
             /* We not gud. */
             lock_release(&cache->cache_lock);
         }
-
-        /* If data is not in the cache, get free cache entry and load into it. */
     }
 
     /* Really shouldn't be null. */
     ASSERT(cache);
 
+    if (cache->mode == UNLOCK) {
+        cache->mode = WRITE_LOCK;
+    } else {
+        /* We need to wait - signal this to other threads with writer count. */
+        cache->writer_waiting++;
+        cond_wait(&cache->writers, &cache->cache_lock);
+        cache->writer_waiting--;
+    }
+
+    ASSERT(cache->mode == WRITE_LOCK);
+    ASSERT(cache->reader_active == 0);
+
     memcpy((void *) &cache->data, buffer, (size_t) BLOCK_SECTOR_SIZE);
+
+    /* Once we're done, signal the next threads. */
+    if (cache->reader_waiting > 0) {
+        /* Grant file to readers.*/
+        cache->mode = READ_LOCK;
+        cond_broadcast(&cache->readers, &cache->cache_lock);
+    } else if (cache->reader_waiting == 0 && cache->writer_waiting > 0) {
+        /* Signal some writer. */
+        cond_signal(&cache->writers, &cache->cache_lock);
+    } else {
+        /* No one waiting. */
+        cache->mode = UNLOCK;
+    }
 
     /* We done, we release. */
     lock_release(&cache->cache_lock);
@@ -177,15 +227,18 @@ static struct cache_entry *get_free_cache(block_sector_t sector, enum lock_mode 
             /* If this is actually free, no one holds this lock. */
             ASSERT(lock_try_acquire(&sector_cache[i].cache_lock));
             ASSERT(sector_cache[i].mode == UNLOCK);
-            ASSERT(sector_cache[i].reader_count == 0);
-            ASSERT(sector_cache[i].writer_count == 0);
+            ASSERT(sector_cache[i].reader_active == 0);
+            ASSERT(sector_cache[i].writer_waiting == 0);
 
-            /* Lock is acquire, mark is as being r/w. */
-            sector_cache[i].mode = mode;
+            /* Lock is acquired, mark is as being r/w. */
+            // sector_cache[i].mode = mode;
 
             /* Relinquish control of cache table. */
             lock_release(&global_fs_lock);
+
+            /* Read in new memory. */
             memset(&sector_cache[i].data, 0, BLOCK_SECTOR_SIZE);
+            block_read(fs_device, sector, &sector_cache[i].data); 
 
             return &sector_cache[i];
         }
@@ -224,7 +277,6 @@ static struct cache_entry *cache_evict(block_sector_t sector, enum lock_mode mod
         lock_release(&cache->cache_lock);
         lock_acquire(&loaded_cache->cache_lock);
 
-        block_write(fs_device, loaded_cache->sector, &loaded_cache->data);
         return loaded_cache;
     } else {
         /* Keep track of old sector, for writing to disk. */
@@ -240,8 +292,10 @@ static struct cache_entry *cache_evict(block_sector_t sector, enum lock_mode mod
            will block until we release the lock later. */
         lock_release(&global_fs_lock);
 
+        /* Read in new memory, write out old. */
         block_write(fs_device, old_sector, &cache->data);
         memset(&cache->data, 0, BLOCK_SECTOR_SIZE);
+        block_read(fs_device, sector, cache->data); 
         return cache;
     }
 }

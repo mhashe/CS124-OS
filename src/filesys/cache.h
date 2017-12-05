@@ -34,8 +34,11 @@ struct cache_entry {
     struct condition readers;
     struct condition writers;
 
-    uint8_t reader_count;
-    uint8_t writer_count;
+    /* Count of waiting processes. */
+    uint8_t reader_active; /* Threads currently reading. */
+    uint8_t reader_waiting; /* Threads waiting to read. */
+    /* Writer_active should only ever be one. */
+    uint8_t writer_waiting; /* Threads waiting to write. */
 
     enum lock_mode mode;
 };
