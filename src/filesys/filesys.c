@@ -7,6 +7,7 @@
 #include "filesys/file.h"
 #include "filesys/free-map.h"
 #include "filesys/inode.h"
+#include "devices/block.h"
 
 /*! Partition that contains the file system. */
 struct block *fs_device;
@@ -81,9 +82,9 @@ bool filesys_remove(const char *name) {
 static void do_format(void) {
     printf("Formatting file system...");
     free_map_create();
-    if (!dir_create(ROOT_DIR_SECTOR, 16)) // TODO: change to expand beyond initial limit of 16
+    // TODO: block_size(fs_device) is an overestimate b/c we are always using indirection!
+    if (!dir_create(ROOT_DIR_SECTOR, block_size(fs_device)))
         PANIC("root directory creation failed");
-    // TODO: create structures for multilevel indirection
     free_map_close();
     printf("done.\n");
 }
