@@ -44,8 +44,8 @@ struct cache_entry {
     enum lock_mode mode;
 };
 
-void cache_read(block_sector_t sector, void * buffer);
-void cache_write(block_sector_t sector, const void * buffer);
+void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset);
+void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t offset);
 
 #endif /* vm/cache.h */
 

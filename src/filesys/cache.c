@@ -64,7 +64,8 @@ static struct cache_entry * sector_to_cache(block_sector_t sector) {
 }
 
 /* Reads cache data at "cache" into buffer. */
-void cache_read(block_sector_t sector, void * buffer) {
+void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) {
+    ASSERT(size + offset <= BLOCK_SECTOR_SIZE);
     struct cache_entry *cache = NULL;
 
     /* Looping is done to avoid situations where we obtain a cache,
@@ -126,7 +127,7 @@ void cache_read(block_sector_t sector, void * buffer) {
     ASSERT(cache->mode == READ_LOCK);
 
     /* Carry out actual read. */
-    memcpy(buffer, (void *) &cache->data, (size_t) BLOCK_SECTOR_SIZE);
+    memcpy(buffer, (void *) (&cache->data) + offset, (size_t) size);
     cache->access = true;
     cache->reader_active--;
 
@@ -147,7 +148,8 @@ void cache_read(block_sector_t sector, void * buffer) {
 /* Reads from buffer into cache data at "cache". 
    Write sector SECTOR to CACHE from BUFFER, which must contain
    BLOCK_SECTOR_SIZE bytes.*/
-void cache_write(block_sector_t sector, const void * buffer) {
+void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t offset) {
+    ASSERT(size + offset <= BLOCK_SECTOR_SIZE);
     struct cache_entry *cache = NULL;
     // TODO don't need to read from disk when we load from disk because we
     // necessarily overwrite the whole sector
@@ -195,7 +197,7 @@ void cache_write(block_sector_t sector, const void * buffer) {
     ASSERT(cache->reader_active == 0);
 
     /* Carry out actual write operation. */
-    memcpy((void *) &cache->data, buffer, (size_t) BLOCK_SECTOR_SIZE);
+    memcpy((void *) &cache->data + offset, buffer, (size_t) size);
     cache->access = true;
     cache->dirty = true;
 
