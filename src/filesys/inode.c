@@ -92,6 +92,7 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
     /* Else, we allocate the sectors and fill them into the inode_disk data. */
     size_t num_found = 0;
     
+    /* Allocate temporary buffers to hold the indexed sector data. */
     block_sector_t *dir = malloc(BLOCK_SECTOR_SIZE);
     if (dir == NULL) {
         return false;
@@ -107,6 +108,7 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
     // TODO: perhaps don't statically allocate all sectors initially?
     block_sector_t available_sectors[new_sectors];
 
+    /* Find the sectors we need for allocation and save them in an array. */
     for (i = 0; i < num_sectors; i++) {
          /* We found a sector that is free, so give it to the inode. */
         if (!bitmap_test(free_map, i)) {
