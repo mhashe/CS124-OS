@@ -1,12 +1,13 @@
 #include "filesys/free-map.h"
 #include <bitmap.h>
 #include <debug.h>
+#include <string.h>
 #include "filesys/file.h"
 #include "filesys/filesys.h"
 #include "filesys/inode.h"
+#include "threads/malloc.h"
 
 static struct file *free_map_file;   /*!< Free map file. */
-static struct bitmap *free_map;      /*!< Free map, one bit per sector. */
 
 /*! Initializes the free map. */
 void free_map_init(void) {
@@ -21,6 +22,7 @@ void free_map_init(void) {
     into *SECTORP.
     Returns true if successful, false if not enough consecutive sectors were
     available or if the free_map file could not be written. */
+// TOOD: remove all calls to this function
 bool free_map_allocate(size_t cnt, block_sector_t *sectorp) {
     block_sector_t sector = bitmap_scan_and_flip(free_map, 0, cnt, false);
     if (sector != BITMAP_ERROR && free_map_file != NULL &&

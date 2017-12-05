@@ -6,10 +6,7 @@
 #include "devices/block.h"
 
 /* Number of direct, indirect, and double indirect inodes. */
-#define NUM_DIRECT 100
-#define NUM_INDIRECT 20
-#define NUM_DOUBLE_INDIRECT 1 // only one is ever needed
-
+#define NUM_ENTRIES_IN_INDIRECT (BLOCK_SECTOR_SIZE / 4)
 
 struct bitmap;
 

@@ -7,6 +7,7 @@
 #include "filesys/cache.h"
 #include "filesys/free-map.h"
 #include "threads/malloc.h"
+#include <bitmap.h>
 
 #include <stdio.h>
 
@@ -16,19 +17,16 @@
 /*! On-disk inode.
     Must be exactly BLOCK_SECTOR_SIZE bytes long. */
 struct inode_disk {
-    // TODO: delete start
-    block_sector_t start;               /*!< First data sector. */
+    block_sector_t start; // TODO: delete
     off_t length;                       /*!< File size in bytes. */
 
     // TODO: add multilevel indirection details
-    block_sector_t direct[NUM_DIRECT];
-    block_sector_t indirect[NUM_INDIRECT];
-    block_sector_t double_indirect[NUM_DOUBLE_INDIRECT];
+    block_sector_t double_indirect;
 
     unsigned magic;                     /*!< Magic number. */
     // TODO: we should actually make use of this number by asserting it in 
     // different places
-    uint32_t unused[4];               /*!< Not used. */
+    uint32_t unused[124];               /*!< Not used. */
 };
 
 /*! Returns the number of sectors to allocate for an inode SIZE
@@ -48,6 +46,11 @@ struct inode {
     // TODO: remove this data attribute and set it to be a pointer to data that is read by the cache (and casted into inode_disk *) from the sector of inode_disk given by inode.sector
 };
 
+
+static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx);
+static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data);
+
+
 /*! Returns the block device sector that contains byte offset POS
     within INODE.
     Returns -1 if INODE does not contain data for a byte at offset
@@ -60,6 +63,95 @@ static block_sector_t byte_to_sector(const struct inode *inode, off_t pos) {
     else
         return -1;
 }
+
+static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx) {
+    *dir_idx = pos / BLOCK_SECTOR_SIZE;
+    *ind_idx = *dir_idx / NUM_ENTRIES_IN_INDIRECT;
+    *dir_idx %= NUM_ENTRIES_IN_INDIRECT;
+}
+
+
+static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
+    // Get correct cnt of inodes we need
+    size_t i;
+    size_t dir_idx_f, ind_idx_f, dir_idx, ind_idx;
+    indices_from_offset(data->length + cnt, &dir_idx_f, &ind_idx_f);
+    indices_from_offset(data->length, &dir_idx, &ind_idx);
+
+    size_t file_sectors = (ind_idx_f - ind_idx) * NUM_ENTRIES_IN_INDIRECT + dir_idx;
+    size_t new_sectors = file_sectors + (ind_idx_f - ind_idx);
+
+    /* If that are not available free sectors for allocation, return false. */
+    size_t num_sectors = bitmap_size(free_map);
+    if (bitmap_count(free_map, 0, num_sectors, false) < new_sectors) {
+        return false;
+    }
+    
+    /* Else, we allocate the sectors and fill them into the inode_disk data. */
+    size_t num_found = 0;
+    
+    block_sector_t *dir = malloc(BLOCK_SECTOR_SIZE);
+    if (dir == NULL) {
+        return false;
+    }
+    block_sector_t *ind = malloc(BLOCK_SECTOR_SIZE);
+    if (ind == NULL) {
+        free(dir);
+        return false;
+    }
+    cache_read(data->double_indirect, ind);
+    cache_read(ind[ind_idx], dir);
+
+    // TODO: perhaps don't statically allocate all sectors initially?
+    block_sector_t available_sectors[new_sectors];
+
+    for (i = 0; i < num_sectors; i++) {
+         /* We found a sector that is free, so give it to the inode. */
+        if (!bitmap_test(free_map, i)) {
+            bitmap_mark(free_map, i);
+
+            available_sectors[num_found] = i;
+            num_found++;
+            if (num_found == new_sectors) {
+                break;
+            }
+        }
+    }
+
+    /* Make sure that we were able to allocate all blocks that we needed to. */
+    ASSERT(num_found == new_sectors);
+
+    /* Write all new entries into the indirected sectors. */
+    i = 0;
+    while (i < new_sectors) {
+        dir_idx++;
+
+        if (dir_idx == NUM_ENTRIES_IN_INDIRECT) {
+            cache_write(ind[ind_idx], dir);
+            ind_idx++;
+            dir_idx = 0;
+            ind[ind_idx] = available_sectors[i];
+            i++;
+            memset(ind, 0, BLOCK_SECTOR_SIZE);
+        }
+
+        dir[dir_idx] = available_sectors[i];
+
+        i++;
+    }
+
+    /* Finish persisting to disk our changes and free temporary buffers. */
+    cache_write(ind[ind_idx], dir);
+    cache_write(data->double_indirect, ind);
+    free(dir);
+    free(ind);
+
+    /* Set the new file length accordingly. */
+    data->length += cnt;
+
+    return true;
+}
+
 
 /*! List of open inodes, so that opening a single inode twice
     returns the same `struct inode'. */
@@ -91,7 +183,7 @@ bool inode_create(block_sector_t sector, off_t length) {
         disk_inode->length = length;
         disk_inode->magic = INODE_MAGIC;
 
-        // TODO: initialize multilevel indirection details
+        /* Initialize multilevel indirection details. */
 
         if (free_map_allocate(sectors, &disk_inode->start)) {
             cache_write(sector, disk_inode, BLOCK_SECTOR_SIZE, 0);

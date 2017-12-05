@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include "devices/block.h"
 
+struct bitmap *free_map;      /*!< Free map, one bit per sector. */
+
 void free_map_init(void);
 void free_map_read(void);
 void free_map_create(void);
