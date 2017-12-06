@@ -55,6 +55,16 @@ static void   munmap(struct intr_frame *f);
 #endif
 
 
+/* Handlers for Project 6. */
+#ifdef FILESYS 
+static void    chdir(struct intr_frame *f);
+static void    mkdir(struct intr_frame *f);
+static void  readdir(struct intr_frame *f);
+static void    isdir(struct intr_frame *f);
+static void  inumber(struct intr_frame *f);
+#endif
+
+
 /* Max of two numbers. */
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 
@@ -171,6 +181,15 @@ static void syscall_handler(struct intr_frame *f) {
         /* Syscalls for Project 5. */
         case SYS_MMAP :     mmap(f);     break;     /* 13 */
         case SYS_MUNMAP :   munmap(f);   break;     /* 14 */
+#endif
+
+#ifdef FILESYS
+        /* Syscalls for Project 6. */
+        case SYS_CHDIR :    chdir(f);    break;     /* 15 */
+        case SYS_MKDIR :    mkdir(f);    break;     /* 16 */
+        case SYS_READDIR :  readdir(f);  break;     /* 17 */
+        case SYS_ISDIR :    isdir(f);    break;     /* 18 */
+        case SYS_ISNUMBER : isnumber(f); break;     /* 19 */
 #endif
 
         /* Invalid syscall. */
@@ -667,3 +686,56 @@ static void munmap(struct intr_frame *f) {
 }
 #endif
 
+
+int inumber(int fd) {
+    return syscall1(SYS_INUMBER, fd);
+}
+                
+#ifdef FILESYS
+/*!< Change the current directory. */
+static void chdir(struct intr_frame *f) {
+    /* Parse arguments. */
+    const char *dir = (const char*) get_arg(f, 1);
+
+    /* Verify arguments. */
+    verify_pointer((uint32_t *) dir);
+
+    // TODO
+}
+
+/*!< Create a directory. */
+static void mkdir(struct intr_frame *f) {
+    /* Parse arguments. */
+    const char *dir = (const char*) get_arg(f, 1);
+
+    /* Verify arguments. */
+    verify_pointer((uint32_t *) dir);
+
+    // TODO
+}
+
+/*!< Reads a directory entry. */
+static void readdir(struct intr_frame *f) {
+    /* Parse arguments. */
+    int fd = get_arg(f, 1);
+    char name = (char) get_arg(f, 2); // TODO : verify that this works
+
+    // TODO
+}
+
+/*!< Tests if a fd represents a directory. */
+static void isdir(struct intr_frame *f) {
+    /* Parse arguments. */
+    int fd = get_arg(f, 1);
+
+    // TODO
+}
+
+/*!< Returns the inode number for a fd. */
+static void inumber(struct intr_frame *f) {
+    /* Parse arguments. */
+    int fd = get_arg(f, 1);
+
+    // TODO
+}
+#endif
