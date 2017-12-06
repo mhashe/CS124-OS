@@ -10,13 +10,15 @@
 #include "devices/timer.h"
 #include "filesys/filesys.h" /* fs_device */
 #include "filesys/off_t.h"
+#include "lib/kernel/list.h"
+#include "threads/malloc.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
 
 struct lock cache_table_lock;
 
 /* Victim. */
-static int victim;
+// static int victim;
 
 /* Cache of data */
 static struct cache_entry sector_cache[CACHE_SIZE];
@@ -26,21 +28,29 @@ static int read_ahead_buffer[CACHE_SIZE];
 volatile int read_ahead_head;
 volatile int read_ahead_tail;
 
+/* LRU cache. Since this should mimic the actual cache, it should
+   only be modified behind the cache_table_lock. */
+static struct list cache_lru;
+
 /* Helper functions. */
 static struct cache_entry *sector_to_cache(block_sector_t sector);
 static struct cache_entry *get_free_cache(block_sector_t sector, bool writing);
 static struct cache_entry *cache_evict(block_sector_t sector, bool writing);
 
+static struct cache_entry *lru_evict(void);
+static void lru_enqueue(block_sector_t sector);
+
 static void read_ahead(void *arg_ UNUSED);
 static void write_behind(void *arg_ UNUSED);
 
 
-
 /* Initialize. */
 void cache_init(void) {
-    victim = 0;
     read_ahead_head = 0;
     read_ahead_tail = 0;
+
+    /* Init cache policy. */
+    list_init(&cache_lru);
 
     lock_init(&cache_table_lock);
 
@@ -68,8 +78,8 @@ void cache_init(void) {
 }
 
 void cache_kernel_thread_init(void) {
-    thread_create("cache-read-ahead",   PRI_DEFAULT, read_ahead, NULL);
-    thread_create("cache-write-behind", PRI_DEFAULT, write_behind, NULL);
+    // thread_create("cache-read-ahead",   PRI_DEFAULT, read_ahead, NULL);
+    // thread_create("cache-write-behind", PRI_DEFAULT, write_behind, NULL);
 }
 
 /* Returns a pointer to the sector's cache entry in the cache. Returns NULL if 
@@ -98,16 +108,23 @@ void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) 
     while (1) {
         /* Acquire global lock and cache entry. */
         lock_acquire(&cache_table_lock);
+        ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
         cache = sector_to_cache(sector);
         lock_release(&cache_table_lock);
 
         if (!cache) {
             /* Sector is not currently in cache- switch it in. */
             lock_acquire(&cache_table_lock);
+            ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
             cache = get_free_cache(sector, false);
         } else {
             /* Lock cache until we finish reading from it. */
             lock_acquire(&cache->cache_entry_lock);
+        }
+
+        /* Verify that we got a cache this time around. */
+        if (!cache) {
+            continue;
         }
 
         /* Should've switched locks. */
@@ -184,14 +201,21 @@ void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t o
     while (1) {
         /* Acquire global lock and cache entry. */
         lock_acquire(&cache_table_lock);
+        ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
         cache = sector_to_cache(sector);
         lock_release(&cache_table_lock);
 
         if (!cache) {
             lock_acquire(&cache_table_lock);
+            ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
             cache = get_free_cache(sector, true);
         } else {
             lock_acquire(&cache->cache_entry_lock);
+        }
+
+        /* Verify that we got a cache this time around. */
+        if (!cache) {
+            continue;
         }
 
         /* Should've switched locks. */
@@ -251,6 +275,7 @@ void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t o
 
 static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
     ASSERT(lock_held_by_current_thread(&cache_table_lock));
+    ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
 
     for (int i = 0; i < CACHE_SIZE; i++) {
         if (sector_cache[i].sector == CACHE_SECTOR_EMPTY) {
@@ -261,6 +286,9 @@ static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
             ASSERT(sector_cache[i].mode == UNLOCK);
             ASSERT(sector_cache[i].reader_active == 0);
             ASSERT(sector_cache[i].writer_waiting == 0);
+
+            /* Keep track of page in LRU queue. */
+            // lru_enqueue(sector);
 
             /* Relinquish control of cache table. */
             lock_release(&cache_table_lock);
@@ -283,17 +311,21 @@ static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
 
 /* Comment */
 static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
-    // TODO: something better
     ASSERT(lock_held_by_current_thread(&cache_table_lock));
+    ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
 
-    /* Choose victim, set for next time. TODO : better policy. */
-    int cur_vic = victim;
-    victim = (victim + 1) % CACHE_SIZE;
-
-    struct cache_entry *cache = &sector_cache[cur_vic];
+    /* Choose victim. */
+    struct cache_entry *cache = lru_evict();
 
     /* Switch locks. */
     lock_release(&cache_table_lock);
+
+    /* It is possible that our cache entry is NULL, i.e. all pages have 
+       been evicted ahead of us. In such case, we return NULL and re-run
+       the while loop. */
+    if (!cache) {
+        return NULL;
+    }
 
     /* For now at least, we just leave all currently waiting threads waiting.
        The idea is that when they wake up at some point, they acquire the lock,
@@ -304,9 +336,15 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
     /* We relock the cache table here to ensure that processes cannot 
        concurrently load the same sector into cache memory twice. */
     lock_acquire(&cache_table_lock);
+    ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
 
     struct cache_entry *loaded_cache = sector_to_cache(sector);
     if (loaded_cache) {
+        /* Cache we were going to use has been removed from queue, and
+           thus should still be paged in. We raise its priority unnecessarily,
+           but that's not a big issue. */
+        // lru_enqueue(cache->sector);
+
         /* If it's already loaded, we only need to lock that cache entry. */
         lock_release(&cache_table_lock);
         lock_release(&cache->cache_entry_lock);
@@ -323,7 +361,9 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
 
         /* Now that everyone knows where the sector will be loaded, we can
            release global. Anyone trying to access this (half-loaded) sector
-           will block until we release the lock later. */
+           will block until we release the lock later. We also mark it in
+           our LRU cache, to keep everything in sync. */
+        // lru_enqueue(sector);
         lock_release(&cache_table_lock);
 
         /* Read in new memory, write out old (if it's dirty). */
@@ -357,7 +397,6 @@ void flush_cache(void) {
             cache->dirty = false;
             lock_release(&cache->cache_entry_lock);
         }
-
     }
 }
 
@@ -374,15 +413,16 @@ static void read_ahead(void *arg_ UNUSED) {
         /* Something to read ahead. */
         int rah = read_ahead_head;
 
-
         /* Acquire global lock and cache entry. */
         lock_acquire(&cache_table_lock);
+        ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
         cache = sector_to_cache(read_ahead_buffer[rah]);
         lock_release(&cache_table_lock);
 
         /* Sector is not currently in cache- switch it in. */
         if (!cache) {
             lock_acquire(&cache_table_lock);
+            ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
             cache = get_free_cache(rah, false);
 
             /* Really shouldn't be null. */
@@ -428,6 +468,103 @@ static void write_behind(void *arg_ UNUSED) {
         i = (i + 1) % CACHE_SIZE;
         cache = NULL;
         timer_msleep(CACHE_KERNEL_SLEEP);
+    }
+}
+
+static void lru_enqueue(block_sector_t sector) {
+    /* Any modification to LRU should be done in lockstep with
+       modification to cache. */
+    ASSERT(lock_held_by_current_thread(&cache_table_lock));
+    ASSERT(list_size(&cache_lru) < CACHE_SIZE);
+
+    /* Keep new entry on LRU queue. */
+    struct lru_entry *new = malloc(sizeof(struct lru_entry));
+    new->sector = sector;
+
+    list_push_back(&cache_lru, &new->elem);
+}
+
+static struct cache_entry *lru_evict(void) {
+    /* Any modification to LRU should be done in lockstep with
+       modification to cache. */
+    ASSERT(lock_held_by_current_thread(&cache_table_lock));
+    ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
+
+    /* Update queue by access time. */
+    // lru_timer_tick();
+
+    /* Get least recently used. It is *possible*, although exceedingly
+       unlikely, that concurrency would cause all pages to be evicted
+       ahead of us without any replacements. In such cases, we return
+       NULL and re-run through our while loop. */
+    if (list_size(&cache_lru) > 0) {
+        struct list_elem *e = list_pop_front(&cache_lru);
+        struct lru_entry *old = list_entry(e, struct lru_entry, elem);
+
+        block_sector_t sector = old->sector;
+        free(old);
+
+        /* Our entry ought to be valid. */
+        ASSERT(sector_to_cache(sector));
+
+        return sector_to_cache(sector); 
+    } else {
+        return NULL;
+    }
+}
+
+void lru_timer_tick(void) {
+   /* Make sure list has actually been initted. */
+    if (cache_lru.head.next == NULL) {
+        /* Not initted, nothing to do. */
+        return;
+    }
+
+    /* If list isn't full, also no reason to updated. */
+    if (list_size(&cache_lru) < CACHE_SIZE) {
+        return;
+    }
+
+    /* If we already hold the lock, we're probably doing something
+       with the cache table. Skip. */
+    if (lock_held_by_current_thread(&cache_table_lock)) {
+        return;
+    }
+
+    /* Only update here if we can acquire the lock; otherwise, potential
+       for weird behavior. Don't actually acquire the lock though, because
+       that's a weird thing to do in an interrupt. */
+    if (lock_try_acquire(&cache_table_lock)) {
+        ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
+
+        /* Move all frames that have been accessed to the back of the queue. */
+        struct list_elem *e;
+        struct list_elem *e_prev;
+
+        /* Start at front of list, go to back. This preserves relative ordering of
+           frames. Reset accessed bit along the way. */
+        e = list_begin(&cache_lru);
+        ASSERT(e);
+        while (e != list_end(&cache_lru)) {
+            struct lru_entry *ce = list_entry(e, struct lru_entry, elem);
+
+            e_prev = e;
+            e = list_next(e);
+            
+            /* If accessed, reset access flag and set to back. */
+            if (sector_to_cache(ce->sector)->access) {
+
+                /* Critical to reset access flag; otherwise, this loop will 
+                   continue inifinitely. */
+                sector_to_cache(ce->sector)->access = false;
+
+                /* Move to back of list. */
+                list_remove(e_prev);
+                list_push_back(&cache_lru, e_prev);
+            }
+        }
+
+        lock_release(&cache_table_lock);
     }
 }
 

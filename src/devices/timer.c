@@ -16,6 +16,10 @@
 #ifdef VM
 #include "vm/clru.h"
 #endif
+
+#ifdef FILESYS
+#include "filesys/cache.h"
+#endif 
   
 #if TIMER_FREQ < 19
 #error 8254 timer requires TIMER_FREQ >= 19
@@ -163,6 +167,11 @@ static void timer_interrupt(struct intr_frame *args UNUSED) {
 #ifdef VM
     /* Handles page replacement updating. */
     clru_timer_tick();
+#endif
+
+#ifdef FILESYS
+     // Handle file system caching. 
+    lru_timer_tick();
 #endif
 
     thread_tick();

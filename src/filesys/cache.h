@@ -8,8 +8,10 @@
 #include <debug.h>
 #include <stdint.h>
 #include <kernel/hash.h>
+
 #include "devices/block.h"
 #include "filesys/off_t.h"
+#include "lib/kernel/list.h"
 #include "threads/synch.h"
 
 
@@ -24,6 +26,12 @@ enum lock_mode {
     UNLOCK,
     READ_LOCK,
     WRITE_LOCK
+};
+
+struct lru_entry {
+    block_sector_t sector;        /* Sector number. */
+
+    struct list_elem elem;  /* Required for list. */
 };
 
 struct cache_entry {
@@ -52,6 +60,7 @@ void cache_kernel_thread_init(void);
 void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset);
 void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t offset);
 void flush_cache(void);
+void lru_timer_tick(void);
 
 #endif /* vm/cache.h */
 
