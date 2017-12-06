@@ -188,7 +188,7 @@ struct thread {
 #endif
 
 #ifdef FILESYS
-    struct dir *cur_directory;
+    block_sector_t cur_directory;
 #endif
     /*! Owned by thread.c. */
     /**@{*/

@@ -27,8 +27,7 @@ struct inode_disk {
     unsigned magic;                     /*!< Magic number. */
     // TODO: we should actually make use of this number by asserting it in 
     // different places
-    uint32_t unused[125];               /*!< Not used. */
-    char unused_chars[3];                     /*!< Not used. */
+    uint32_t unused[124];               /*!< Not used. */
 };
 
 /*! Returns the number of sectors to allocate for an inode SIZE

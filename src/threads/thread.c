@@ -241,7 +241,7 @@ void thread_init(void) {
     initial_thread->tid = allocate_tid();
 
 #ifdef FILESYS
-    initial_thread->cur_directory = dir_open_root();
+    initial_thread->cur_directory = ROOT_DIR_SECTOR;
 #endif
 
     /* The initial thread has a nice and recent_cpu values of zero. */
@@ -413,7 +413,7 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
     }
 
     #ifdef FILESYS
-        initial_thread->cur_directory = dir_reopen(thread_current()->cur_directory);
+        initial_thread->cur_directory = thread_current()->cur_directory;
     #endif
 
     /* Stack frame for kernel_thread(). */
