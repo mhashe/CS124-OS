@@ -18,6 +18,7 @@ bool free_map_allocate(size_t, block_sector_t *);
 void free_map_release(block_sector_t, size_t);
 
 bool free_map_allocate_single(block_sector_t *sectorp);
+void free_map_release_single(block_sector_t sector);
 
 #endif /* filesys/free-map.h */
 

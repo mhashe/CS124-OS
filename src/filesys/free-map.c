@@ -47,6 +47,13 @@ bool free_map_allocate_single(block_sector_t *sectorp) {
     return sector != BITMAP_ERROR;
 }
 
+// TODO: comment
+void free_map_release_single(block_sector_t sector) {
+    ASSERT(bitmap_test(free_map, sector));
+    bitmap_reset(free_map, sector);
+    bitmap_write(free_map, free_map_file);
+}
+
 /*! Makes CNT sectors starting at SECTOR available for use. */
 void free_map_release(block_sector_t sector, size_t cnt) {
     ASSERT(bitmap_all(free_map, sector, cnt));
