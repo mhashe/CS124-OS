@@ -17,9 +17,6 @@
 
 struct lock cache_table_lock;
 
-/* Victim. */
-// static int victim;
-
 /* Cache of data */
 static struct cache_entry sector_cache[CACHE_SIZE];
 
@@ -39,6 +36,7 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing);
 
 static struct cache_entry *lru_evict(void);
 static void lru_enqueue(block_sector_t sector);
+static void lru_update(void);
 
 static void read_ahead(void *arg_ UNUSED);
 static void write_behind(void *arg_ UNUSED);
@@ -288,7 +286,7 @@ static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
             ASSERT(sector_cache[i].writer_waiting == 0);
 
             /* Keep track of page in LRU queue. */
-            // lru_enqueue(sector);
+            lru_enqueue(sector);
 
             /* Relinquish control of cache table. */
             lock_release(&cache_table_lock);
@@ -343,7 +341,7 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
         /* Cache we were going to use has been removed from queue, and
            thus should still be paged in. We raise its priority unnecessarily,
            but that's not a big issue. */
-        // lru_enqueue(cache->sector);
+        lru_enqueue(cache->sector);
 
         /* If it's already loaded, we only need to lock that cache entry. */
         lock_release(&cache_table_lock);
@@ -363,7 +361,7 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
            release global. Anyone trying to access this (half-loaded) sector
            will block until we release the lock later. We also mark it in
            our LRU cache, to keep everything in sync. */
-        // lru_enqueue(sector);
+        lru_enqueue(sector);
         lock_release(&cache_table_lock);
 
         /* Read in new memory, write out old (if it's dirty). */
@@ -491,7 +489,7 @@ static struct cache_entry *lru_evict(void) {
     ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
 
     /* Update queue by access time. */
-    // lru_timer_tick();
+    lru_update();
 
     /* Get least recently used. It is *possible*, although exceedingly
        unlikely, that concurrency would cause all pages to be evicted
@@ -513,7 +511,7 @@ static struct cache_entry *lru_evict(void) {
     }
 }
 
-void lru_timer_tick(void) {
+static void lru_update(void) {
    /* Make sure list has actually been initted. */
     if (cache_lru.head.next == NULL) {
         /* Not initted, nothing to do. */
