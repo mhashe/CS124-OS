@@ -189,7 +189,7 @@ static void syscall_handler(struct intr_frame *f) {
         case SYS_MKDIR :    mkdir(f);    break;     /* 16 */
         case SYS_READDIR :  readdir(f);  break;     /* 17 */
         case SYS_ISDIR :    isdir(f);    break;     /* 18 */
-        case SYS_ISNUMBER : isnumber(f); break;     /* 19 */
+        case SYS_INUMBER :  inumber(f);  break;     /* 19 */
 #endif
 
         /* Invalid syscall. */
@@ -687,10 +687,6 @@ static void munmap(struct intr_frame *f) {
 #endif
 
 
-int inumber(int fd) {
-    return syscall1(SYS_INUMBER, fd);
-}
-                
 #ifdef FILESYS
 /*!< Change the current directory. */
 static void chdir(struct intr_frame *f) {
@@ -701,6 +697,7 @@ static void chdir(struct intr_frame *f) {
     verify_pointer((uint32_t *) dir);
 
     // TODO
+    (void) dir;
 }
 
 /*!< Create a directory. */
@@ -712,6 +709,7 @@ static void mkdir(struct intr_frame *f) {
     verify_pointer((uint32_t *) dir);
 
     // TODO
+    (void) dir;
 }
 
 /*!< Reads a directory entry. */
@@ -721,6 +719,8 @@ static void readdir(struct intr_frame *f) {
     char name = (char) get_arg(f, 2); // TODO : verify that this works
 
     // TODO
+    (void) fd;
+    (void) name;
 }
 
 /*!< Tests if a fd represents a directory. */
@@ -729,6 +729,7 @@ static void isdir(struct intr_frame *f) {
     int fd = get_arg(f, 1);
 
     // TODO
+    (void) fd;
 }
 
 /*!< Returns the inode number for a fd. */
@@ -737,5 +738,7 @@ static void inumber(struct intr_frame *f) {
     int fd = get_arg(f, 1);
 
     // TODO
+    (void) fd;
 }
 #endif
+
