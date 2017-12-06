@@ -3,11 +3,12 @@
 #include <debug.h>
 #include <round.h>
 #include <string.h>
+#include <bitmap.h>
 #include "filesys/filesys.h"
 #include "filesys/cache.h"
 #include "filesys/free-map.h"
 #include "threads/malloc.h"
-#include <bitmap.h>
+#include "threads/synch.h"
 
 #include <stdio.h>
 
@@ -17,7 +18,7 @@
 /*! On-disk inode.
     Must be exactly BLOCK_SECTOR_SIZE bytes long. */
 struct inode_disk {
-    off_t length;                       /*!< File size in bytes. */
+    volatile off_t length;                       /*!< File size in bytes. */
 
     /* Multilevel indirection. */
     block_sector_t double_indirect;
@@ -41,6 +42,7 @@ struct inode {
     int open_cnt;                       /*!< Number of openers. */
     bool removed;                       /*!< True if deleted, false otherwise. */
     int deny_write_cnt;                 /*!< 0: writes ok, >0: deny writes. */
+    struct lock extension_lock;         /*!< Lock to extend file. */
     struct inode_disk data;             /*!< Inode content. */
     // TODO: remove this data attribute and set it to be a pointer to data that is read by the cache (and casted into inode_disk *) from the sector of inode_disk given by inode.sector ... Apparently this is already done? Why does lecture say we can remove this then? or can we?
 };
@@ -377,6 +379,7 @@ struct inode * inode_open(block_sector_t sector) {
     inode->open_cnt = 1;
     inode->deny_write_cnt = 0;
     inode->removed = false;
+    lock_init(&inode->extension_lock);
     cache_read(inode->sector, &inode->data, BLOCK_SECTOR_SIZE, 0);
     return inode;
 }
@@ -407,6 +410,9 @@ void inode_close(struct inode *inode) {
         /* Remove from inode list and release lock. */
         list_remove(&inode->elem);
  
+        /* Persist changes to inode to disk. */
+        cache_write(inode->sector, &inode->data, BLOCK_SECTOR_SIZE, 0);
+
         /* Deallocate blocks if removed. */
         if (inode->removed) {
             block_sector_t *ind = malloc(BLOCK_SECTOR_SIZE);
@@ -493,17 +499,34 @@ off_t inode_read_at(struct inode *inode, void *buffer_, off_t size, off_t offset
 
 /*! Writes SIZE bytes from BUFFER into INODE, starting at OFFSET.
     Returns the number of bytes actually written, which may be
-    less than SIZE if end of file is reached or an error occurs.
-
-    TODO: (Normally a write at end of file would extend the inode, but
-    growth is not yet implemented.) */
-off_t inode_write_at(struct inode *inode, const void *buffer_, off_t size, off_t offset) {
+    less than SIZE if end of file is reached or an error occurs. */
+off_t inode_write_at(struct inode *inode, const void *buffer_, off_t size, 
+        off_t offset) {
     const uint8_t *buffer = buffer_;
     off_t bytes_written = 0;
     // uint8_t *bounce = NULL;
 
     if (inode->deny_write_cnt)
         return 0;
+
+    /* If we are writing beyond the file’s length (in sectors), we might be
+    extending the file. */
+    off_t write_position = offset + size;
+
+   /* Note that this condition doesn’t guarentee a new sector is needed,
+    but in case it isn’t inode_extend_file(). */
+    if (write_position >= inode->data.length) {
+        /* Get the lock and then check again that we are extending. */
+        lock_acquire(&inode->extension_lock);
+
+       if (write_position >= inode->data.length) {
+            /* We are, so extend the file. */
+            inode_alloc_for_append(write_position - inode->data.length,
+                &inode->data);
+            // TODO: rename to inode_extend_file(). also change order of its args?
+        }
+        lock_release(&inode->extension_lock);
+    }
 
     while (size > 0) {
         /* Sector to write, starting byte offset within sector. */
