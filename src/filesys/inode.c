@@ -17,16 +17,15 @@
 /*! On-disk inode.
     Must be exactly BLOCK_SECTOR_SIZE bytes long. */
 struct inode_disk {
-    block_sector_t start; // TODO: delete
     off_t length;                       /*!< File size in bytes. */
 
-    /* Add multilevel indirection. */
+    /* Multilevel indirection. */
     block_sector_t double_indirect;
 
     unsigned magic;                     /*!< Magic number. */
     // TODO: we should actually make use of this number by asserting it in 
     // different places
-    uint32_t unused[124];               /*!< Not used. */
+    uint32_t unused[125];               /*!< Not used. */
 };
 
 /*! Returns the number of sectors to allocate for an inode SIZE
@@ -398,6 +397,7 @@ block_sector_t inode_get_inumber(const struct inode *inode) {
     If this was the last reference to INODE, frees its memory.
     If INODE was also a removed inode, frees its blocks. */
 void inode_close(struct inode *inode) {
+    int i;
     /* Ignore null pointer. */
     if (inode == NULL)
         return;
@@ -409,9 +409,34 @@ void inode_close(struct inode *inode) {
  
         /* Deallocate blocks if removed. */
         if (inode->removed) {
-            free_map_release(inode->sector, 1);
-            free_map_release(inode->data.start,
-                             bytes_to_sectors(inode->data.length)); 
+            block_sector_t *ind = malloc(BLOCK_SECTOR_SIZE);
+            ASSERT(ind); // TODO: do something better than assert?
+            block_sector_t *dir = malloc(BLOCK_SECTOR_SIZE);
+            ASSERT(dir); // TODO: do something better than assert?
+
+            cache_read(inode->data.double_indirect, ind, BLOCK_SECTOR_SIZE, 0);
+            while (*ind) {
+                cache_read(*ind, dir, BLOCK_SECTOR_SIZE, 0);
+                for (i = 0; i < NUM_ENTRIES_IN_INDIRECT; i++) {
+                    if (*(dir + i)) {
+                        break;
+                    }
+                    /* Free the direct (file contents) sector. */
+                    free_map_release_single(*(dir + i));
+                }
+                /* Free the single indirect sector. */
+                free_map_release_single(*ind);
+                if (i != NUM_ENTRIES_IN_INDIRECT) {
+                    break;
+                }
+                ind++;
+            }
+
+            /* Free the double indirect sector. */
+            free_map_release_single(inode->data.double_indirect);
+
+            /* Free inode itself. */
+            free_map_release_single(inode->sector);
         }
 
         free(inode); 

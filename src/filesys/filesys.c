@@ -83,7 +83,6 @@ static void do_format(void) {
     printf("Formatting file system...");
     free_map_create();
     // TODO: block_size(fs_device) is an overestimate b/c we are always using indirection!
-    printf("PAST FREEMAP\n");
     if (!dir_create(ROOT_DIR_SECTOR, block_size(fs_device)))
         PANIC("root directory creation failed");
     free_map_close();
