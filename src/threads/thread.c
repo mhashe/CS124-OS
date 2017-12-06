@@ -23,6 +23,10 @@
 #include "vm/page.h"
 #endif
 
+#ifdef FILESYS
+#include "filesys/filesys.h"
+#endif
+
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 
 /*! Random value for struct thread's `magic' member.
@@ -236,6 +240,10 @@ void thread_init(void) {
     initial_thread->status = THREAD_RUNNING;
     initial_thread->tid = allocate_tid();
 
+#ifdef FILESYS
+    initial_thread->cur_directory = dir_open_root();
+#endif
+
     /* The initial thread has a nice and recent_cpu values of zero. */
     if (thread_mlfqs) {
         initial_thread->nice = NICE_INIT;
@@ -403,6 +411,10 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
         t->recent_cpu = thread_current()->recent_cpu;
         thread_update_priority_in_mlfqs(t, NULL);
     }
+
+    #ifdef FILESYS
+        initial_thread->cur_directory = dir_reopen(thread_current()->cur_directory);
+    #endif
 
     /* Stack frame for kernel_thread(). */
     kf = alloc_frame(t, sizeof *kf);

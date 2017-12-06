@@ -14,6 +14,10 @@
 #include "vm/page.h"
 #include "vaddr.h"
 
+#ifdef FILESYS
+#include "filesys/directory.h"
+#endif
+
 /*! States in a thread's life cycle. */
 enum thread_status {
     THREAD_RUNNING,     /*!< Running thread. */
@@ -183,6 +187,9 @@ struct thread {
     /**@{*/
 #endif
 
+#ifdef FILESYS
+    struct dir *cur_directory;
+#endif
     /*! Owned by thread.c. */
     /**@{*/
     unsigned magic;                     /* Detects stack overflow. */
