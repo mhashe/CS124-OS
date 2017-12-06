@@ -20,7 +20,7 @@ struct inode_disk {
     block_sector_t start; // TODO: delete
     off_t length;                       /*!< File size in bytes. */
 
-    // TODO: add multilevel indirection details
+    /* Add multilevel indirection. */
     block_sector_t double_indirect;
 
     unsigned magic;                     /*!< Magic number. */
@@ -43,7 +43,7 @@ struct inode {
     bool removed;                       /*!< True if deleted, false otherwise. */
     int deny_write_cnt;                 /*!< 0: writes ok, >0: deny writes. */
     struct inode_disk data;             /*!< Inode content. */
-    // TODO: remove this data attribute and set it to be a pointer to data that is read by the cache (and casted into inode_disk *) from the sector of inode_disk given by inode.sector
+    // TODO: remove this data attribute and set it to be a pointer to data that is read by the cache (and casted into inode_disk *) from the sector of inode_disk given by inode.sector ... Apparently this is already done? Why does lecture say we can remove this then? or can we?
 };
 
 
@@ -73,7 +73,6 @@ static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx) {
 
 static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
     /* Get the correct count of sectors we need. */
-    size_t i;
 
     /* Calculate initial and final directed and indirected sector indices 
     after appending cnt bytes. */
@@ -83,7 +82,7 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
     indices_from_offset(data->length + cnt - 1, &dir_idx_f, &ind_idx_f);
     /* Note that if data->length is 0, dir_idx is 0, which is correct. */
     indices_from_offset(data->length - 1, &dir_idx, &ind_idx);
-
+   
     size_t file_sectors = ((ind_idx_f - ind_idx) * NUM_ENTRIES_IN_INDIRECT + 
         (dir_idx_f - dir_idx));
 
@@ -103,6 +102,7 @@ static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
     block_sector_t available_sectors[new_sectors];
 
     /* Find the sectors we need for allocation and save them in an array. */
+    size_t i;
     for (i = 0; i < num_sectors; i++) {
          /* We found a sector that is free, so give it to the inode. */
         if (!bitmap_test(free_map, i)) {

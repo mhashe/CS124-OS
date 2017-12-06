@@ -34,6 +34,7 @@ bool free_map_allocate(size_t cnt, block_sector_t *sectorp) {
     return sector != BITMAP_ERROR;
 }
 
+// TODO: comment
 bool free_map_allocate_single(block_sector_t *sectorp) {
     block_sector_t sector = bitmap_scan_and_flip(free_map, 0, 1, false);
     if (sector != BITMAP_ERROR && free_map_file != NULL &&
@@ -80,9 +81,3 @@ void free_map_create(void) {
     if (!bitmap_write(free_map, free_map_file))
         PANIC("can't write free map");
 }
-
-// TODO: create a free_map_allocate() that doesn't allocate continguous values in the bitmap
-// instead, it finds total number free. if total free are enough, then set each 
-// individually to not free. or just use bitmap_test() all the way.
-// Note: obviously this entire process of allocating is something that needs to 
-// be locked down
