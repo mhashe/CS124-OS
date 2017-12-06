@@ -78,6 +78,7 @@ list_begin (struct list *list)
 struct list_elem *
 list_next (struct list_elem *elem)
 {
+  ASSERT (elem != NULL);
   ASSERT (is_head (elem) || is_interior (elem));
   return elem->next;
 }
@@ -109,6 +110,7 @@ list_rbegin (struct list *list)
 struct list_elem *
 list_prev (struct list_elem *elem)
 {
+  ASSERT (elem != NULL);
   ASSERT (is_interior (elem) || is_tail (elem));
   return elem->prev;
 }
@@ -165,8 +167,9 @@ list_tail (struct list *list)
 void
 list_insert (struct list_elem *before, struct list_elem *elem)
 {
-  ASSERT (is_interior (before) || is_tail (before));
+  ASSERT (before != NULL);
   ASSERT (elem != NULL);
+  ASSERT (is_interior (before) || is_tail (before));
 
   elem->prev = before->prev;
   elem->next = before;
@@ -181,6 +184,9 @@ void
 list_splice (struct list_elem *before,
              struct list_elem *first, struct list_elem *last)
 {
+  ASSERT (before != NULL);
+  ASSERT (first != NULL);
+  ASSERT (last != NULL);
   ASSERT (is_interior (before) || is_tail (before));
   if (first == last)
     return;
@@ -205,6 +211,8 @@ list_splice (struct list_elem *before,
 void
 list_push_front (struct list *list, struct list_elem *elem)
 {
+  ASSERT (list != NULL);
+  ASSERT (elem != NULL);
   list_insert (list_begin (list), elem);
 }
 
@@ -213,6 +221,8 @@ list_push_front (struct list *list, struct list_elem *elem)
 void
 list_push_back (struct list *list, struct list_elem *elem)
 {
+  ASSERT (list != NULL);
+  ASSERT (elem != NULL);
   list_insert (list_end (list), elem);
 }
 
@@ -245,6 +255,7 @@ list_push_back (struct list *list, struct list_elem *elem)
 struct list_elem *
 list_remove (struct list_elem *elem)
 {
+  ASSERT (elem != NULL);
   ASSERT (is_interior (elem));
   elem->prev->next = elem->next;
   elem->next->prev = elem->prev;
@@ -256,6 +267,7 @@ list_remove (struct list_elem *elem)
 struct list_elem *
 list_pop_front (struct list *list)
 {
+  ASSERT (list != NULL);
   struct list_elem *front = list_front (list);
   list_remove (front);
   return front;
@@ -266,6 +278,7 @@ list_pop_front (struct list *list)
 struct list_elem *
 list_pop_back (struct list *list)
 {
+  ASSERT (list != NULL);
   struct list_elem *back = list_back (list);
   list_remove (back);
   return back;
@@ -276,6 +289,7 @@ list_pop_back (struct list *list)
 struct list_elem *
 list_front (struct list *list)
 {
+  ASSERT (list != NULL);
   ASSERT (!list_empty (list));
   return list->head.next;
 }
@@ -285,6 +299,7 @@ list_front (struct list *list)
 struct list_elem *
 list_back (struct list *list)
 {
+  ASSERT (list != NULL);
   ASSERT (!list_empty (list));
   return list->tail.prev;
 }
@@ -294,6 +309,7 @@ list_back (struct list *list)
 size_t
 list_size (struct list *list)
 {
+  ASSERT (list != NULL);
   struct list_elem *e;
   size_t cnt = 0;
 
@@ -306,6 +322,7 @@ list_size (struct list *list)
 bool
 list_empty (struct list *list)
 {
+  ASSERT (list != NULL);
   return list_begin (list) == list_end (list);
 }
 
@@ -313,6 +330,8 @@ list_empty (struct list *list)
 static void
 swap (struct list_elem **a, struct list_elem **b) 
 {
+  ASSERT (a != NULL);
+  ASSERT (b != NULL);
   struct list_elem *t = *a;
   *a = *b;
   *b = t;
@@ -322,6 +341,7 @@ swap (struct list_elem **a, struct list_elem **b)
 void
 list_reverse (struct list *list)
 {
+  ASSERT (list != NULL);
   if (!list_empty (list)) 
     {
       struct list_elem *e;
@@ -339,6 +359,9 @@ bool
 is_sorted (struct list_elem *a, struct list_elem *b,
            list_less_func *less, void *aux)
 {
+  ASSERT (a != NULL);
+  ASSERT (b != NULL);
+  ASSERT (less != NULL);
   if (a != b)
     while ((a = list_next (a)) != b) 
       if (less (a, list_prev (a), aux))
