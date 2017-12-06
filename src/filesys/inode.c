@@ -49,7 +49,7 @@ struct inode {
 
 
 static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx);
-static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data);
+static bool inode_extend_file(struct inode_disk *data, size_t cnt);
 static void print_inode_allocation(struct inode_disk *data);
 
 /*! List of open inodes, so that opening a single inode twice
@@ -66,7 +66,7 @@ static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx) {
 }
 
 
-static bool inode_alloc_for_append(size_t cnt, struct inode_disk *data) {
+static bool inode_extend_file(struct inode_disk *data, size_t cnt) {
     /* Get the correct count of sectors we need. */
 
     /* Calculate initial and final directed and indirected sector indices 
@@ -331,7 +331,7 @@ bool inode_create(block_sector_t sector, off_t length) {
             // print_inode_allocation(disk_inode);
 
             /* Now allocate the space for the file contents (beyond (0, 0)). */
-            if (success && !inode_alloc_for_append(length, disk_inode)) {
+            if (success && !inode_extend_file(disk_inode, length)) {
                 /* If the allocation fails, release sectors used by inode. */
                 free_map_release_single(ind_sector);
                 free_map_release_single(disk_inode->double_indirect);
@@ -521,9 +521,7 @@ off_t inode_write_at(struct inode *inode, const void *buffer_, off_t size,
 
        if (write_position >= inode->data.length) {
             /* We are, so extend the file. */
-            inode_alloc_for_append(write_position - inode->data.length,
-                &inode->data);
-            // TODO: rename to inode_extend_file(). also change order of its args?
+            inode_extend_file(&inode->data, write_position-inode->data.length);
         }
         lock_release(&inode->extension_lock);
     }
