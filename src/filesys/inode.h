@@ -11,7 +11,7 @@
 struct bitmap;
 
 void inode_init(void);
-bool inode_create(block_sector_t, off_t);
+bool inode_create(block_sector_t, off_t, bool);
 struct inode *inode_open(block_sector_t);
 struct inode *inode_reopen(struct inode *);
 block_sector_t inode_get_inumber(const struct inode *);
@@ -22,5 +22,7 @@ off_t inode_write_at(struct inode *, const void *, off_t size, off_t offset);
 void inode_deny_write(struct inode *);
 void inode_allow_write(struct inode *);
 off_t inode_length(const struct inode *);
+
+bool inode_is_directory(struct inode *inode);
 
 #endif /* filesys/inode.h */

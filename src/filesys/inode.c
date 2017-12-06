@@ -19,6 +19,7 @@
     Must be exactly BLOCK_SECTOR_SIZE bytes long. */
 struct inode_disk {
     volatile off_t length;                       /*!< File size in bytes. */
+    bool is_directory;                 /*!< Whether inode represents a directory. */
 
     /* Multilevel indirection. */
     block_sector_t double_indirect;
@@ -27,6 +28,7 @@ struct inode_disk {
     // TODO: we should actually make use of this number by asserting it in 
     // different places
     uint32_t unused[125];               /*!< Not used. */
+    char unused_chars[3];                     /*!< Not used. */
 };
 
 /*! Returns the number of sectors to allocate for an inode SIZE
@@ -57,6 +59,9 @@ static void print_inode_allocation(struct inode_disk *data);
 static struct list open_inodes;
 
 
+bool inode_is_directory(struct inode *inode) {
+    return inode->data.is_directory;
+}
 
 /* TODO: Comment. */
 static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx) {
@@ -279,7 +284,7 @@ static void print_inode_allocation(struct inode_disk *data) {
     device.
     Returns true if successful.
     Returns false if memory or disk allocation fails. */
-bool inode_create(block_sector_t sector, off_t length) {
+bool inode_create(block_sector_t sector, off_t length, bool is_directory) {
     struct inode_disk *disk_inode = NULL;
     bool success = false;
 
@@ -294,6 +299,7 @@ bool inode_create(block_sector_t sector, off_t length) {
     if (disk_inode != NULL) {
         disk_inode->length = 0;
         disk_inode->magic = INODE_MAGIC;
+        disk_inode->is_directory = is_directory;
 
         /* Create multilevel indirection into inode. */
         block_sector_t *zeros = calloc(1, BLOCK_SECTOR_SIZE);
