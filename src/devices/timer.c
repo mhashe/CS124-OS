@@ -169,11 +169,6 @@ static void timer_interrupt(struct intr_frame *args UNUSED) {
     clru_timer_tick();
 #endif
 
-#ifdef FILESYS
-     // Handle file system caching. 
-    lru_timer_tick();
-#endif
-
     thread_tick();
 }
 
