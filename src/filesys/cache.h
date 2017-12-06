@@ -35,7 +35,7 @@ struct lru_entry {
 };
 
 struct cache_entry {
-    int sector;
+    volatile int sector;
     bool access;
     bool dirty;
     char data[BLOCK_SECTOR_SIZE];

@@ -118,6 +118,7 @@ void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) 
         } else {
             /* Lock cache until we finish reading from it. */
             lock_acquire(&cache->cache_entry_lock);
+            // printf("READ LOOP ACQUIRE %d\n", cache - sector_cache);
         }
 
         /* Verify that we got a cache this time around. */
@@ -135,12 +136,14 @@ void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) 
             break;
         } else {
             /* We not gud. */
+            // printf("READ LOOP RELEASE %d\n", cache - sector_cache);
             lock_release(&cache->cache_entry_lock);
         }
     }
 
     /* Really shouldn't be null. */
     ASSERT(cache);
+    // printf("Got cache %d\n", cache-sector_cache);
 
     if (cache->mode == UNLOCK) {
         /* Don't need to wait. */
@@ -184,6 +187,7 @@ void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) 
     } /* else: More readers, let them take care of cleanup. */
 
     /* We done, we release. */
+    // printf("READ RELEASE %d\n", cache - sector_cache);
     lock_release(&cache->cache_entry_lock);
 }
 
@@ -191,6 +195,7 @@ void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) 
    Write sector SECTOR to CACHE from BUFFER, which must contain
    BLOCK_SECTOR_SIZE bytes.*/
 void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t offset) {
+    // printf("CACHE WRITE\n");
     ASSERT(size + offset <= BLOCK_SECTOR_SIZE);
     struct cache_entry *cache = NULL;
     // TODO don't need to read from disk when we load from disk because we
@@ -204,11 +209,15 @@ void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t o
         lock_release(&cache_table_lock);
 
         if (!cache) {
+            // printf("acquire - load cache\n");
             lock_acquire(&cache_table_lock);
             ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
+            // printf("acquire - table lock\n");
             cache = get_free_cache(sector, true);
         } else {
+            // printf("acquire - found cache\n");
             lock_acquire(&cache->cache_entry_lock);
+            // printf("WRITE LOOP ACQUIRE %d\n", cache - sector_cache);
         }
 
         /* Verify that we got a cache this time around. */
@@ -226,12 +235,14 @@ void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t o
             break;
         } else {
             /* We not gud. */
+            // printf("WRITE LOOP RELEASE %d\n", cache - sector_cache);
             lock_release(&cache->cache_entry_lock);
         }
     }
 
     /* Really shouldn't be null. */
     ASSERT(cache);
+    // printf("Got cache %d\n", cache-sector_cache);
 
     if (cache->mode == UNLOCK) {
         cache->mode = WRITE_LOCK;
@@ -244,6 +255,7 @@ void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t o
 
     ASSERT(cache->mode == WRITE_LOCK);
     ASSERT(cache->reader_active == 0);
+    // printf("CACHE WRITING\n");
 
     /* Carry out actual write operation. */
     memcpy((void *) &cache->data + offset, buffer, (size_t) size);
@@ -268,7 +280,9 @@ void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t o
     }
 
     /* We done, we release. */
+    // printf("WRITE RELEASE %d\n", cache - sector_cache);
     lock_release(&cache->cache_entry_lock);
+    // printf("!CACHE WRITE\n");
 }
 
 static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
@@ -277,16 +291,15 @@ static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
 
     for (int i = 0; i < CACHE_SIZE; i++) {
         if (sector_cache[i].sector == CACHE_SECTOR_EMPTY) {
-            sector_cache[i].sector = sector;
-
-            /* If this is actually free, no one holds this lock. */
             ASSERT(lock_try_acquire(&sector_cache[i].cache_entry_lock));
+            /* If this is actually free, no one holds this lock. */
             ASSERT(sector_cache[i].mode == UNLOCK);
             ASSERT(sector_cache[i].reader_active == 0);
             ASSERT(sector_cache[i].writer_waiting == 0);
 
             /* Keep track of page in LRU queue. */
             lru_enqueue(sector);
+            sector_cache[i].sector = sector;
 
             /* Relinquish control of cache table. */
             lock_release(&cache_table_lock);
@@ -299,6 +312,7 @@ static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
                 block_read(fs_device, sector, &sector_cache[i].data); 
             }
 
+            // printf("slot availble %d\n", i);
             return &sector_cache[i];
         }
     }
@@ -309,6 +323,8 @@ static struct cache_entry *get_free_cache(block_sector_t sector, bool writing) {
 
 /* Comment */
 static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
+    // printf("EVICTING\n");
+    // TODO: something better
     ASSERT(lock_held_by_current_thread(&cache_table_lock));
     ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
 
@@ -329,10 +345,12 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
        The idea is that when they wake up at some point, they acquire the lock,
        realize that this is no longer the data that they want, and then
        relinquish it. */
+    // printf("EVICT cache lock, %d\n", cur_vic);
     lock_acquire(&cache->cache_entry_lock);
 
     /* We relock the cache table here to ensure that processes cannot 
        concurrently load the same sector into cache memory twice. */
+    // printf("EVICT table lock\n");
     lock_acquire(&cache_table_lock);
     ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
 
@@ -343,6 +361,8 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
            but that's not a big issue. */
         lru_enqueue(cache->sector);
 
+        // printf("EVICT loaded\n");
+
         /* If it's already loaded, we only need to lock that cache entry. */
         lock_release(&cache_table_lock);
         lock_release(&cache->cache_entry_lock);
@@ -350,6 +370,7 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
 
         return loaded_cache;
     } else {
+        // printf("EVICT lock\n");
         /* Keep track of old sector, for writing to disk. */
         int old_sector = cache->sector;
 
@@ -410,6 +431,7 @@ static void read_ahead(void *arg_ UNUSED) {
 
         /* Something to read ahead. */
         int rah = read_ahead_head;
+        // printf("READ AHEAD %d\n", rah);
 
         /* Acquire global lock and cache entry. */
         lock_acquire(&cache_table_lock);
@@ -425,6 +447,7 @@ static void read_ahead(void *arg_ UNUSED) {
 
             /* Really shouldn't be null. */
             ASSERT(cache);
+            // printf("READ AHEAD got %d\n", cache - sector_cache);
 
             /* Should've switched locks. */
             ASSERT(!lock_held_by_current_thread(&cache_table_lock));
@@ -432,11 +455,13 @@ static void read_ahead(void *arg_ UNUSED) {
             
             /* We done, we release. */
             lock_release(&cache->cache_entry_lock);
+            // printf("READ AHEAD release %d\n", cache - sector_cache);
         }
 
         /* Move to next entry in read ahead buffer. */
         read_ahead_head = (read_ahead_head + 1) % CACHE_SIZE;
         cache = NULL;
+        // printf("READ AHEAD DONE %d\n", rah);
         timer_msleep(CACHE_KERNEL_SLEEP);
     }
 }
@@ -446,25 +471,35 @@ static void write_behind(void *arg_ UNUSED) {
 
     int i = 0;
     while (1) {
+        lock_acquire(&cache_table_lock);
+        // printf("WRITE BEHIND %d\n", i);
         cache = &sector_cache[i];
 
         /* Cache is filled from the front; if we ever hit
            empty entries, everything past that is also empty. */
         if (cache->sector == CACHE_SECTOR_EMPTY) {
             i = 0;
+            lock_release(&cache_table_lock);
+            // printf("WRITE BEHIND DONE %d\n", i);
+            timer_msleep(CACHE_KERNEL_SLEEP);
+            continue;
         }
 
         if (cache->dirty) {
             if (lock_try_acquire(&cache->cache_entry_lock)) {
+                // printf("WRITE BEHIND ACQUIRE %d\n", i);
                 block_write(fs_device, cache->sector, &cache->data);
                 cache->dirty = false;
                 lock_release(&cache->cache_entry_lock);
+                // printf("WRITE BEHIND RELEASE %d\n", i);
             }
         }
 
         /* Move to next entry in cache. */
-        i = (i + 1) % CACHE_SIZE;
         cache = NULL;
+        lock_release(&cache_table_lock);
+        // printf("WRITE BEHIND DONE %d\n", i);
+        i = (i + 1) % CACHE_SIZE;
         timer_msleep(CACHE_KERNEL_SLEEP);
     }
 }
