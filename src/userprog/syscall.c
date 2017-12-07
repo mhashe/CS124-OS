@@ -393,15 +393,17 @@ static void open(struct intr_frame *f) {
         /* Try to open file. */
         struct file* file = filesys_open(file_name);
 
-        struct dir* dir = NULL;
-        struct inode* inode = file_get_inode(file);
-        if (inode_is_directory(inode)) {
-            dir = dir_open(inode);
-        } else {
-            inode_close(inode);
-        }
 
         if (file) {
+            /* Store directory in file_des for readdir. */
+            struct dir* dir = NULL;
+            struct inode* inode = file_get_inode(file);
+            if (inode_is_directory(inode)) {
+                dir = dir_open(inode);
+            } else {
+                inode_close(inode);
+            }
+
             /* File opened! Create a file descriptor, add to list. */
             int fd = 2;
 
