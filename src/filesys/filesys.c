@@ -15,6 +15,8 @@
 struct block *fs_device;
 
 static void do_format(void);
+static bool split_path_parent_name(const char *path, char ** parent_dir_name, 
+                    char ** name, bool is_directory);
 
 /*! Initializes the file system module.
     If FORMAT is true, reformats the file system. */
@@ -38,19 +40,10 @@ void filesys_done(void) {
     free_map_close();
 }
 
-/*! Creates a file named NAME with the given INITIAL_SIZE.  Returns true if
-    successful, false otherwise.  Fails if a file named NAME already exists,
-    or if internal memory allocation fails. */
-bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
-    block_sector_t inode_sector = 0;
-    // printf("FILESYS CREATE! %s\n", path);
-
-    /* Get parent directory and name of file/directory to be created from 
-    path. */
-    char *parent_dir_name;
-    const char *name;
-    
+static bool split_path_parent_name(const char *path, char ** parent_dir_name, 
+                    char ** name, bool is_directory) {
     int end_of_name = strlen(path);
+    int end_of_parent;
 
     if (is_directory) {
         while (*(path + end_of_name) == '/') {
@@ -66,7 +59,7 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
         return false;
     }
 
-    int end_of_parent = end_of_name;
+    end_of_parent = end_of_name;
     while (*(path + end_of_parent) != '/') {
         if (end_of_parent == 0) {
             break;
@@ -74,16 +67,34 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
         end_of_parent--;
     }
 
-    parent_dir_name = malloc(end_of_parent + 1);
-    if (parent_dir_name == NULL) {
+    *parent_dir_name = malloc(end_of_parent + 1);
+    if (*parent_dir_name == NULL) {
         return false;
     }
-    strlcpy(parent_dir_name, path, end_of_parent + 1);
+    strlcpy(*parent_dir_name, path, end_of_parent + 1);
 
     if (end_of_parent == 0) {
-        name = path;
+        *name = (char *) path;
     } else {
-        name = ((char *) path) + end_of_parent + 1;
+        *name = ((char *) path) + end_of_parent + 1;
+    }
+
+    return true;
+}
+
+/*! Creates a file named NAME with the given INITIAL_SIZE.  Returns true if
+    successful, false otherwise.  Fails if a file named NAME already exists,
+    or if internal memory allocation fails. */
+bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
+    block_sector_t inode_sector = 0;
+    // printf("FILESYS CREATE! %s\n", path);
+
+    /* Get parent directory and name of file/directory to be created at  
+    path. */
+    char *parent_dir_name;
+    char *name;
+    if (!split_path_parent_name(path, &parent_dir_name, &name, is_directory)) {
+        return false;
     }
 
     // printf("Parent directory: %s, name: %s\n", parent_dir_name, name);
@@ -175,8 +186,22 @@ struct file * filesys_open(const char *path) {
 /*! Deletes the file named NAME.  Returns true if successful, false on failure.
     Fails if no file named NAME exists, or if an internal memory allocation
     fails. */
-bool filesys_remove(const char *name) {
-    struct dir *dir = dir_open_root();
+bool filesys_remove(const char *path) {
+    /* Get parent directory and name of file/directory to be removed at  
+    path. */
+    char *parent_dir_name;
+    char *name;
+    if (!split_path_parent_name(path, &parent_dir_name, &name, true)) {
+        return false;
+    }
+
+    struct file * file = filesys_open(parent_dir_name);
+    if (file == NULL) {
+        return false;
+    }
+
+    struct dir *dir = dir_open(file_get_inode(file));
+
     bool success = dir != NULL && dir_remove(dir, name);
     dir_close(dir);
 

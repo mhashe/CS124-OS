@@ -709,7 +709,9 @@ static void chdir(struct intr_frame *f) {
     verify_pointer((uint32_t *) dir);
 
     struct file *file = filesys_open(dir);
-    ASSERT(file != NULL);
+    if (file == NULL) {
+        return;
+    }
     struct inode *inode = file_get_inode(file);
     if (inode == NULL) {
         return;
