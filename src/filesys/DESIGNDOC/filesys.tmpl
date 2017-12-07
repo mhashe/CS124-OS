@@ -123,6 +123,20 @@ still allows a max file size equal to that of the disk.
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+struct inode_disk {
+    volatile off_t length;           /*!< File size in bytes. */
+    bool is_directory;               /*!< If inode represents a directory. */
+
+    block_sector_t double_indirect;  /*!< Multilevel indirection. */
+
+    unsigned magic;                  /*!< Magic number. */
+    uint32_t unused[124];            /*!< Not used. */
+};
+
+The "is_directory" field was added to inode_disk to implement subdirectories. 
+It allows filesys functions to navigate the filesystem by knowing if a 
+inode represents a file or a directory.
+
 ---- ALGORITHMS ----
 
 >> B2: Describe your code for traversing a user-specified path.  How
