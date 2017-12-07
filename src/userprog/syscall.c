@@ -334,7 +334,7 @@ static void create(struct intr_frame *f) {
     verify_pointer((uint32_t *) file);
 
     /* Create file, return boolean value. */
-    f->eax = filesys_create(file, initial_size);
+    f->eax = filesys_create(file, initial_size, false);
 }
 
 

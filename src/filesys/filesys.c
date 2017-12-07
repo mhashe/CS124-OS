@@ -9,6 +9,7 @@
 #include "filesys/inode.h"
 #include "devices/block.h"
 #include "threads/thread.h"
+#include "threads/malloc.h"
 
 /*! Partition that contains the file system. */
 struct block *fs_device;
@@ -40,17 +41,78 @@ void filesys_done(void) {
 /*! Creates a file named NAME with the given INITIAL_SIZE.  Returns true if
     successful, false otherwise.  Fails if a file named NAME already exists,
     or if internal memory allocation fails. */
-bool filesys_create(const char *name, off_t initial_size) {
+bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
     block_sector_t inode_sector = 0;
-    struct dir *dir = dir_open_root();
-    bool success = (dir != NULL &&
+    printf("FILESYS CREATE! %s\n", path);
+
+    /* Get parent directory and name of file/directory to be created from 
+    path. */
+    char *parent_dir_name;
+    const char *name;
+    
+    int end_of_name = strlen(path);
+
+    if (is_directory) {
+        while (*(path + end_of_name) == '/') {
+            end_of_name--;
+        }
+    } else {
+        if (*(path + end_of_name) == '/') {
+            return false;
+        }
+    }
+
+    if (end_of_name == 0) {
+        return false;
+    }
+
+    int end_of_parent = end_of_name;
+    while (*(path + end_of_parent) != '/') {
+        if (end_of_parent == 0) {
+            break;
+        }
+        end_of_parent--;
+    }
+
+    parent_dir_name = malloc(end_of_parent + 1);
+    if (parent_dir_name == NULL) {
+        return false;
+    }
+    strlcpy(parent_dir_name, path, end_of_parent + 1);
+
+    if (end_of_parent == 0) {
+        name = path;
+    } else {
+        name = ((char *) path) + end_of_parent + 1;
+    }
+
+    printf("Parent directory: %s, name: %s\n", parent_dir_name, name);
+
+    /* Get file corresponding to parent directory. */
+    struct file *parent_dir_file = filesys_open((const char *) parent_dir_name);
+    free(parent_dir_name);
+
+    if (parent_dir_file == NULL) {
+        return false;
+    }
+
+    /* Get directory struct corresponding to parent directory. */
+    struct dir * parent_dir = dir_open(file_get_inode(parent_dir_file));
+
+    printf("Creating new thing...\n");
+    /* Create new file/directory inside its parent directory. */
+    bool success = (parent_dir != NULL &&
                     free_map_allocate_single(&inode_sector) &&
-                    inode_create(inode_sector, initial_size, false) &&
-                    dir_add(dir, name, inode_sector));
+                    inode_create(inode_sector, initial_size, is_directory) &&
+                    dir_add(parent_dir, name, inode_sector));
+    printf("Done?...\n");
     if (!success && inode_sector != 0) 
         free_map_release(inode_sector, 1);
-    dir_close(dir);
 
+    printf("Dir close?\n");
+    dir_close(parent_dir);
+
+    printf("!FILESYS CREATE\n");
     return success;
 }
 

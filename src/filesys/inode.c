@@ -290,6 +290,7 @@ static void print_inode_allocation(struct inode_disk *data) {
     Returns true if successful.
     Returns false if memory or disk allocation fails. */
 bool inode_create(block_sector_t sector, off_t length, bool is_directory) {
+    // printf("INODE CREATE\n");
     struct inode_disk *disk_inode = NULL;
     bool success = false;
 
@@ -357,7 +358,6 @@ bool inode_create(block_sector_t sector, off_t length, bool is_directory) {
         free(disk_inode);
     }
     // printf("!! INODE CREATE\n");
-
 
     return success;
 }
