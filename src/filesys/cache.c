@@ -371,6 +371,8 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
             block_write(fs_device, old_sector, &cache->data); 
         }
         cache->dirty = false;
+        cache->access = false;
+        cache->mode = UNLOCK;
         // TODO : review memset policy
         // memset(&cache->data, 0, BLOCK_SECTOR_SIZE);
         if (!writing) {
