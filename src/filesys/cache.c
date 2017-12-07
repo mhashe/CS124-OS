@@ -11,6 +11,7 @@
 #include "filesys/filesys.h" /* fs_device */
 #include "filesys/off_t.h"
 #include "lib/kernel/list.h"
+#include "threads/interrupt.h"
 #include "threads/malloc.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
@@ -97,7 +98,9 @@ static struct cache_entry * sector_to_cache(block_sector_t sector) {
 
 /* Reads cache data at "cache" into buffer. */
 void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) {
+    ASSERT((int) sector != CACHE_SECTOR_EMPTY);
     ASSERT(size + offset <= BLOCK_SECTOR_SIZE);
+
     struct cache_entry *cache = NULL;
 
     /* Looping is done to avoid situations where we obtain a cache,
@@ -192,7 +195,9 @@ void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) 
    Write sector SECTOR to CACHE from BUFFER, which must contain
    BLOCK_SECTOR_SIZE bytes.*/
 void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t offset) {
+    ASSERT((int) sector != CACHE_SECTOR_EMPTY);
     ASSERT(size + offset <= BLOCK_SECTOR_SIZE);
+
     struct cache_entry *cache = NULL;
     // TODO don't need to read from disk when we load from disk because we
     // necessarily overwrite the whole sector
@@ -368,7 +373,11 @@ static struct cache_entry *cache_evict(block_sector_t sector, bool writing) {
 
         /* Read in new memory, write out old (if it's dirty). */
         if (cache->dirty) {
-            block_write(fs_device, old_sector, &cache->data); 
+            /* Occassionally, need to flush stored files when a thread closes. This
+               requires enabling interrupts. */
+            enum intr_level old_level = intr_enable();
+            block_write(fs_device, old_sector, &cache->data);
+            intr_set_level(old_level);
         }
         cache->dirty = false;
         cache->access = false;
@@ -394,10 +403,18 @@ void flush_cache(void) {
         }
 
         if (cache->dirty) {
+            /* Occassionally, need to flush stored files when a thread closes. This
+               requires enabling interrupts. */
+            enum intr_level old_level = intr_enable();
+
+            /* If the filesystem is shutting down, there shouldn't be any
+               threads holding these locks. */
             ASSERT(lock_try_acquire(&cache->cache_entry_lock))
             block_write(fs_device, cache->sector, &cache->data);
             cache->dirty = false;
             lock_release(&cache->cache_entry_lock);
+
+            intr_set_level(old_level);
         }
     }
 }
