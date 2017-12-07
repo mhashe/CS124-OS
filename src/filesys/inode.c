@@ -402,6 +402,7 @@ struct inode * inode_open(block_sector_t sector) {
     inode->removed = false;
     lock_init(&inode->extension_lock);
     cache_read(inode->sector, &inode->data, BLOCK_SECTOR_SIZE, 0);
+    ASSERT(inode->data.magic == INODE_MAGIC);
     return inode;
 }
 
