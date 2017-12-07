@@ -716,15 +716,17 @@ static void chdir(struct intr_frame *f) {
 static void mkdir(struct intr_frame *f) {
     /* Parse arguments. */
     const char *dir = (const char*) get_arg(f, 1);
+    f->eax = (uint32_t) false;
 
     /* Verify arguments. */
     verify_pointer((uint32_t *) dir);
 
-    if (filesys_create(dir, MAX_FILES_PER_DIR * sizeof(struct dir_entry), true)) {
-        f->eax = (uint32_t) true;
-    } else {
-        f->eax = (uint32_t) false;
+    /* Create the directory. */
+    if (!filesys_create(dir, MAX_FILES_PER_DIR * sizeof(struct dir_entry), true)) {
+        return;
     }
+
+    f->eax = (uint32_t) true;
     // printf("MKDIR: Successfully created directory: %s\n", dir);
 }
 

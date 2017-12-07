@@ -96,8 +96,11 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
         return false;
     }
 
+    struct inode *parent_inode = file_get_inode(parent_dir_file);
+    block_sector_t parent_sector = inode_get_sector(parent_inode);
+
     /* Get directory struct corresponding to parent directory. */
-    struct dir * parent_dir = dir_open(file_get_inode(parent_dir_file));
+    struct dir * parent_dir = dir_open(parent_inode);
 
     // printf("Creating new thing...\n");
     /* Create new file/directory inside its parent directory. */
@@ -105,6 +108,20 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
                     free_map_allocate_single(&inode_sector) &&
                     inode_create(inode_sector, initial_size, is_directory) &&
                     dir_add(parent_dir, name, inode_sector));
+
+    /* Add relative links to parent and self in new directory directory. */
+    if (success && is_directory) {
+        struct dir *new_dir = dir_open(inode_open(inode_sector));
+        if (new_dir != NULL) {
+            char relative_link[] =  "..";
+            dir_add(new_dir, relative_link, parent_sector);
+            relative_link[1] = '\0';
+            dir_add(new_dir, relative_link, inode_sector); 
+        } else {
+            success = false;
+        }
+    }
+
     // printf("Done?...\n");
     if (!success && inode_sector != 0) 
         free_map_release(inode_sector, 1);
@@ -163,10 +180,20 @@ bool filesys_remove(const char *name) {
 static void do_format(void) {
     printf("Formatting file system...");
     free_map_create();
-    // TODO: block_size(fs_device) is an overestimate b/c we are always using indirection!
+
     if (!dir_create(ROOT_DIR_SECTOR, MAX_FILES_PER_DIR))
         PANIC("root directory creation failed");
     free_map_close();
-    printf("done.\n");
+
+    struct dir *new_dir = dir_open_root();
+    if (new_dir == NULL) {
+        PANIC("root directory creation failed");
+    }
+
+    /* Add relative links to parent and current directories as root. */
+    char relative_link[] =  "..";
+    dir_add(new_dir, relative_link, ROOT_DIR_SECTOR);
+    relative_link[1] = '\0';
+    dir_add(new_dir, relative_link, ROOT_DIR_SECTOR); 
 }
 
