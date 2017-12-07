@@ -41,6 +41,31 @@ Stackover flow, wikipedia
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+struct inode_disk {
+    volatile off_t length;           /*!< File size in bytes. */
+    bool is_directory;               /*!< If inode represents a directory. */
+
+    block_sector_t double_indirect;  /*!< Multilevel indirection. */
+
+    unsigned magic;                  /*!< Magic number. */
+    uint32_t unused[124];            /*!< Not used. */
+};
+
+The "double_indirect" field was added to inode_disk to implement indexing.
+
+/*! In-memory inode. */
+struct inode {
+    struct list_elem elem;              /*!< Element in inode list. */
+    block_sector_t sector;              /*!< Sector number of disk location. */
+    int open_cnt;                       /*!< Number of openers. */
+    bool removed;                       /*!< True if deleted, false otherwise.*/
+    int deny_write_cnt;                 /*!< 0: writes ok, >0: deny writes. */
+    struct lock extension_lock;         /*!< Lock to extend file. */
+    struct inode_disk data;             /*!< Inode content. */
+};
+
+The "extension_lock" field as added to inode to implement file extensibility.
+
 >> A2: What is the maximum size of a file supported by your inode
 >> structure?  Show your work.
 
@@ -49,12 +74,20 @@ Stackover flow, wikipedia
 >> A3: Explain how your code avoids a race if two processes attempt to
 >> extend a file at the same time.
 
+All inodes have an extension_lock field. Before any file is extended, this 
+lock is acquired in the file's corresponding inode and released following 
+extension. Once the lock is acquired, the design also confirms whether 
+extension is still necessary given that another process may have already 
+extended it.
+
 >> A4: Suppose processes A and B both have file F open, both
 >> positioned at end-of-file.  If A reads and B writes F at the same
 >> time, A may read all, part, or none of what B writes.  However, A
 >> may not read data other than what B writes, e.g. if B writes
 >> nonzero data, A is not allowed to see all zeros.  Explain how your
 >> code avoids this race.
+
+Why is this only an end-of-file condition? Isn't this a read/write lock?        TODO
 
 >> A5: Explain how your synchronization design provides "fairness".
 >> File access is "fair" if readers cannot indefinitely block writers
@@ -63,6 +96,8 @@ Stackover flow, wikipedia
 >> processes writing to a file cannot prevent another process forever
 >> from reading the file.
 
+Why is this only an end-of-file condition? Isn't this a read/write lock?        TODO
+
 ---- RATIONALE ----
 
 >> A6: Is your inode structure a multilevel index?  If so, why did you
@@ -70,6 +105,14 @@ Stackover flow, wikipedia
 >> indirect blocks?  If not, why did you choose an alternative inode
 >> structure, and what advantages and disadvantages does your
 >> structure have, compared to a multilevel index?
+
+The inode struct is a multilevel index. The struct contains a single 
+doubly-indrect block. While a combination of direct, indirect, and doubly 
+indirect blocks may have been more space-conservative for files of a 
+smaller size, we found that using a single doubly-indirect block 
+significantly simplified our design. At the same time, the single block 
+still allows a max file size equal to that of the disk. 
+
 
 			    SUBDIRECTORIES
 			    ==============
@@ -101,6 +144,7 @@ Stackover flow, wikipedia
 
 >> B6: Explain why you chose to represent the current directory of a
 >> process the way you did.
+
 
 			     BUFFER CACHE
 			     ============
