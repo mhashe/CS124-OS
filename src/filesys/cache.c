@@ -15,6 +15,7 @@
 #include "threads/synch.h"
 #include "threads/thread.h"
 
+/* Lock on accessing cache table. */
 struct lock cache_table_lock;
 
 /* Cache of data */
@@ -408,7 +409,8 @@ static void read_ahead(void *arg_ UNUSED) {
         lock_acquire(&cache_table_lock);
         ASSERT(list_size(&cache_lru) <= CACHE_SIZE);
 
-        for (i = read_ahead_head; i != read_ahead_tail; i = (i + 1) % CACHE_SIZE) {
+        for (i = read_ahead_head; i != read_ahead_tail; 
+             i = (i + 1) % CACHE_SIZE) {
             /* Acquire global lock and cache entry. */
             cache = sector_to_cache(read_ahead_buffer[i]);
 

@@ -23,36 +23,36 @@
 #define CACHE_KERNEL_SLEEP 250
 
 enum lock_mode {
-    UNLOCK,
-    READ_LOCK,
-    WRITE_LOCK
+    UNLOCK,                         /* No one occupies lock. */
+    READ_LOCK,                      /* Readers occupy lock. */
+    WRITE_LOCK                      /* Writer occupies lock. */
 };
 
 struct lru_entry {
-    block_sector_t sector;        /* Sector number. */
+    block_sector_t sector;          /* Sector number. */
 
-    struct list_elem elem;  /* Required for list. */
+    struct list_elem elem;          /* Required for list. */
 };
 
 struct cache_entry {
-    volatile int sector;
-    bool access;
-    bool dirty;
-    char data[BLOCK_SECTOR_SIZE];
+    volatile int sector;            /* Sector number loaded into cache. */
+    bool access;                    /* Has sector been accessed. */
+    bool dirty;                     /* Has sector been written to. */
+    char data[BLOCK_SECTOR_SIZE];   /* Actual sector data. */
 
     /* Implement read/write lock. */
     struct lock cache_entry_lock;
 
-    struct condition readers;
-    struct condition writers;
+    struct condition readers;       /* Condvar for readers. */
+    struct condition writers;       /* Condvar for writers. */
 
     /* Count of waiting processes. */
-    uint8_t reader_active; /* Threads currently reading. */
-    uint8_t reader_waiting; /* Threads waiting to read. */
+    uint8_t reader_active;          /* Threads currently reading. */
+    uint8_t reader_waiting;         /* Threads waiting to read. */
     /* Writer_active should only ever be one or zero. */
-    uint8_t writer_waiting; /* Threads waiting to write. */
+    uint8_t writer_waiting;         /* Threads waiting to write. */
 
-    enum lock_mode mode;
+    enum lock_mode mode;            /* Who currently holds lock. */
 };
 
 void cache_init(void);
