@@ -225,14 +225,13 @@ done:
 /*! Reads the next directory entry in DIR and stores the name in NAME.  Returns
     true if successful, false if the directory contains no more entries. */
 bool dir_readdir(struct dir *dir, char name[NAME_MAX + 1]) {
-    printf("DIR_READDIR %p %p %d\n", dir, dir->inode, dir->pos);
+    // printf("DIR_READDIR %p %p %d\n", dir, dir->inode, dir->pos);
     struct dir_entry e;
     char parent_link[] = "..";
     char child_link[] = ".";
 
     while (inode_read_at(dir->inode, &e, sizeof(e), dir->pos) == sizeof(e)) {
         dir->pos += sizeof(e);
-        // printf("%d\n", dir->pos);
 
         /* If file is in-use, it is not self, and it is not its parent, then 
         it can be printed. */
@@ -243,7 +242,6 @@ bool dir_readdir(struct dir *dir, char name[NAME_MAX + 1]) {
             return true;
         } 
     }
-    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1\n");
     return false;
 }
 
