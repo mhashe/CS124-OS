@@ -7,13 +7,6 @@
 #include "threads/malloc.h"
 
 
-/*! A single directory entry. */
-struct dir_entry {
-    block_sector_t inode_sector;        /*!< Sector number of header. */
-    char name[NAME_MAX + 1];            /*!< Null terminated file name. */
-    bool in_use;                        /*!< In use or free? */
-};
-
 /*! Creates a directory with space for ENTRY_CNT entries in the
     given SECTOR.  Returns true if successful, false on failure. */
 bool dir_create(block_sector_t sector, size_t entry_cnt) {
@@ -107,6 +100,7 @@ bool dir_lookup(const struct dir *dir, const char *path, struct inode **inode) {
         // printf("Found directory!\n");
         return true;
     }
+    // printf("Proceeding\n");
 
     char *name_end = (char *) path;
     while ((*name_end != '/') && (*name_end != '\0')) {
@@ -155,7 +149,6 @@ bool dir_lookup(const struct dir *dir, const char *path, struct inode **inode) {
     Fails if NAME is invalid (i.e. too long) or a disk or memory
     error occurs. */
 bool dir_add(struct dir *dir, const char *name, block_sector_t inode_sector) {
-    printf("DIR ADD! %s\n", name);
     struct dir_entry e;
     off_t ofs;
     bool success = false;
@@ -166,14 +159,11 @@ bool dir_add(struct dir *dir, const char *name, block_sector_t inode_sector) {
     /* Check NAME for validity. */
     if (*name == '\0' || strlen(name) > NAME_MAX)
         return false;
-    printf("Name is valid\n");
 
     /* Check that NAME is not in use. */
     if (lookup(dir, name, NULL, NULL)) {
-        printf("Name is in use??\n");
         goto done;
     }
-    printf("Name is not in use\n");
 
     /* Set OFS to offset of free slot.
        If there are no free slots, then it will be set to the
@@ -187,7 +177,6 @@ bool dir_add(struct dir *dir, const char *name, block_sector_t inode_sector) {
         if (!e.in_use)
             break;
     }
-    printf("Read correctly. Writing slot...\n");
 
     /* Write slot. */
     e.in_use = true;
@@ -196,7 +185,6 @@ bool dir_add(struct dir *dir, const char *name, block_sector_t inode_sector) {
     success = inode_write_at(dir->inode, &e, sizeof(e), ofs) == sizeof(e);
 
 done:
-    printf("!DIR ADD %d\n", success);
     return success;
 }
 

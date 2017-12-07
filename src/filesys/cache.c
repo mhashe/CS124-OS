@@ -101,6 +101,7 @@ void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) 
     // printf("    READING: %d\n", sector);
     ASSERT((int) sector != CACHE_SECTOR_EMPTY);
     ASSERT(size + offset <= BLOCK_SECTOR_SIZE);
+    // printf("Read at sector %d, %d bytes at offset %d\n", sector, size, offset);
 
     struct cache_entry *cache = NULL;
 

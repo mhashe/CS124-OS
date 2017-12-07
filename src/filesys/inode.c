@@ -36,6 +36,7 @@ static inline size_t bytes_to_sectors(off_t size) {
     return DIV_ROUND_UP(size, BLOCK_SECTOR_SIZE);
 }
 
+
 /*! In-memory inode. */
 struct inode {
     struct list_elem elem;              /*!< Element in inode list. */
@@ -61,10 +62,21 @@ static void print_inode_allocation(struct inode_disk *data);
 static struct list open_inodes;
 
 
+
+void inode_check(struct inode *inode) {
+    printf("CHECK: %d, %d\n", inode->data.is_directory, inode->data.magic == INODE_MAGIC);
+}
+
 bool inode_is_directory(struct inode *inode) {
     ASSERT(inode != NULL);
     ASSERT(inode->data.magic == INODE_MAGIC);
     return inode->data.is_directory;
+}
+
+block_sector_t inode_get_sector(struct inode *inode) {
+    ASSERT(inode != NULL);
+    ASSERT(inode->data.magic == INODE_MAGIC);
+    return inode->sector;
 }
 
 /* Given a certain position in a file, figure out the index in the single
@@ -226,8 +238,6 @@ static block_sector_t byte_to_sector(const struct inode *inode, off_t pos) {
     size_t dir_idx, ind_idx;
     indices_from_offset(pos, &dir_idx, &ind_idx);
     block_sector_t sector;
-
-    // printf("INDICES: %d, %d\n", dir_idx, ind_idx);
 
     /* Temporary buffer to story indirection tables. */
     block_sector_t *buffer = malloc(sizeof(block_sector_t));

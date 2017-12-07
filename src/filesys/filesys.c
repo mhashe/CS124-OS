@@ -43,7 +43,7 @@ void filesys_done(void) {
     or if internal memory allocation fails. */
 bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
     block_sector_t inode_sector = 0;
-    printf("FILESYS CREATE! %s\n", path);
+    // printf("FILESYS CREATE! %s\n", path);
 
     /* Get parent directory and name of file/directory to be created from 
     path. */
@@ -86,7 +86,7 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
         name = ((char *) path) + end_of_parent + 1;
     }
 
-    printf("Parent directory: %s, name: %s\n", parent_dir_name, name);
+    // printf("Parent directory: %s, name: %s\n", parent_dir_name, name);
 
     /* Get file corresponding to parent directory. */
     struct file *parent_dir_file = filesys_open((const char *) parent_dir_name);
@@ -99,20 +99,20 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
     /* Get directory struct corresponding to parent directory. */
     struct dir * parent_dir = dir_open(file_get_inode(parent_dir_file));
 
-    printf("Creating new thing...\n");
+    // printf("Creating new thing...\n");
     /* Create new file/directory inside its parent directory. */
     bool success = (parent_dir != NULL &&
                     free_map_allocate_single(&inode_sector) &&
                     inode_create(inode_sector, initial_size, is_directory) &&
                     dir_add(parent_dir, name, inode_sector));
-    printf("Done?...\n");
+    // printf("Done?...\n");
     if (!success && inode_sector != 0) 
         free_map_release(inode_sector, 1);
 
-    printf("Dir close?\n");
+    // printf("Dir close?\n");
     dir_close(parent_dir);
 
-    printf("!FILESYS CREATE\n");
+    // printf("!FILESYS CREATE\n");
     return success;
 }
 
@@ -124,6 +124,11 @@ struct file * filesys_open(const char *path) {
     struct inode *inode = NULL;
     struct dir *dir;
 
+    // TODO: comment. edge case
+    if (path[0] == '\0') {
+        return file_open(inode_open(thread_current()->cur_directory));
+    }
+
     /* If name is an absolute path, start looking from root. Else, look from 
     the current open directory. */
     if (path[0] == '/') {
@@ -133,10 +138,12 @@ struct file * filesys_open(const char *path) {
         dir = dir_open(inode_open(thread_current()->cur_directory));
     }
 
-    if (dir != NULL)
+    if (dir != NULL){
         dir_lookup(dir, path, &inode);
+    }
     dir_close(dir);
     // printf("FOUND PATH %p, %d\n", inode, (inode != NULL));
+    // inode_check(inode);
 
     return file_open(inode);
 }
@@ -157,7 +164,7 @@ static void do_format(void) {
     printf("Formatting file system...");
     free_map_create();
     // TODO: block_size(fs_device) is an overestimate b/c we are always using indirection!
-    if (!dir_create(ROOT_DIR_SECTOR, block_size(fs_device)))
+    if (!dir_create(ROOT_DIR_SECTOR, MAX_FILES_PER_DIR))
         PANIC("root directory creation failed");
     free_map_close();
     printf("done.\n");

@@ -24,5 +24,7 @@ void inode_allow_write(struct inode *);
 off_t inode_length(const struct inode *);
 
 bool inode_is_directory(struct inode *inode);
+block_sector_t inode_get_sector(struct inode *inode);
+void inode_check(struct inode *inode);
 
 #endif /* filesys/inode.h */

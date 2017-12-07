@@ -23,6 +23,10 @@
 #include "vm/page.h"
 #endif
 
+#include "filesys/directory.h"
+#include "filesys/filesys.h"
+#include "filesys/inode.h"
+
 
 /* Handler function. */
 static void syscall_handler(struct intr_frame *);
@@ -710,21 +714,18 @@ static void chdir(struct intr_frame *f) {
 
 /*!< Create a directory. */
 static void mkdir(struct intr_frame *f) {
-    ASSERT(0); // Not implemented
     /* Parse arguments. */
     const char *dir = (const char*) get_arg(f, 1);
 
     /* Verify arguments. */
     verify_pointer((uint32_t *) dir);
 
-    /* If path is re */
-    if (dir[0] == '/') {
-
+    if (filesys_create(dir, MAX_FILES_PER_DIR * sizeof(struct dir_entry), true)) {
+        f->eax = (uint32_t) true;
+    } else {
+        f->eax = (uint32_t) false;
     }
-
-    // TODO
-    (void) dir;
-    f->eax = (uint32_t) true;
+    // printf("MKDIR: Successfully created directory: %s\n", dir);
 }
 
 /*!< Reads a directory entry. */
@@ -741,22 +742,34 @@ static void readdir(struct intr_frame *f) {
 
 /*!< Tests if a fd represents a directory. */
 static void isdir(struct intr_frame *f) {
-    ASSERT(0); // Not implemented
     /* Parse arguments. */
     int fd = get_arg(f, 1);
 
-    // TODO
-    (void) fd;
+    struct file *file = file_from_fd(fd)->file;
+    ASSERT(file != NULL);
+    struct inode *inode = file_get_inode(file);
+    ASSERT(inode != NULL);
+
+    if (inode_is_directory(inode)) {
+        f->eax = (uint32_t) true;
+        
+    } else {
+        f->eax = (uint32_t) false;
+    }
 }
 
 /*!< Returns the inode number for a fd. */
 static void inumber(struct intr_frame *f) {
-    ASSERT(0); // Not implemented
     /* Parse arguments. */
     int fd = get_arg(f, 1);
 
-    // TODO
-    (void) fd;
+    struct file *file = file_from_fd(fd)->file;
+    ASSERT(file != NULL);
+    struct inode *inode = file_get_inode(file);
+    ASSERT(inode != NULL);
+
+    f->eax = (uint32_t) inode_get_sector(inode);
+    
 }
 #endif
 

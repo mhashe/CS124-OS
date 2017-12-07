@@ -7,6 +7,7 @@
 /*! Sectors of system file inodes. @{ */
 #define FREE_MAP_SECTOR 0       /*!< Free map file inode sector. */
 #define ROOT_DIR_SECTOR 1       /*!< Root directory file inode sector. */
+#define MAX_FILES_PER_DIR 150
 /*! @} */
 
 /*! Block device that contains the file system. */
