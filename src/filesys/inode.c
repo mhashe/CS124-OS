@@ -19,7 +19,7 @@
     Must be exactly BLOCK_SECTOR_SIZE bytes long. */
 struct inode_disk {
     volatile off_t length;                       /*!< File size in bytes. */
-    bool is_directory;                 /*!< Whether inode represents a directory. */
+    bool is_directory;             /*!< Whether inode represents a directory. */
 
     /* Multilevel indirection. */
     block_sector_t double_indirect;
@@ -41,11 +41,14 @@ struct inode {
     struct list_elem elem;              /*!< Element in inode list. */
     block_sector_t sector;              /*!< Sector number of disk location. */
     int open_cnt;                       /*!< Number of openers. */
-    bool removed;                       /*!< True if deleted, false otherwise. */
+    bool removed;                       /*!< True if deleted, false otherwise.*/
     int deny_write_cnt;                 /*!< 0: writes ok, >0: deny writes. */
     struct lock extension_lock;         /*!< Lock to extend file. */
     struct inode_disk data;             /*!< Inode content. */
-    // TODO: remove this data attribute and set it to be a pointer to data that is read by the cache (and casted into inode_disk *) from the sector of inode_disk given by inode.sector ... Apparently this is already done? Why does lecture say we can remove this then? or can we?
+    // TODO: remove this data attribute and set it to be a pointer to data that
+    // is read by the cache (and casted into inode_disk *) from the sector of
+    // inode_disk given by inode.sector ... Apparently this is already done? Why
+    // does lecture say we can remove this then? or can we?
 };
 
 
@@ -62,7 +65,8 @@ bool inode_is_directory(struct inode *inode) {
     return inode->data.is_directory;
 }
 
-/* TODO: Comment. */
+/* Given a certain position in a file, figure out the index in the single
+   indirect block and the direct block. Store these indexes in pointers. */
 static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx) {
     *dir_idx = pos / BLOCK_SECTOR_SIZE;
     *ind_idx = *dir_idx / NUM_ENTRIES_IN_INDIRECT;
@@ -81,7 +85,7 @@ static bool inode_extend_file(struct inode_disk *data, size_t cnt) {
     indices_from_offset(data->length + cnt - 1, &dir_idx_f, &ind_idx_f);
     /* Note that if data->length is 0, dir_idx is 0, which is correct. */
     indices_from_offset(data->length - 1, &dir_idx, &ind_idx);
-   
+
     size_t file_sectors = ((ind_idx_f - ind_idx) * NUM_ENTRIES_IN_INDIRECT + 
         (dir_idx_f - dir_idx));
 
@@ -130,7 +134,9 @@ static bool inode_extend_file(struct inode_disk *data, size_t cnt) {
     /* If we were not able to allocate all blocks that we needed or we fail 
     to persist our changes in free_map to its file, undo our changes and 
     return false. */
-    if ((num_found != new_sectors) || (free_map_file != NULL && !bitmap_write(free_map, free_map_file))) {
+    if ((num_found != new_sectors) || 
+        (free_map_file != NULL && !bitmap_write(free_map, free_map_file))) {
+
         for (i = 0; i < num_found; i++) {
             bitmap_reset(free_map, available_sectors[i]);
         }
@@ -473,12 +479,6 @@ off_t inode_read_at(struct inode *inode, void *buffer_, off_t size, off_t offset
         block_sector_t sector_idx = byte_to_sector (inode, offset);
         // TODO: do something if sector_idx is -1 (meaning failure)?
         // printf("Read at sector: %d\n", sector_idx);
-        if (sector_idx == 171) {
-            // printf("Read at sector: %d\n", sector_idx);
-            // printf("size: %d, offset: %d\n", size, offset);
-            // printf("table:\n");
-            // print_inode_allocation(&inode->data);
-        }
         int sector_ofs = offset % BLOCK_SECTOR_SIZE;
 
         /* Bytes left in inode, bytes left in sector, lesser of the two. */
@@ -536,12 +536,6 @@ off_t inode_write_at(struct inode *inode, const void *buffer_, off_t size,
         block_sector_t sector_idx = byte_to_sector(inode, offset);
         // TODO: do something if sector_idx is -1 (meaning failure)?
         // printf("Write to sector: %d\n", sector_idx);
-        if (sector_idx == 171) {
-            // printf("Write at sector: %d\n", sector_idx);
-            // printf("size: %d, offset: %d\n", size, offset);
-            // printf("table:\n");
-            // print_inode_allocation(&inode->data);
-        }
         int sector_ofs = offset % BLOCK_SECTOR_SIZE;
 
         /* Bytes left in inode, bytes left in sector, lesser of the two. */

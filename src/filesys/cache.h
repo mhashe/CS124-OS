@@ -57,8 +57,10 @@ struct cache_entry {
 
 void cache_init(void);
 void cache_kernel_thread_init(void);
-void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset);
-void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t offset);
+void cache_read(block_sector_t sector, void * buffer, off_t size, 
+    off_t offset);
+void cache_write(block_sector_t sector, const void * buffer, off_t size, 
+    off_t offset);
 void flush_cache(void);
 
 #endif /* vm/cache.h */

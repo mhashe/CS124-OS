@@ -21,7 +21,6 @@ void free_map_init(void) {
     into *SECTORP.
     Returns true if successful, false if not enough consecutive sectors were
     available or if the free_map file could not be written. */
-// TOOD: remove all calls to this function
 bool free_map_allocate(size_t cnt, block_sector_t *sectorp) {
     block_sector_t sector = bitmap_scan_and_flip(free_map, 0, cnt, false);
     if (sector != BITMAP_ERROR && free_map_file != NULL &&
@@ -34,7 +33,9 @@ bool free_map_allocate(size_t cnt, block_sector_t *sectorp) {
     return sector != BITMAP_ERROR;
 }
 
-// TODO: comment
+/* Allocate a single sector from the free map and stores it into *SECTORP. 
+   Returns true if successful, false if not enough consecutive sectors were
+   available or if the free_map file could not be written. */
 bool free_map_allocate_single(block_sector_t *sectorp) {
     block_sector_t sector = bitmap_scan_and_flip(free_map, 0, 1, false);
     if (sector != BITMAP_ERROR && free_map_file != NULL &&
@@ -47,7 +48,7 @@ bool free_map_allocate_single(block_sector_t *sectorp) {
     return sector != BITMAP_ERROR;
 }
 
-// TODO: comment
+/* Makes sector available for use. */
 void free_map_release_single(block_sector_t sector) {
     ASSERT(bitmap_test(free_map, sector));
     bitmap_reset(free_map, sector);
