@@ -191,8 +191,26 @@ through the whole queue, it releases the cache table lock and sleeps.
 >> buffer cache block, how are other processes prevented from evicting
 >> that block?
 
+When a process is using the cache block, it holds that cache block's lock. If
+there are multiple readers using it, the last reader that finishes (as kept
+track of by a count) releases the lock. As such, when a process is actively
+reading or writing a slot, it necessarily holds the lock on that slot.
+
+On eviction, once a victim (a cache slot) is chosen, we acquire that slot's
+lock. This means that the eviction cannot procede until it acquires the lock
+which means that no one else can be actively using it. As such, an eviction
+cannot occur when another process is reading and writing. 
+
 >> C6: During the eviction of a block from the cache, how are other
 >> processes prevented from attempting to access the block?
+
+This follows a very similar logic. On eviction, once a victim is chosen, we
+require the cache slot's lock. Any r/w operations on a slot require this same
+lock so they cannot procede until they acquire the lock. In order to prevnt the
+sector that is loaded in a certain slot from being pulled out from under the r/w
+operation, once we acquire a certain slot's lock, we check to make sure that it
+is still the sector we want. If it isn't, we then release the lock and while
+loop and try again.
 
 ---- RATIONALE ----
 
