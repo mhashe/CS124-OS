@@ -19,7 +19,7 @@ Michael Hashe <mhashe@caltech.edu>
 >> What is the Git repository and commit hash for your submission?
 
     Repository URL:  https://github.com/MichaelHashe/CS124-OS
-   commit ...
+    commit ...
 
 ---- PRELIMINARIES ----
 
@@ -164,26 +164,28 @@ struct cache_entry {
 >> C2: Describe how your cache replacement algorithm chooses a cache
 >> block to evict.
 
+We use an LRU replacement policy. Instead of checking access bits every
+timer tick, we check before each eviction (this is largely to avoid 
+concurrency issues). At each eviction, the block at the tail of the 
+LRU queue is evicted, and a new block is appended to the front.
+
 >> C3: Describe your implementation of write-behind.
 
 Write behind is a kernel thread that gets started on system init. The thread
 goes through the whole cache table and writes each sector (if it is dirty) to
 disk, clearing its dirty bit. It does this while holding the cache table lock.
-This was necessary because the system was deadlocking without the thread holding
-it. Furthermore, it isn't an issue because nothing else will block on getting
-the cache table lock while holding the cache slot lock. When it finds a dirty
-sector, it obtains that cache slot's lock (possibly blocking on it), writes it
-to disk, and then releases the lock. After it has gone through the whole table,
-it releases the cache table lock and then sleeps.
+When it finds a dirty sector, it obtains that cache slot's lock (possibly
+blocking on it), writes it to disk, and then releases the lock. After it has
+gone through the whole table, it releases the cache table lock and sleeps.
 
 >> C4: Describe your implementation of read-ahead.
 
 The read ahead implementation is very similar to the write behind
-implementation. It reads ahead the whole queue all at once, while holding the
-cache table lock. It checks to see if the sector has already been loaded into
-the cache. If it has, then it does nothing for that slot. If it hasn't, it tries
-loading it into the cache, evicting something if necessary. After it goes
-through the whole queue, it releases the cache table lock and sleeps.
+implementation. It reads through its queue while holding the cache table lock.
+It checks to see if the sector has already been loaded into the cache. If it
+has, then it does nothing for that slot. If it hasn't, it tries loading it
+into the cache, evicting something if necessary. After it goes through the
+whole queue, it releases the cache table lock and sleeps.
 
 ---- SYNCHRONIZATION ----
 
@@ -193,8 +195,9 @@ through the whole queue, it releases the cache table lock and sleeps.
 
 When a process is using the cache block, it holds that cache block's lock. If
 there are multiple readers using it, the last reader that finishes (as kept
-track of by a count) releases the lock. As such, when a process is actively
-reading or writing a slot, it necessarily holds the lock on that slot.
+track of by a count) releases the R/W lock, and either gives it to a writer or
+marks the block as unlocked. As such, when a process is actively reading or
+writing a slot, it necessarily holds the lock on that slot.
 
 On eviction, once a victim (a cache slot) is chosen, we acquire that slot's
 lock. This means that the eviction cannot procede until it acquires the lock
@@ -216,6 +219,11 @@ loop and try again.
 
 >> C7: Describe a file workload likely to benefit from buffer caching,
 >> and workloads likely to benefit from read-ahead and write-behind.
+
+Repeated accesses to the same file(s) is likely to benefit from caching. Read-
+ahead is likely to benefit sequential scans, i.e. for data processing. Write-
+behind is likely to benefit sequentual writes, in making eviction operataions
+less costly.
 
 			   SURVEY QUESTIONS
 			   ================
