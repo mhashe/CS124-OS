@@ -70,6 +70,7 @@ struct list all_list;
 struct file_des {
     int fd;                /*!< Numeric file descriptor. */
     struct file* file;     /*!< File struct pointer. */
+    struct dir*  dir;      /*!< Directory struct pointer. */
 
     struct list_elem elem; /*!< Pointers to previous, next file descriptors. */
 };

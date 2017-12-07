@@ -232,6 +232,7 @@ static void halt(struct intr_frame *f UNUSED) {
    process's parent waits for it (see below), this is the status that will be
    returned. */
 static void exit(struct intr_frame *f) {
+    // printf("EXIT\n");
     /* Parse arguments. */
     int status = get_arg(f, 1);
 
@@ -251,6 +252,7 @@ static void exit(struct intr_frame *f) {
 
     /* Keep track of our own exit status. */
     thread_current()->exit_code = status;
+    // printf("!EXIT\n");
 
     /* Terminate program. */
     thread_exit();
@@ -261,6 +263,7 @@ static void exit(struct intr_frame *f) {
    arguments, and returns the new process's program id (pid). Returns -1
    in case of error. */
 static void exec(struct intr_frame *f) {
+    // printf("EXEC\n");
     /* Parse arguments. */
     const char* cmd_line = (const char*) get_arg(f, 1);
 
@@ -280,6 +283,7 @@ static void exec(struct intr_frame *f) {
     if (!c->load_success) {
         f->eax = -1;
     }
+    // printf("!EXEC\n");
 
 }
 
@@ -319,9 +323,11 @@ static void exec(struct intr_frame *f) {
    implement process_wait() according to the comment at the top of the function
    and then implement the wait system call in terms of process_wait(). */
 static void wait(struct intr_frame *f) {
+    // printf("WAIT\n");
     /* Parse arguments. */
     pid_t pid = get_arg(f, 1);
     f->eax = process_wait(pid);
+    // printf("!WAIT\n");
 }
 
 
@@ -330,6 +336,7 @@ static void wait(struct intr_frame *f) {
    opening the new file is a separate operation which would require a open
    system call. */
 static void create(struct intr_frame *f) {
+    // printf("CREATE\n");
     /* Parse arguments, ensure valid pointer. */
     const char* file = (const char*) get_arg(f, 1);
     unsigned initial_size = get_arg(f,2);
@@ -339,6 +346,7 @@ static void create(struct intr_frame *f) {
 
     /* Create file, return boolean value. */
     f->eax = filesys_create(file, initial_size, false);
+    // printf("!CREATE\n");
 }
 
 
@@ -346,6 +354,7 @@ static void create(struct intr_frame *f) {
    file may be removed regardless of whether it is open or closed, and removing
    an open file does not close it. */
 static void remove(struct intr_frame *f) {
+    // printf("REMOVE\n");
     /* Parse arguments. */
     const char* file = (const char*) get_arg(f, 1);
 
@@ -354,6 +363,7 @@ static void remove(struct intr_frame *f) {
 
     /* Remove file. */
     f->eax = filesys_remove(file);
+    // printf("!REMOVE\n");
 }
 
 
@@ -373,8 +383,10 @@ static void remove(struct intr_frame *f) {
    descriptors for a single file are closed independently in separate calls to
    close and they do not share a file position. */
 static void open(struct intr_frame *f) {
+    // printf("OPEN\n");
     /* Parse arguments. */
     const char* file_name = (const char*) get_arg(f, 1);
+    printf("OPENING %s\n", file_name);
 
     /* Verify arguments. */
     verify_pointer((uint32_t *) file_name);
@@ -392,6 +404,13 @@ static void open(struct intr_frame *f) {
     if (file_name) {
         /* Try to open file. */
         struct file* file = filesys_open(file_name);
+
+        struct dir* dir = NULL;
+        struct inode* inode = file_get_inode(file);
+        inode_check(inode);
+        if (inode_is_directory(inode)) {
+            dir = dir_open(inode);
+        }
 
         if (file) {
             /* File opened! Create a file descriptor, add to list. */
@@ -415,6 +434,7 @@ static void open(struct intr_frame *f) {
             struct file_des* new_fd = malloc(sizeof(struct file_des));
             new_fd->fd = fd;
             new_fd->file = file;
+            new_fd->dir = dir;
 
             list_push_back(&thread_current()->fds, &new_fd->elem);
 
@@ -440,6 +460,7 @@ static void open(struct intr_frame *f) {
 
 /* Returns the size, in bytes, of the file open as fd. */
 static void filesize(struct intr_frame *f) {
+    // printf("FILESIZE\n");
     /* Parse arguments. */
     int fd = get_arg(f, 1);
 
@@ -456,6 +477,7 @@ static void filesize(struct intr_frame *f) {
         /* Invalid file has no size. */
         thread_exit();
     }
+    // printf("!FILESIZE\n");
 }
 
 
@@ -464,6 +486,7 @@ static void filesize(struct intr_frame *f) {
    (due to a condition other than end of file). Fd 0 reads from the keyboard
    using input_getc(). */
 static void read(struct intr_frame *f) {
+    // printf("READ\n");
     /* Parse arguments. */
     int fd = get_arg(f, 1);
     void* buffer = (void *) get_arg(f, 2);
@@ -498,6 +521,7 @@ static void read(struct intr_frame *f) {
         /* Can't read invalid file. */
         f->eax = -1;
     }
+    // printf("!READ\n");
 }
 
 
@@ -516,6 +540,7 @@ static void read(struct intr_frame *f) {
    Otherwise, lines of text output by different processes may end up interleaved
    on the console, confusing both human readers and our grading scripts. */
 static void write(struct intr_frame *f) {
+    // printf("WRITE\n");
     /* Parse arguments. */
     int fd = get_arg(f, 1);
     const void* buffer = (void *) get_arg(f, 2);
@@ -549,6 +574,7 @@ static void write(struct intr_frame *f) {
         /* Can't write to file. */
         f->eax = 0;
     }
+    // printf("!WRITE\n");
 }
 
 
@@ -563,6 +589,7 @@ static void write(struct intr_frame *f) {
    These semantics are implemented in the file system and do not require any
    special effort in system call implementation. */
 static void seek(struct intr_frame *f) {
+    // printf("SEEK\n");
     /* Parse arguments. */
     int fd = get_arg(f, 1);
     unsigned position = get_arg(f, 2);
@@ -580,12 +607,14 @@ static void seek(struct intr_frame *f) {
         /* Can't seek invalid file. */
         thread_exit();
     }
+    // printf("!SEEK\n");
 }
 
 
 /* Returns the position of the next byte to be read or written in open file fd,
    expressed in bytes from the beginning of the file. */
 static void tell(struct intr_frame *f) {
+    // printf("TELL\n");
     /* Parse arguments. */
     int fd = get_arg(f, 1);
 
@@ -602,12 +631,14 @@ static void tell(struct intr_frame *f) {
         /* Can't tell invalid file. */
         thread_exit();
     }
+    // printf("!TELL\n");
 }
 
 
 /* Closes file descriptor fd. Exiting or terminating a process implicitly closes
    all its open file descriptors, as if by calling this function for each one.*/
 static void close(struct intr_frame *f) {
+    // printf("CLOSE\n");
     /* Parse arguments. */
     int fd = get_arg(f, 1);
 
@@ -619,7 +650,11 @@ static void close(struct intr_frame *f) {
     /* Tell file. */
     struct file_des* file_des = file_from_fd(fd);
     if (file_des) {
+        if (file_des->dir != NULL) {
+            dir_close(file_des->dir);
+        }
         file_close(file_des->file);
+
 
         /* Free memory, remove from list. */
         list_remove(&file_des->elem);
@@ -629,6 +664,7 @@ static void close(struct intr_frame *f) {
         /* Can't close invalid file. */
         thread_exit();
     }
+    // printf("!CLOSE\n");
 }
 
 
@@ -657,6 +693,7 @@ static void close(struct intr_frame *f) {
    Pintos code assumes virtual page 0 is not mapped. Finally, file descriptors 0
    and 1, representing console input and output, are not mappable. */
 static void mmap(struct intr_frame *f) {
+    // printf("MMAP\n");
     /* Parse arguments. */
     int fd = get_arg(f, 1);
     void* addr = (void *) get_arg(f, 2);
@@ -681,6 +718,7 @@ static void mmap(struct intr_frame *f) {
     } else {
         f->eax = mapid;
     }
+    // printf("!MMAP\n");
 }
 
 
@@ -688,12 +726,13 @@ static void mmap(struct intr_frame *f) {
    by a previous call to mmap by the same process that has not yet been
    unmapped. */
 static void munmap(struct intr_frame *f) {
-    (void)f;
+    // printf("MUNMAP\n");
     /* Parse arguments. */
     mapid_t mapid = get_arg(f, 1);
 
     /* Remove the map from the supplementary page table and memory. */
     sup_remove_map(mapid);
+    // printf("!MUNMAP\n");
 }
 #endif
 
@@ -701,6 +740,7 @@ static void munmap(struct intr_frame *f) {
 #ifdef FILESYS
 /*!< Change the current directory. */
 static void chdir(struct intr_frame *f) {
+    // printf("CHDIR\n");
     /* Parse arguments. */
     const char *dir = (const char*) get_arg(f, 1);
     f->eax = (uint32_t) false;
@@ -720,10 +760,12 @@ static void chdir(struct intr_frame *f) {
     thread_current()->cur_directory = inode_get_sector(inode);
 
     f->eax = (uint32_t) true;
+    printf("!CHDIR\n");
 }
 
 /*!< Create a directory. */
 static void mkdir(struct intr_frame *f) {
+    // printf("MKDIR\n");
     /* Parse arguments. */
     const char *dir = (const char*) get_arg(f, 1);
     f->eax = (uint32_t) false;
@@ -737,19 +779,20 @@ static void mkdir(struct intr_frame *f) {
     }
 
     f->eax = (uint32_t) true;
+    // printf("!MKDIR\n");
 }
 
 /*!< Reads a directory entry. */
 static void readdir(struct intr_frame *f) {
+    // printf("READIR\n");
     /* Parse arguments. */
     int fd = get_arg(f, 1);
     char *name = (char *) get_arg(f, 2); // TODO : verify that this works
 
     f->eax = (uint32_t) false;
 
-    struct file *file = file_from_fd(fd)->file;
-    ASSERT(file != NULL);
-    struct dir *dir = dir_open(file_get_inode(file));
+    struct dir *dir = file_from_fd(fd)->dir;
+    
     if (dir == NULL) {
         return;
     }
@@ -757,30 +800,40 @@ static void readdir(struct intr_frame *f) {
     if (dir_readdir(dir, name)) {
         f->eax = (uint32_t) true;
     }
+    printf("READDIR %s\n", name);
 
     dir_close(dir);
+    printf("!READIR\n");
 }
 
 /*!< Tests if a fd represents a directory. */
 static void isdir(struct intr_frame *f) {
+    // printf("ISDIR\n");
     /* Parse arguments. */
     int fd = get_arg(f, 1);
     f->eax = (uint32_t) false;
 
-    struct file *file = file_from_fd(fd)->file;
-    ASSERT(file != NULL);
-    struct inode *inode = file_get_inode(file);
-    if (inode == NULL) {
-        return;
-    }
-
-    if (inode_is_directory(inode)) {
+    struct dir *dir = file_from_fd(fd)->dir;
+    if (dir != NULL) {
         f->eax = (uint32_t) true;
     }
+    // struct file *file = file_from_fd(fd)->file;
+    // ASSERT(file != NULL);
+    // struct inode *inode = file_get_inode(file);
+    // if (inode == NULL) {
+    //     return;
+    // }
+
+    // if (inode_is_directory(inode)) {
+    //     f->eax = (uint32_t) true;
+    // }
+
+    // printf("!ISDIR\n");
 }
 
 /*!< Returns the inode number for a fd. */
 static void inumber(struct intr_frame *f) {
+    // printf("INUMBER\n");
     /* Parse arguments. */
     int fd = get_arg(f, 1);
 
@@ -792,6 +845,7 @@ static void inumber(struct intr_frame *f) {
     }
 
     f->eax = (uint32_t) inode_get_sector(inode);
+    printf("!INUMBER\n");
 }
 #endif
 

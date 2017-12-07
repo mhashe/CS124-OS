@@ -48,6 +48,7 @@ static bool do_write (int fd, const char *buffer, int size, bool *write_error);
 static bool
 make_tar_archive (const char *archive_name, char *files[], size_t file_cnt) 
 {
+  printf("%s %s %d\n", archive_name, files[0], file_cnt);
   static const char zeros[512];
   int archive_fd;
   bool success = true;
@@ -59,28 +60,37 @@ make_tar_archive (const char *archive_name, char *files[], size_t file_cnt)
       printf ("%s: create failed\n", archive_name);
       return false;
     }
+    printf("TAR1\n");
   archive_fd = open (archive_name);
+  printf("TAR2 %d\n", archive_fd);
   if (archive_fd < 0)
     {
       printf ("%s: open failed\n", archive_name);
       return false;
     }
+    printf("TAR3\n");
 
   for (i = 0; i < file_cnt; i++) 
     {
+      printf("HI\n");
       char file_name[128];
       
       strlcpy (file_name, files[i], sizeof file_name);
+      printf("HI2 %s\n", file_name);
       if (!archive_file (file_name, sizeof file_name,
                          archive_fd, &write_error))
+        printf("BAD\n");
         success = false;
     }
+    printf("TAR4 %d\n", success);
 
   if (!do_write (archive_fd, zeros, 512, &write_error)
       || !do_write (archive_fd, zeros, 512, &write_error)) 
     success = false;
+  printf("TAR5 %d\n", success);
 
   close (archive_fd);
+  printf("TAR6 %d\n", success);
 
   return success;
 }
@@ -89,25 +99,34 @@ static bool
 archive_file (char file_name[], size_t file_name_size,
               int archive_fd, bool *write_error) 
 {
+  printf("ARCHIVING %s\n", file_name);
   int file_fd = open (file_name);
+  printf("ARCHIVE2 %d\n", file_fd);
   if (file_fd >= 0) 
     {
       bool success;
 
       if (inumber (file_fd) != inumber (archive_fd)) 
         {
-          if (!isdir (file_fd))
+          printf("ARCHIVE3 %s\n", file_name);
+          if (!isdir (file_fd)) {
+            printf("ARCHIVE FILE %s\n", file_name);
             success = archive_ordinary_file (file_name, file_fd,
                                              archive_fd, write_error);
-          else
+          }
+          else {
+            printf("ARCHIVE DIRECTORY %s\n", file_name);
             success = archive_directory (file_name, file_name_size, file_fd,
                                          archive_fd, write_error);      
+          }
+          printf("ARCHIVE4\n");
         }
       else
         {
           /* Nothing to do: don't try to archive the archive file. */
           success = true;
         }
+        printf("ARCHIVE5 %d\n", success);
   
       close (file_fd);
 
@@ -124,6 +143,7 @@ static bool
 archive_ordinary_file (const char *file_name, int file_fd,
                        int archive_fd, bool *write_error)
 {
+  printf("ARCHIVE_ORDINARY\n");
   bool read_error = false;
   bool success = true;
   int file_size = filesize (file_fd);
@@ -152,6 +172,7 @@ archive_ordinary_file (const char *file_name, int file_fd,
 
       file_size -= chunk_size;
     }
+    printf("!ARCHIVE_ORDINARY %d\n", success);
 
   return success;
 }
@@ -160,6 +181,7 @@ static bool
 archive_directory (char file_name[], size_t file_name_size, int file_fd,
                    int archive_fd, bool *write_error)
 {
+  printf("ARCHIVE_DIR %s\n", file_name);
   size_t dir_len;
   bool success = true;
 
@@ -174,10 +196,17 @@ archive_directory (char file_name[], size_t file_name_size, int file_fd,
     return false;
       
   file_name[dir_len] = '/';
-  while (readdir (file_fd, &file_name[dir_len + 1])) 
-    if (!archive_file (file_name, file_name_size, archive_fd, write_error))
+  printf("%s\n", file_name+dir_len);
+  while (readdir (file_fd, &file_name[dir_len + 1])) {
+
+    printf("\t\t\tCONTENT %s\n", file_name+dir_len+1);
+    if (!archive_file (file_name, file_name_size, archive_fd, write_error)) {
+      printf("HI\n");
       success = false;
+    }
+  }
   file_name[dir_len] = '\0';
+  printf("!ARCHIVE_DIR %d\n", success);
 
   return success;
 }
