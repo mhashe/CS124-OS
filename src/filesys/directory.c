@@ -226,10 +226,17 @@ done:
     true if successful, false if the directory contains no more entries. */
 bool dir_readdir(struct dir *dir, char name[NAME_MAX + 1]) {
     struct dir_entry e;
+    char parent_link[] = "..";
+    char child_link[] = ".";
 
     while (inode_read_at(dir->inode, &e, sizeof(e), dir->pos) == sizeof(e)) {
         dir->pos += sizeof(e);
-        if (e.in_use) {
+
+        /* If file is in-use, it is not self, and it is not its parent, then 
+        it can be printed. */
+        if (e.in_use && !(strcmp(parent_link, e.name) == 0) &&
+            !(strcmp(child_link, e.name) == 0)) {
+
             strlcpy(name, e.name, NAME_MAX + 1);
             return true;
         } 

@@ -732,20 +732,27 @@ static void mkdir(struct intr_frame *f) {
 
 /*!< Reads a directory entry. */
 static void readdir(struct intr_frame *f) {
-    ASSERT(0); // Not implemented
     /* Parse arguments. */
     int fd = get_arg(f, 1);
-    char name = (char) get_arg(f, 2); // TODO : verify that this works
+    char *name = (char *) get_arg(f, 2); // TODO : verify that this works
 
-    // TODO
-    (void) fd;
-    (void) name;
+    f->eax = (uint32_t) false;
+
+    struct file *file = file_from_fd(fd)->file;
+    ASSERT(file != NULL);
+    struct dir *dir = dir_open(file_get_inode(file));
+    ASSERT(dir != NULL);
+
+    if (dir_readdir(dir, name)) {
+        f->eax = (uint32_t) true;
+    }
 }
 
 /*!< Tests if a fd represents a directory. */
 static void isdir(struct intr_frame *f) {
     /* Parse arguments. */
     int fd = get_arg(f, 1);
+    f->eax = (uint32_t) false;
 
     struct file *file = file_from_fd(fd)->file;
     ASSERT(file != NULL);
@@ -754,9 +761,6 @@ static void isdir(struct intr_frame *f) {
 
     if (inode_is_directory(inode)) {
         f->eax = (uint32_t) true;
-        
-    } else {
-        f->eax = (uint32_t) false;
     }
 }
 
@@ -771,7 +775,6 @@ static void inumber(struct intr_frame *f) {
     ASSERT(inode != NULL);
 
     f->eax = (uint32_t) inode_get_sector(inode);
-    
 }
 #endif
 
