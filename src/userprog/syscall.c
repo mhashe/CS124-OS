@@ -690,6 +690,7 @@ static void munmap(struct intr_frame *f) {
 #ifdef FILESYS
 /*!< Change the current directory. */
 static void chdir(struct intr_frame *f) {
+    ASSERT(0); // Not implemented
     /* Parse arguments. */
     const char *dir = (const char*) get_arg(f, 1);
 
@@ -702,18 +703,26 @@ static void chdir(struct intr_frame *f) {
 
 /*!< Create a directory. */
 static void mkdir(struct intr_frame *f) {
+    ASSERT(0); // Not implemented
     /* Parse arguments. */
     const char *dir = (const char*) get_arg(f, 1);
 
     /* Verify arguments. */
     verify_pointer((uint32_t *) dir);
 
+    /* If path is re */
+    if (dir[0] == '/') {
+
+    }
+
     // TODO
     (void) dir;
+    f->eax = (uint32_t) true;
 }
 
 /*!< Reads a directory entry. */
 static void readdir(struct intr_frame *f) {
+    ASSERT(0); // Not implemented
     /* Parse arguments. */
     int fd = get_arg(f, 1);
     char name = (char) get_arg(f, 2); // TODO : verify that this works
@@ -725,6 +734,7 @@ static void readdir(struct intr_frame *f) {
 
 /*!< Tests if a fd represents a directory. */
 static void isdir(struct intr_frame *f) {
+    ASSERT(0); // Not implemented
     /* Parse arguments. */
     int fd = get_arg(f, 1);
 
@@ -734,6 +744,7 @@ static void isdir(struct intr_frame *f) {
 
 /*!< Returns the inode number for a fd. */
 static void inumber(struct intr_frame *f) {
+    ASSERT(0); // Not implemented
     /* Parse arguments. */
     int fd = get_arg(f, 1);
 

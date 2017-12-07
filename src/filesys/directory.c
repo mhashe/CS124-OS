@@ -87,21 +87,66 @@ static bool lookup(const struct dir *dir, const char *name,
     return false;
 }
 
-/*! Searches DIR for a file with the given NAME and returns true if one exists,
+/*! Searches DIR for a file with the given PATH and returns true if one exists,
     false otherwise.  On success, sets *INODE to an inode for the file,
     otherwise to a null pointer.  The caller must close *INODE. */
-bool dir_lookup(const struct dir *dir, const char *name, struct inode **inode) {
+bool dir_lookup(const struct dir *dir, const char *path, struct inode **inode) {
     struct dir_entry e;
 
+    // printf("Recursively looking up %s!\n", path);
+
     ASSERT(dir != NULL);
-    ASSERT(name != NULL);
+    ASSERT(path != NULL);
 
-    if (lookup(dir, name, &e, NULL))
-        *inode = inode_open(e.inode_sector);
-    else
-        *inode = NULL;
+    while (*path == '/') {
+        path++;
+    }
 
-    return *inode != NULL;
+    if (*path == '\0') {
+        *inode = dir_get_inode((struct dir *) dir);
+        // printf("Found directory!\n");
+        return true;
+    }
+
+    char *name_end = (char *) path;
+    while ((*name_end != '/') && (*name_end != '\0')) {
+        name_end++;
+    }
+    char *name = malloc(name_end - path + 1);
+    strlcpy(name, path, (name_end - path + 1));
+    // printf("Copied %d bytes of %s into: %s!\n", (name_end - path), path, name);
+
+    // TODO: get name from name_end
+
+    if (!lookup(dir, name, &e, NULL)) {
+        // printf("Could not find %s in directory\n", name);
+        free(name);
+        return false;
+    }
+
+    free(name);
+    *inode = inode_open(e.inode_sector);
+
+    if (*inode == NULL) {
+        // printf("Could not open inode at sector %d\n", e.inode_sector);
+        return false;
+    }
+
+    /* If name is a directory, search it recursively and return result. */
+    if (inode_is_directory(*inode)) {
+        return dir_lookup(dir_open(*inode), name_end, inode);
+    }
+
+    /* If name is a file. */
+    if (*name_end == '\0') {
+        /* Looking up a file, which is found, so return true. */
+        // printf("Found file!\n");
+        return true;
+    }
+    /* Else, trying to access a path through a directory that is in fact a 
+    file. */
+    // printf("Error treating file as a directory\n");
+    return false;
 }
 
 /*! Adds a file named NAME to DIR, which must not already contain a file by

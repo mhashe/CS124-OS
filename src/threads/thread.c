@@ -412,9 +412,9 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
         thread_update_priority_in_mlfqs(t, NULL);
     }
 
-    #ifdef FILESYS
-        initial_thread->cur_directory = thread_current()->cur_directory;
-    #endif
+#ifdef FILESYS
+    t->cur_directory = thread_current()->cur_directory;
+#endif
 
     /* Stack frame for kernel_thread(). */
     kf = alloc_frame(t, sizeof *kf);

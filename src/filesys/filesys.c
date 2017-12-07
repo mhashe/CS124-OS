@@ -8,6 +8,7 @@
 #include "filesys/free-map.h"
 #include "filesys/inode.h"
 #include "devices/block.h"
+#include "threads/thread.h"
 
 /*! Partition that contains the file system. */
 struct block *fs_device;
@@ -53,16 +54,27 @@ bool filesys_create(const char *name, off_t initial_size) {
     return success;
 }
 
-/*! Opens the file with the given NAME.  Returns the new file if successful
+/*! Opens the file with the given PATH.  Returns the new file if successful
     or a null pointer otherwise.  Fails if no file named NAME exists,
     or if an internal memory allocation fails. */
-struct file * filesys_open(const char *name) {
-    struct dir *dir = dir_open_root();
+struct file * filesys_open(const char *path) {
+    // printf("OPENING PATH: %s!\n", path);
     struct inode *inode = NULL;
+    struct dir *dir;
+
+    /* If name is an absolute path, start looking from root. Else, look from 
+    the current open directory. */
+    if (path[0] == '/') {
+        dir = dir_open_root();
+        path++;
+    } else {
+        dir = dir_open(inode_open(thread_current()->cur_directory));
+    }
 
     if (dir != NULL)
-        dir_lookup(dir, name, &inode);
+        dir_lookup(dir, path, &inode);
     dir_close(dir);
+    // printf("FOUND PATH %p, %d\n", inode, (inode != NULL));
 
     return file_open(inode);
 }
