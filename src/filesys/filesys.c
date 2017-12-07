@@ -120,6 +120,7 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
         } else {
             success = false;
         }
+        dir_close(new_dir);
     }
 
     // printf("Done?...\n");

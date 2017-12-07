@@ -701,15 +701,23 @@ static void munmap(struct intr_frame *f) {
 #ifdef FILESYS
 /*!< Change the current directory. */
 static void chdir(struct intr_frame *f) {
-    ASSERT(0); // Not implemented
     /* Parse arguments. */
     const char *dir = (const char*) get_arg(f, 1);
+    f->eax = (uint32_t) false;
 
     /* Verify arguments. */
     verify_pointer((uint32_t *) dir);
 
-    // TODO
-    (void) dir;
+    struct file *file = filesys_open(dir);
+    ASSERT(file != NULL);
+    struct inode *inode = file_get_inode(file);
+    if (inode == NULL) {
+        return;
+    }
+
+    thread_current()->cur_directory = inode_get_sector(inode);
+
+    f->eax = (uint32_t) true;
 }
 
 /*!< Create a directory. */
@@ -727,7 +735,6 @@ static void mkdir(struct intr_frame *f) {
     }
 
     f->eax = (uint32_t) true;
-    // printf("MKDIR: Successfully created directory: %s\n", dir);
 }
 
 /*!< Reads a directory entry. */
@@ -741,11 +748,15 @@ static void readdir(struct intr_frame *f) {
     struct file *file = file_from_fd(fd)->file;
     ASSERT(file != NULL);
     struct dir *dir = dir_open(file_get_inode(file));
-    ASSERT(dir != NULL);
+    if (dir == NULL) {
+        return;
+    }
 
     if (dir_readdir(dir, name)) {
         f->eax = (uint32_t) true;
     }
+
+    dir_close(dir);
 }
 
 /*!< Tests if a fd represents a directory. */
@@ -757,7 +768,9 @@ static void isdir(struct intr_frame *f) {
     struct file *file = file_from_fd(fd)->file;
     ASSERT(file != NULL);
     struct inode *inode = file_get_inode(file);
-    ASSERT(inode != NULL);
+    if (inode == NULL) {
+        return;
+    }
 
     if (inode_is_directory(inode)) {
         f->eax = (uint32_t) true;
@@ -772,7 +785,9 @@ static void inumber(struct intr_frame *f) {
     struct file *file = file_from_fd(fd)->file;
     ASSERT(file != NULL);
     struct inode *inode = file_get_inode(file);
-    ASSERT(inode != NULL);
+    if (inode == NULL) {
+        return;
+    }
 
     f->eax = (uint32_t) inode_get_sector(inode);
 }
