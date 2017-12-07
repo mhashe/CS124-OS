@@ -98,6 +98,7 @@ static struct cache_entry * sector_to_cache(block_sector_t sector) {
 
 /* Reads cache data at "cache" into buffer. */
 void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) {
+    // printf("    READING: %d\n", sector);
     ASSERT((int) sector != CACHE_SECTOR_EMPTY);
     ASSERT(size + offset <= BLOCK_SECTOR_SIZE);
 
@@ -195,6 +196,7 @@ void cache_read(block_sector_t sector, void * buffer, off_t size, off_t offset) 
    Write sector SECTOR to CACHE from BUFFER, which must contain
    BLOCK_SECTOR_SIZE bytes.*/
 void cache_write(block_sector_t sector, const void * buffer, off_t size, off_t offset) {
+    // printf("    WRITING: %d\n", sector);
     ASSERT((int) sector != CACHE_SECTOR_EMPTY);
     ASSERT(size + offset <= BLOCK_SECTOR_SIZE);
 

@@ -378,6 +378,13 @@ static void open(struct intr_frame *f) {
     /* Count of file descriptors for error checking. */
     size_t count_start = list_size(&thread_current()->fds);
 
+    /* If file_name is "", we return -1. This used to be handled in
+       filesys_open, but is now handled here to make parsing easier. */
+    if (file_name[0] == '\0') {
+        f->eax = -1;
+        return;
+    }
+
     if (file_name) {
         /* Try to open file. */
         struct file* file = filesys_open(file_name);
