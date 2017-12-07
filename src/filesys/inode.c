@@ -62,6 +62,8 @@ static struct list open_inodes;
 
 
 bool inode_is_directory(struct inode *inode) {
+    ASSERT(inode != NULL);
+    ASSERT(inode->data.magic == INODE_MAGIC);
     return inode->data.is_directory;
 }
 
@@ -75,6 +77,9 @@ static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx) {
 
 
 static bool inode_extend_file(struct inode_disk *data, size_t cnt) {
+    ASSERT(data != NULL);
+    ASSERT(data->magic == INODE_MAGIC);
+
     /* Get the correct count of sectors we need. */
 
     /* Calculate initial and final directed and indirected sector indices 
@@ -212,6 +217,8 @@ void inode_init(void) {
     Returns -1 if INODE does not contain data for a byte at offset
     POS. */
 static block_sector_t byte_to_sector(const struct inode *inode, off_t pos) {
+    ASSERT(inode != NULL);
+    ASSERT(inode->data.magic == INODE_MAGIC);
     // printf("BYTES_TO_SECTOR: (bytes: %d)\n", pos);
     // print_inode_allocation(&inode->data);
     
@@ -258,6 +265,9 @@ static block_sector_t byte_to_sector(const struct inode *inode, off_t pos) {
 
 /* TODO: Comment. Essentially a function for debugging purposes. */
 static void print_inode_allocation(struct inode_disk *data) {
+    ASSERT(data != NULL);
+    ASSERT(data->magic == INODE_MAGIC);
+
     int i;
 
     block_sector_t *ind = malloc(BLOCK_SECTOR_SIZE);
@@ -397,13 +407,18 @@ struct inode * inode_open(block_sector_t sector) {
 
 /*! Reopens and returns INODE. */
 struct inode * inode_reopen(struct inode *inode) {
-    if (inode != NULL)
+    if (inode != NULL) {
+        ASSERT(inode->data.magic == INODE_MAGIC);
         inode->open_cnt++;
+    }
     return inode;
 }
 
 /*! Returns INODE's inode number. */
 block_sector_t inode_get_inumber(const struct inode *inode) {
+    ASSERT(inode != NULL);
+    ASSERT(inode->data.magic == INODE_MAGIC);
+
     return inode->sector;
 }
 
@@ -411,10 +426,13 @@ block_sector_t inode_get_inumber(const struct inode *inode) {
     If this was the last reference to INODE, frees its memory.
     If INODE was also a removed inode, frees its blocks. */
 void inode_close(struct inode *inode) {
+
     int i;
     /* Ignore null pointer. */
     if (inode == NULL)
         return;
+
+    ASSERT(inode->data.magic == INODE_MAGIC);
 
     /* Release resources if this was the last opener. */
     if (--inode->open_cnt == 0) {
@@ -464,6 +482,8 @@ void inode_close(struct inode *inode) {
     has it open. */
 void inode_remove(struct inode *inode) {
     ASSERT(inode != NULL);
+    ASSERT(inode->data.magic == INODE_MAGIC);
+
     inode->removed = true;
 }
 
@@ -471,6 +491,9 @@ void inode_remove(struct inode *inode) {
    Returns the number of bytes actually read, which may be less
    than SIZE if an error occurs or end of file is reached. */
 off_t inode_read_at(struct inode *inode, void *buffer_, off_t size, off_t offset) {
+    ASSERT(inode != NULL);
+    ASSERT(inode->data.magic == INODE_MAGIC);
+
     uint8_t *buffer = buffer_;
     off_t bytes_read = 0;
 
@@ -507,6 +530,9 @@ off_t inode_read_at(struct inode *inode, void *buffer_, off_t size, off_t offset
     less than SIZE if end of file is reached or an error occurs. */
 off_t inode_write_at(struct inode *inode, const void *buffer_, off_t size, 
         off_t offset) {
+    ASSERT(inode != NULL);
+    ASSERT(inode->data.magic == INODE_MAGIC);
+
     const uint8_t *buffer = buffer_;
     off_t bytes_written = 0;
     // uint8_t *bounce = NULL;
@@ -563,6 +589,9 @@ off_t inode_write_at(struct inode *inode, const void *buffer_, off_t size,
 /*! Disables writes to INODE.
     May be called at most once per inode opener. */
 void inode_deny_write (struct inode *inode) {
+    ASSERT(inode != NULL);
+    ASSERT(inode->data.magic == INODE_MAGIC);
+
     inode->deny_write_cnt++;
     ASSERT(inode->deny_write_cnt <= inode->open_cnt);
 }
@@ -571,6 +600,9 @@ void inode_deny_write (struct inode *inode) {
     Must be called once by each inode opener who has called
     inode_deny_write() on the inode, before closing the inode. */
 void inode_allow_write (struct inode *inode) {
+    ASSERT(inode != NULL);
+    ASSERT(inode->data.magic == INODE_MAGIC);
+
     ASSERT(inode->deny_write_cnt > 0);
     ASSERT(inode->deny_write_cnt <= inode->open_cnt);
     inode->deny_write_cnt--;
@@ -578,6 +610,9 @@ void inode_allow_write (struct inode *inode) {
 
 /*! Returns the length, in bytes, of INODE's data. */
 off_t inode_length(const struct inode *inode) {
+    ASSERT(inode != NULL);
+    ASSERT(inode->data.magic == INODE_MAGIC);
+
     return inode->data.length;
 }
 
