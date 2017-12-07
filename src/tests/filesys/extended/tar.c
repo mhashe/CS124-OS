@@ -126,9 +126,10 @@ archive_file (char file_name[], size_t file_name_size,
           /* Nothing to do: don't try to archive the archive file. */
           success = true;
         }
-        printf("ARCHIVE5 %d\n", success);
+        printf("ARCHIVE5 %d %d\n", success, file_fd);
   
       close (file_fd);
+        printf("ARCHIVE6 %d\n", success);
 
       return success;
     }
@@ -181,7 +182,7 @@ static bool
 archive_directory (char file_name[], size_t file_name_size, int file_fd,
                    int archive_fd, bool *write_error)
 {
-  printf("ARCHIVE_DIR %s\n", file_name);
+  printf("ARCHIVE_DIR %s %d\n", file_name, file_fd);
   size_t dir_len;
   bool success = true;
 
@@ -196,7 +197,7 @@ archive_directory (char file_name[], size_t file_name_size, int file_fd,
     return false;
       
   file_name[dir_len] = '/';
-  printf("%s\n", file_name+dir_len);
+  printf("%s %d\n", file_name+dir_len, file_fd);
   while (readdir (file_fd, &file_name[dir_len + 1])) {
 
     printf("\t\t\tCONTENT %s\n", file_name+dir_len+1);
@@ -204,6 +205,7 @@ archive_directory (char file_name[], size_t file_name_size, int file_fd,
       printf("HI\n");
       success = false;
     }
+    printf("PAST ARCHIVE\n");
   }
   file_name[dir_len] = '\0';
   printf("!ARCHIVE_DIR %d\n", success);

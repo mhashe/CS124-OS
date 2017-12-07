@@ -232,7 +232,7 @@ bool dir_readdir(struct dir *dir, char name[NAME_MAX + 1]) {
 
     while (inode_read_at(dir->inode, &e, sizeof(e), dir->pos) == sizeof(e)) {
         dir->pos += sizeof(e);
-        printf("%d\n", dir->pos);
+        // printf("%d\n", dir->pos);
 
         /* If file is in-use, it is not self, and it is not its parent, then 
         it can be printed. */

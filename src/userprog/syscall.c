@@ -410,6 +410,8 @@ static void open(struct intr_frame *f) {
         inode_check(inode);
         if (inode_is_directory(inode)) {
             dir = dir_open(inode);
+        } else {
+            inode_close(inode);
         }
 
         if (file) {
@@ -802,7 +804,6 @@ static void readdir(struct intr_frame *f) {
     }
     printf("READDIR %s\n", name);
 
-    dir_close(dir);
     printf("!READIR\n");
 }
 
@@ -815,18 +816,11 @@ static void isdir(struct intr_frame *f) {
 
     struct dir *dir = file_from_fd(fd)->dir;
     if (dir != NULL) {
+        printf("ISDIR %p %p\n", dir, dir->inode);
         f->eax = (uint32_t) true;
+    } else {
+        printf("NO DIR\n");
     }
-    // struct file *file = file_from_fd(fd)->file;
-    // ASSERT(file != NULL);
-    // struct inode *inode = file_get_inode(file);
-    // if (inode == NULL) {
-    //     return;
-    // }
-
-    // if (inode_is_directory(inode)) {
-    //     f->eax = (uint32_t) true;
-    // }
 
     // printf("!ISDIR\n");
 }
