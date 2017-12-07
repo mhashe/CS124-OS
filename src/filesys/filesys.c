@@ -102,6 +102,12 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
     /* Get directory struct corresponding to parent directory. */
     struct dir * parent_dir = dir_open(parent_inode);
 
+    /* If parent already has a child with the same name, then return false. */
+    struct inode *inode = NULL;
+    if (dir_lookup(parent_dir, name, &inode)){
+        return false;
+    }
+
     // printf("Creating new thing...\n");
     /* Create new file/directory inside its parent directory. */
     bool success = (parent_dir != NULL &&
