@@ -391,7 +391,7 @@ static void input_sector(struct channel *c, void *sector) {
 static void output_sector(struct channel *c, const void *sector) {
     outsw(reg_data(c), sector, BLOCK_SECTOR_SIZE / 2);
 }
-
+
 /* Low-level ATA primitives. */
 
 /*! Wait up to 10 seconds for the controller to become idle, that

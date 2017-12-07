@@ -113,16 +113,19 @@ void timer_sleep(int64_t ticks) {
 
 /*! Sleeps for approximately MS milliseconds.  Interrupts must be turned on. */
 void timer_msleep(int64_t ms) {
+    ASSERT(intr_get_level() == INTR_ON);
     real_time_sleep(ms, 1000);
 }
 
 /*! Sleeps for approximately US microseconds.  Interrupts must be turned on. */
 void timer_usleep(int64_t us) {
+    ASSERT(intr_get_level() == INTR_ON);
     real_time_sleep(us, 1000 * 1000);
 }
 
 /*! Sleeps for approximately NS nanoseconds.  Interrupts must be turned on. */
 void timer_nsleep(int64_t ns) {
+    ASSERT(intr_get_level() == INTR_ON);
     real_time_sleep(ns, 1000 * 1000 * 1000);
 }
 
