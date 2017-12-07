@@ -410,9 +410,7 @@ void flush_cache(void) {
                requires enabling interrupts. */
             enum intr_level old_level = intr_enable();
 
-            /* If the filesystem is shutting down, there shouldn't be any
-               threads holding these locks. */
-            ASSERT(lock_try_acquire(&cache->cache_entry_lock))
+            lock_acquire(&cache->cache_entry_lock);
             block_write(fs_device, cache->sector, &cache->data);
             cache->dirty = false;
             lock_release(&cache->cache_entry_lock);

@@ -1,0 +1,2584 @@
+cd build && make grade
+make[1]: Entering directory '/media/sf_term7/cs124/CS124-OS/src/filesys/build'
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/args-none -a args-none -- -q  -f run args-none < /dev/null 2> tests/userprog/args-none.errors > tests/userprog/args-none.output
+perl -I../.. ../../tests/userprog/args-none.ck tests/userprog/args-none tests/userprog/args-none.result
+pass tests/userprog/args-none
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/args-single -a args-single -- -q  -f run 'args-single onearg' < /dev/null 2> tests/userprog/args-single.errors > tests/userprog/args-single.output
+perl -I../.. ../../tests/userprog/args-single.ck tests/userprog/args-single tests/userprog/args-single.result
+pass tests/userprog/args-single
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/args-multiple -a args-multiple -- -q  -f run 'args-multiple some arguments for you!' < /dev/null 2> tests/userprog/args-multiple.errors > tests/userprog/args-multiple.output
+perl -I../.. ../../tests/userprog/args-multiple.ck tests/userprog/args-multiple tests/userprog/args-multiple.result
+pass tests/userprog/args-multiple
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/args-many -a args-many -- -q  -f run 'args-many a b c d e f g h i j k l m n o p q r s t u v' < /dev/null 2> tests/userprog/args-many.errors > tests/userprog/args-many.output
+perl -I../.. ../../tests/userprog/args-many.ck tests/userprog/args-many tests/userprog/args-many.result
+pass tests/userprog/args-many
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/args-dbl-space -a args-dbl-space -- -q  -f run 'args-dbl-space two  spaces!' < /dev/null 2> tests/userprog/args-dbl-space.errors > tests/userprog/args-dbl-space.output
+perl -I../.. ../../tests/userprog/args-dbl-space.ck tests/userprog/args-dbl-space tests/userprog/args-dbl-space.result
+pass tests/userprog/args-dbl-space
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/sc-bad-sp -a sc-bad-sp -- -q  -f run sc-bad-sp < /dev/null 2> tests/userprog/sc-bad-sp.errors > tests/userprog/sc-bad-sp.output
+perl -I../.. ../../tests/userprog/sc-bad-sp.ck tests/userprog/sc-bad-sp tests/userprog/sc-bad-sp.result
+pass tests/userprog/sc-bad-sp
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/sc-bad-arg -a sc-bad-arg -- -q  -f run sc-bad-arg < /dev/null 2> tests/userprog/sc-bad-arg.errors > tests/userprog/sc-bad-arg.output
+perl -I../.. ../../tests/userprog/sc-bad-arg.ck tests/userprog/sc-bad-arg tests/userprog/sc-bad-arg.result
+pass tests/userprog/sc-bad-arg
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/sc-boundary -a sc-boundary -- -q  -f run sc-boundary < /dev/null 2> tests/userprog/sc-boundary.errors > tests/userprog/sc-boundary.output
+perl -I../.. ../../tests/userprog/sc-boundary.ck tests/userprog/sc-boundary tests/userprog/sc-boundary.result
+pass tests/userprog/sc-boundary
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/sc-boundary-2 -a sc-boundary-2 -- -q  -f run sc-boundary-2 < /dev/null 2> tests/userprog/sc-boundary-2.errors > tests/userprog/sc-boundary-2.output
+perl -I../.. ../../tests/userprog/sc-boundary-2.ck tests/userprog/sc-boundary-2 tests/userprog/sc-boundary-2.result
+pass tests/userprog/sc-boundary-2
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/halt -a halt -- -q  -f run halt < /dev/null 2> tests/userprog/halt.errors > tests/userprog/halt.output
+perl -I../.. ../../tests/userprog/halt.ck tests/userprog/halt tests/userprog/halt.result
+pass tests/userprog/halt
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/exit -a exit -- -q  -f run exit < /dev/null 2> tests/userprog/exit.errors > tests/userprog/exit.output
+perl -I../.. ../../tests/userprog/exit.ck tests/userprog/exit tests/userprog/exit.result
+pass tests/userprog/exit
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/create-normal -a create-normal -- -q  -f run create-normal < /dev/null 2> tests/userprog/create-normal.errors > tests/userprog/create-normal.output
+perl -I../.. ../../tests/userprog/create-normal.ck tests/userprog/create-normal tests/userprog/create-normal.result
+pass tests/userprog/create-normal
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/create-empty -a create-empty -- -q  -f run create-empty < /dev/null 2> tests/userprog/create-empty.errors > tests/userprog/create-empty.output
+perl -I../.. ../../tests/userprog/create-empty.ck tests/userprog/create-empty tests/userprog/create-empty.result
+pass tests/userprog/create-empty
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/create-null -a create-null -- -q  -f run create-null < /dev/null 2> tests/userprog/create-null.errors > tests/userprog/create-null.output
+perl -I../.. ../../tests/userprog/create-null.ck tests/userprog/create-null tests/userprog/create-null.result
+pass tests/userprog/create-null
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/create-bad-ptr -a create-bad-ptr -- -q  -f run create-bad-ptr < /dev/null 2> tests/userprog/create-bad-ptr.errors > tests/userprog/create-bad-ptr.output
+perl -I../.. ../../tests/userprog/create-bad-ptr.ck tests/userprog/create-bad-ptr tests/userprog/create-bad-ptr.result
+pass tests/userprog/create-bad-ptr
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/create-long -a create-long -- -q  -f run create-long < /dev/null 2> tests/userprog/create-long.errors > tests/userprog/create-long.output
+perl -I../.. ../../tests/userprog/create-long.ck tests/userprog/create-long tests/userprog/create-long.result
+pass tests/userprog/create-long
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/create-exists -a create-exists -- -q  -f run create-exists < /dev/null 2> tests/userprog/create-exists.errors > tests/userprog/create-exists.output
+perl -I../.. ../../tests/userprog/create-exists.ck tests/userprog/create-exists tests/userprog/create-exists.result
+pass tests/userprog/create-exists
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/create-bound -a create-bound -- -q  -f run create-bound < /dev/null 2> tests/userprog/create-bound.errors > tests/userprog/create-bound.output
+perl -I../.. ../../tests/userprog/create-bound.ck tests/userprog/create-bound tests/userprog/create-bound.result
+pass tests/userprog/create-bound
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/open-normal -a open-normal -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run open-normal < /dev/null 2> tests/userprog/open-normal.errors > tests/userprog/open-normal.output
+perl -I../.. ../../tests/userprog/open-normal.ck tests/userprog/open-normal tests/userprog/open-normal.result
+pass tests/userprog/open-normal
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/open-missing -a open-missing -- -q  -f run open-missing < /dev/null 2> tests/userprog/open-missing.errors > tests/userprog/open-missing.output
+perl -I../.. ../../tests/userprog/open-missing.ck tests/userprog/open-missing tests/userprog/open-missing.result
+pass tests/userprog/open-missing
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/open-boundary -a open-boundary -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run open-boundary < /dev/null 2> tests/userprog/open-boundary.errors > tests/userprog/open-boundary.output
+perl -I../.. ../../tests/userprog/open-boundary.ck tests/userprog/open-boundary tests/userprog/open-boundary.result
+pass tests/userprog/open-boundary
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/open-empty -a open-empty -- -q  -f run open-empty < /dev/null 2> tests/userprog/open-empty.errors > tests/userprog/open-empty.output
+perl -I../.. ../../tests/userprog/open-empty.ck tests/userprog/open-empty tests/userprog/open-empty.result
+pass tests/userprog/open-empty
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/open-null -a open-null -- -q  -f run open-null < /dev/null 2> tests/userprog/open-null.errors > tests/userprog/open-null.output
+perl -I../.. ../../tests/userprog/open-null.ck tests/userprog/open-null tests/userprog/open-null.result
+pass tests/userprog/open-null
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/open-bad-ptr -a open-bad-ptr -- -q  -f run open-bad-ptr < /dev/null 2> tests/userprog/open-bad-ptr.errors > tests/userprog/open-bad-ptr.output
+perl -I../.. ../../tests/userprog/open-bad-ptr.ck tests/userprog/open-bad-ptr tests/userprog/open-bad-ptr.result
+pass tests/userprog/open-bad-ptr
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/open-twice -a open-twice -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run open-twice < /dev/null 2> tests/userprog/open-twice.errors > tests/userprog/open-twice.output
+perl -I../.. ../../tests/userprog/open-twice.ck tests/userprog/open-twice tests/userprog/open-twice.result
+pass tests/userprog/open-twice
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/close-normal -a close-normal -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run close-normal < /dev/null 2> tests/userprog/close-normal.errors > tests/userprog/close-normal.output
+perl -I../.. ../../tests/userprog/close-normal.ck tests/userprog/close-normal tests/userprog/close-normal.result
+pass tests/userprog/close-normal
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/close-twice -a close-twice -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run close-twice < /dev/null 2> tests/userprog/close-twice.errors > tests/userprog/close-twice.output
+perl -I../.. ../../tests/userprog/close-twice.ck tests/userprog/close-twice tests/userprog/close-twice.result
+pass tests/userprog/close-twice
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/close-stdin -a close-stdin -- -q  -f run close-stdin < /dev/null 2> tests/userprog/close-stdin.errors > tests/userprog/close-stdin.output
+perl -I../.. ../../tests/userprog/close-stdin.ck tests/userprog/close-stdin tests/userprog/close-stdin.result
+pass tests/userprog/close-stdin
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/close-stdout -a close-stdout -- -q  -f run close-stdout < /dev/null 2> tests/userprog/close-stdout.errors > tests/userprog/close-stdout.output
+perl -I../.. ../../tests/userprog/close-stdout.ck tests/userprog/close-stdout tests/userprog/close-stdout.result
+pass tests/userprog/close-stdout
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/close-bad-fd -a close-bad-fd -- -q  -f run close-bad-fd < /dev/null 2> tests/userprog/close-bad-fd.errors > tests/userprog/close-bad-fd.output
+perl -I../.. ../../tests/userprog/close-bad-fd.ck tests/userprog/close-bad-fd tests/userprog/close-bad-fd.result
+pass tests/userprog/close-bad-fd
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/read-normal -a read-normal -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run read-normal < /dev/null 2> tests/userprog/read-normal.errors > tests/userprog/read-normal.output
+perl -I../.. ../../tests/userprog/read-normal.ck tests/userprog/read-normal tests/userprog/read-normal.result
+pass tests/userprog/read-normal
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/read-bad-ptr -a read-bad-ptr -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run read-bad-ptr < /dev/null 2> tests/userprog/read-bad-ptr.errors > tests/userprog/read-bad-ptr.output
+perl -I../.. ../../tests/userprog/read-bad-ptr.ck tests/userprog/read-bad-ptr tests/userprog/read-bad-ptr.result
+pass tests/userprog/read-bad-ptr
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/read-boundary -a read-boundary -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run read-boundary < /dev/null 2> tests/userprog/read-boundary.errors > tests/userprog/read-boundary.output
+perl -I../.. ../../tests/userprog/read-boundary.ck tests/userprog/read-boundary tests/userprog/read-boundary.result
+pass tests/userprog/read-boundary
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/read-zero -a read-zero -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run read-zero < /dev/null 2> tests/userprog/read-zero.errors > tests/userprog/read-zero.output
+perl -I../.. ../../tests/userprog/read-zero.ck tests/userprog/read-zero tests/userprog/read-zero.result
+pass tests/userprog/read-zero
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/read-stdout -a read-stdout -- -q  -f run read-stdout < /dev/null 2> tests/userprog/read-stdout.errors > tests/userprog/read-stdout.output
+perl -I../.. ../../tests/userprog/read-stdout.ck tests/userprog/read-stdout tests/userprog/read-stdout.result
+pass tests/userprog/read-stdout
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/read-bad-fd -a read-bad-fd -- -q  -f run read-bad-fd < /dev/null 2> tests/userprog/read-bad-fd.errors > tests/userprog/read-bad-fd.output
+perl -I../.. ../../tests/userprog/read-bad-fd.ck tests/userprog/read-bad-fd tests/userprog/read-bad-fd.result
+pass tests/userprog/read-bad-fd
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/write-normal -a write-normal -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run write-normal < /dev/null 2> tests/userprog/write-normal.errors > tests/userprog/write-normal.output
+perl -I../.. ../../tests/userprog/write-normal.ck tests/userprog/write-normal tests/userprog/write-normal.result
+pass tests/userprog/write-normal
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/write-bad-ptr -a write-bad-ptr -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run write-bad-ptr < /dev/null 2> tests/userprog/write-bad-ptr.errors > tests/userprog/write-bad-ptr.output
+perl -I../.. ../../tests/userprog/write-bad-ptr.ck tests/userprog/write-bad-ptr tests/userprog/write-bad-ptr.result
+pass tests/userprog/write-bad-ptr
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/write-boundary -a write-boundary -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run write-boundary < /dev/null 2> tests/userprog/write-boundary.errors > tests/userprog/write-boundary.output
+perl -I../.. ../../tests/userprog/write-boundary.ck tests/userprog/write-boundary tests/userprog/write-boundary.result
+pass tests/userprog/write-boundary
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/write-zero -a write-zero -p ../../tests/userprog/sample.txt -a sample.txt -- -q  -f run write-zero < /dev/null 2> tests/userprog/write-zero.errors > tests/userprog/write-zero.output
+perl -I../.. ../../tests/userprog/write-zero.ck tests/userprog/write-zero tests/userprog/write-zero.result
+pass tests/userprog/write-zero
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/write-stdin -a write-stdin -- -q  -f run write-stdin < /dev/null 2> tests/userprog/write-stdin.errors > tests/userprog/write-stdin.output
+perl -I../.. ../../tests/userprog/write-stdin.ck tests/userprog/write-stdin tests/userprog/write-stdin.result
+pass tests/userprog/write-stdin
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/write-bad-fd -a write-bad-fd -- -q  -f run write-bad-fd < /dev/null 2> tests/userprog/write-bad-fd.errors > tests/userprog/write-bad-fd.output
+perl -I../.. ../../tests/userprog/write-bad-fd.ck tests/userprog/write-bad-fd tests/userprog/write-bad-fd.result
+pass tests/userprog/write-bad-fd
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/exec-once -a exec-once -p tests/userprog/child-simple -a child-simple -- -q  -f run exec-once < /dev/null 2> tests/userprog/exec-once.errors > tests/userprog/exec-once.output
+perl -I../.. ../../tests/userprog/exec-once.ck tests/userprog/exec-once tests/userprog/exec-once.result
+pass tests/userprog/exec-once
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/exec-arg -a exec-arg -p tests/userprog/child-args -a child-args -- -q  -f run exec-arg < /dev/null 2> tests/userprog/exec-arg.errors > tests/userprog/exec-arg.output
+perl -I../.. ../../tests/userprog/exec-arg.ck tests/userprog/exec-arg tests/userprog/exec-arg.result
+pass tests/userprog/exec-arg
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/exec-multiple -a exec-multiple -p tests/userprog/child-simple -a child-simple -- -q  -f run exec-multiple < /dev/null 2> tests/userprog/exec-multiple.errors > tests/userprog/exec-multiple.output
+perl -I../.. ../../tests/userprog/exec-multiple.ck tests/userprog/exec-multiple tests/userprog/exec-multiple.result
+pass tests/userprog/exec-multiple
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/exec-missing -a exec-missing -- -q  -f run exec-missing < /dev/null 2> tests/userprog/exec-missing.errors > tests/userprog/exec-missing.output
+perl -I../.. ../../tests/userprog/exec-missing.ck tests/userprog/exec-missing tests/userprog/exec-missing.result
+pass tests/userprog/exec-missing
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/exec-bad-ptr -a exec-bad-ptr -- -q  -f run exec-bad-ptr < /dev/null 2> tests/userprog/exec-bad-ptr.errors > tests/userprog/exec-bad-ptr.output
+perl -I../.. ../../tests/userprog/exec-bad-ptr.ck tests/userprog/exec-bad-ptr tests/userprog/exec-bad-ptr.result
+pass tests/userprog/exec-bad-ptr
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/wait-simple -a wait-simple -p tests/userprog/child-simple -a child-simple -- -q  -f run wait-simple < /dev/null 2> tests/userprog/wait-simple.errors > tests/userprog/wait-simple.output
+perl -I../.. ../../tests/userprog/wait-simple.ck tests/userprog/wait-simple tests/userprog/wait-simple.result
+pass tests/userprog/wait-simple
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/wait-twice -a wait-twice -p tests/userprog/child-simple -a child-simple -- -q  -f run wait-twice < /dev/null 2> tests/userprog/wait-twice.errors > tests/userprog/wait-twice.output
+perl -I../.. ../../tests/userprog/wait-twice.ck tests/userprog/wait-twice tests/userprog/wait-twice.result
+pass tests/userprog/wait-twice
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/wait-killed -a wait-killed -p tests/userprog/child-bad -a child-bad -- -q  -f run wait-killed < /dev/null 2> tests/userprog/wait-killed.errors > tests/userprog/wait-killed.output
+perl -I../.. ../../tests/userprog/wait-killed.ck tests/userprog/wait-killed tests/userprog/wait-killed.result
+pass tests/userprog/wait-killed
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/wait-bad-pid -a wait-bad-pid -- -q  -f run wait-bad-pid < /dev/null 2> tests/userprog/wait-bad-pid.errors > tests/userprog/wait-bad-pid.output
+perl -I../.. ../../tests/userprog/wait-bad-pid.ck tests/userprog/wait-bad-pid tests/userprog/wait-bad-pid.result
+pass tests/userprog/wait-bad-pid
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/multi-recurse -a multi-recurse -- -q  -f run 'multi-recurse 15' < /dev/null 2> tests/userprog/multi-recurse.errors > tests/userprog/multi-recurse.output
+perl -I../.. ../../tests/userprog/multi-recurse.ck tests/userprog/multi-recurse tests/userprog/multi-recurse.result
+pass tests/userprog/multi-recurse
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/multi-child-fd -a multi-child-fd -p ../../tests/userprog/sample.txt -a sample.txt -p tests/userprog/child-close -a child-close -- -q  -f run multi-child-fd < /dev/null 2> tests/userprog/multi-child-fd.errors > tests/userprog/multi-child-fd.output
+perl -I../.. ../../tests/userprog/multi-child-fd.ck tests/userprog/multi-child-fd tests/userprog/multi-child-fd.result
+pass tests/userprog/multi-child-fd
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/rox-simple -a rox-simple -- -q  -f run rox-simple < /dev/null 2> tests/userprog/rox-simple.errors > tests/userprog/rox-simple.output
+perl -I../.. ../../tests/userprog/rox-simple.ck tests/userprog/rox-simple tests/userprog/rox-simple.result
+pass tests/userprog/rox-simple
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/rox-child -a rox-child -p tests/userprog/child-rox -a child-rox -- -q  -f run rox-child < /dev/null 2> tests/userprog/rox-child.errors > tests/userprog/rox-child.output
+perl -I../.. ../../tests/userprog/rox-child.ck tests/userprog/rox-child tests/userprog/rox-child.result
+pass tests/userprog/rox-child
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/rox-multichild -a rox-multichild -p tests/userprog/child-rox -a child-rox -- -q  -f run rox-multichild < /dev/null 2> tests/userprog/rox-multichild.errors > tests/userprog/rox-multichild.output
+perl -I../.. ../../tests/userprog/rox-multichild.ck tests/userprog/rox-multichild tests/userprog/rox-multichild.result
+pass tests/userprog/rox-multichild
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/bad-read -a bad-read -- -q  -f run bad-read < /dev/null 2> tests/userprog/bad-read.errors > tests/userprog/bad-read.output
+perl -I../.. ../../tests/userprog/bad-read.ck tests/userprog/bad-read tests/userprog/bad-read.result
+pass tests/userprog/bad-read
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/bad-write -a bad-write -- -q  -f run bad-write < /dev/null 2> tests/userprog/bad-write.errors > tests/userprog/bad-write.output
+perl -I../.. ../../tests/userprog/bad-write.ck tests/userprog/bad-write tests/userprog/bad-write.result
+pass tests/userprog/bad-write
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/bad-read2 -a bad-read2 -- -q  -f run bad-read2 < /dev/null 2> tests/userprog/bad-read2.errors > tests/userprog/bad-read2.output
+perl -I../.. ../../tests/userprog/bad-read2.ck tests/userprog/bad-read2 tests/userprog/bad-read2.result
+pass tests/userprog/bad-read2
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/bad-write2 -a bad-write2 -- -q  -f run bad-write2 < /dev/null 2> tests/userprog/bad-write2.errors > tests/userprog/bad-write2.output
+perl -I../.. ../../tests/userprog/bad-write2.ck tests/userprog/bad-write2 tests/userprog/bad-write2.result
+pass tests/userprog/bad-write2
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/bad-jump -a bad-jump -- -q  -f run bad-jump < /dev/null 2> tests/userprog/bad-jump.errors > tests/userprog/bad-jump.output
+perl -I../.. ../../tests/userprog/bad-jump.ck tests/userprog/bad-jump tests/userprog/bad-jump.result
+pass tests/userprog/bad-jump
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/userprog/bad-jump2 -a bad-jump2 -- -q  -f run bad-jump2 < /dev/null 2> tests/userprog/bad-jump2.errors > tests/userprog/bad-jump2.output
+perl -I../.. ../../tests/userprog/bad-jump2.ck tests/userprog/bad-jump2 tests/userprog/bad-jump2.result
+pass tests/userprog/bad-jump2
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/lg-create -a lg-create -- -q  -f run lg-create < /dev/null 2> tests/filesys/base/lg-create.errors > tests/filesys/base/lg-create.output
+perl -I../.. ../../tests/filesys/base/lg-create.ck tests/filesys/base/lg-create tests/filesys/base/lg-create.result
+pass tests/filesys/base/lg-create
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/lg-full -a lg-full -- -q  -f run lg-full < /dev/null 2> tests/filesys/base/lg-full.errors > tests/filesys/base/lg-full.output
+perl -I../.. ../../tests/filesys/base/lg-full.ck tests/filesys/base/lg-full tests/filesys/base/lg-full.result
+pass tests/filesys/base/lg-full
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/lg-random -a lg-random -- -q  -f run lg-random < /dev/null 2> tests/filesys/base/lg-random.errors > tests/filesys/base/lg-random.output
+perl -I../.. ../../tests/filesys/base/lg-random.ck tests/filesys/base/lg-random tests/filesys/base/lg-random.result
+pass tests/filesys/base/lg-random
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/lg-seq-block -a lg-seq-block -- -q  -f run lg-seq-block < /dev/null 2> tests/filesys/base/lg-seq-block.errors > tests/filesys/base/lg-seq-block.output
+perl -I../.. ../../tests/filesys/base/lg-seq-block.ck tests/filesys/base/lg-seq-block tests/filesys/base/lg-seq-block.result
+pass tests/filesys/base/lg-seq-block
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/lg-seq-random -a lg-seq-random -- -q  -f run lg-seq-random < /dev/null 2> tests/filesys/base/lg-seq-random.errors > tests/filesys/base/lg-seq-random.output
+perl -I../.. ../../tests/filesys/base/lg-seq-random.ck tests/filesys/base/lg-seq-random tests/filesys/base/lg-seq-random.result
+pass tests/filesys/base/lg-seq-random
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/sm-create -a sm-create -- -q  -f run sm-create < /dev/null 2> tests/filesys/base/sm-create.errors > tests/filesys/base/sm-create.output
+perl -I../.. ../../tests/filesys/base/sm-create.ck tests/filesys/base/sm-create tests/filesys/base/sm-create.result
+pass tests/filesys/base/sm-create
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/sm-full -a sm-full -- -q  -f run sm-full < /dev/null 2> tests/filesys/base/sm-full.errors > tests/filesys/base/sm-full.output
+perl -I../.. ../../tests/filesys/base/sm-full.ck tests/filesys/base/sm-full tests/filesys/base/sm-full.result
+pass tests/filesys/base/sm-full
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/sm-random -a sm-random -- -q  -f run sm-random < /dev/null 2> tests/filesys/base/sm-random.errors > tests/filesys/base/sm-random.output
+perl -I../.. ../../tests/filesys/base/sm-random.ck tests/filesys/base/sm-random tests/filesys/base/sm-random.result
+pass tests/filesys/base/sm-random
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/sm-seq-block -a sm-seq-block -- -q  -f run sm-seq-block < /dev/null 2> tests/filesys/base/sm-seq-block.errors > tests/filesys/base/sm-seq-block.output
+perl -I../.. ../../tests/filesys/base/sm-seq-block.ck tests/filesys/base/sm-seq-block tests/filesys/base/sm-seq-block.result
+pass tests/filesys/base/sm-seq-block
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/sm-seq-random -a sm-seq-random -- -q  -f run sm-seq-random < /dev/null 2> tests/filesys/base/sm-seq-random.errors > tests/filesys/base/sm-seq-random.output
+perl -I../.. ../../tests/filesys/base/sm-seq-random.ck tests/filesys/base/sm-seq-random tests/filesys/base/sm-seq-random.result
+pass tests/filesys/base/sm-seq-random
+pintos -v -k -T 300 --qemu  --filesys-size=2 -p tests/filesys/base/syn-read -a syn-read -p tests/filesys/base/child-syn-read -a child-syn-read -- -q  -f run syn-read < /dev/null 2> tests/filesys/base/syn-read.errors > tests/filesys/base/syn-read.output
+perl -I../.. ../../tests/filesys/base/syn-read.ck tests/filesys/base/syn-read tests/filesys/base/syn-read.result
+pass tests/filesys/base/syn-read
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/syn-remove -a syn-remove -- -q  -f run syn-remove < /dev/null 2> tests/filesys/base/syn-remove.errors > tests/filesys/base/syn-remove.output
+perl -I../.. ../../tests/filesys/base/syn-remove.ck tests/filesys/base/syn-remove tests/filesys/base/syn-remove.result
+pass tests/filesys/base/syn-remove
+pintos -v -k -T 60 --qemu  --filesys-size=2 -p tests/filesys/base/syn-write -a syn-write -p tests/filesys/base/child-syn-wrt -a child-syn-wrt -- -q  -f run syn-write < /dev/null 2> tests/filesys/base/syn-write.errors > tests/filesys/base/syn-write.output
+perl -I../.. ../../tests/filesys/base/syn-write.ck tests/filesys/base/syn-write tests/filesys/base/syn-write.result
+pass tests/filesys/base/syn-write
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-empty-name -a dir-empty-name -p tests/filesys/extended/tar -a tar -- -q  -f run dir-empty-name < /dev/null 2> tests/filesys/extended/dir-empty-name.errors > tests/filesys/extended/dir-empty-name.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-empty-name.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-empty-name-persistence.errors > tests/filesys/extended/dir-empty-name-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-empty-name.ck tests/filesys/extended/dir-empty-name tests/filesys/extended/dir-empty-name.result
+pass tests/filesys/extended/dir-empty-name
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-mk-tree -a dir-mk-tree -p tests/filesys/extended/tar -a tar -- -q  -f run dir-mk-tree < /dev/null 2> tests/filesys/extended/dir-mk-tree.errors > tests/filesys/extended/dir-mk-tree.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-mk-tree.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-mk-tree-persistence.errors > tests/filesys/extended/dir-mk-tree-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-mk-tree.ck tests/filesys/extended/dir-mk-tree tests/filesys/extended/dir-mk-tree.result
+FAIL tests/filesys/extended/dir-mk-tree
+run: mkdir "/0/0": FAILED
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-mkdir -a dir-mkdir -p tests/filesys/extended/tar -a tar -- -q  -f run dir-mkdir < /dev/null 2> tests/filesys/extended/dir-mkdir.errors > tests/filesys/extended/dir-mkdir.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-mkdir.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-mkdir-persistence.errors > tests/filesys/extended/dir-mkdir-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-mkdir.ck tests/filesys/extended/dir-mkdir tests/filesys/extended/dir-mkdir.result
+FAIL tests/filesys/extended/dir-mkdir
+Kernel panic in run: PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804a878 0x8048124 0x8048916 0x8048947
+Translation of call stack:
+In kernel.o:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002f41e: mkdir (...../userprog/syscall.c:716)
+0xc002eba9: syscall_handler (...../userprog/syscall.c:192)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/extended/dir-mkdir:
+0x0804a878: chdir (...../lib/user/syscall.c:137)
+0x08048124: test_main (...s/extended/dir-mkdir.c:12)
+0x08048916: main (...ild/../../tests/main.c:11)
+0x08048947: _start (.../../../lib/user/entry.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-open -a dir-open -p tests/filesys/extended/tar -a tar -- -q  -f run dir-open < /dev/null 2> tests/filesys/extended/dir-open.errors > tests/filesys/extended/dir-open.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-open.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-open-persistence.errors > tests/filesys/extended/dir-open-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-open.ck tests/filesys/extended/dir-open tests/filesys/extended/dir-open.result
+pass tests/filesys/extended/dir-open
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-over-file -a dir-over-file -p tests/filesys/extended/tar -a tar -- -q  -f run dir-over-file < /dev/null 2> tests/filesys/extended/dir-over-file.errors > tests/filesys/extended/dir-over-file.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-over-file.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-over-file-persistence.errors > tests/filesys/extended/dir-over-file-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-over-file.ck tests/filesys/extended/dir-over-file tests/filesys/extended/dir-over-file.result
+pass tests/filesys/extended/dir-over-file
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-rm-cwd -a dir-rm-cwd -p tests/filesys/extended/tar -a tar -- -q  -f run dir-rm-cwd < /dev/null 2> tests/filesys/extended/dir-rm-cwd.errors > tests/filesys/extended/dir-rm-cwd.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-rm-cwd.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-rm-cwd-persistence.errors > tests/filesys/extended/dir-rm-cwd-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-rm-cwd.ck tests/filesys/extended/dir-rm-cwd tests/filesys/extended/dir-rm-cwd.result
+FAIL tests/filesys/extended/dir-rm-cwd
+Kernel panic in run: PANIC at ../../userprog/syscall.c:733 in readdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f49e 0xc002ebc9 0xc0022a8d 0xc0022cb7 0x804ace5 0x80481a4 0x8048d44 0x8048d75
+Translation of call stack:
+In kernel.o:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002f49e: isdir (...../userprog/syscall.c:744)
+0xc002ebc9: syscall_handler (...../userprog/syscall.c:194)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/extended/dir-rm-cwd:
+0x0804ace5: readdir (...../lib/user/syscall.c:145)
+0x080481a4: test_main (.../extended/dir-rm-cwd.c:33)
+0x08048d44: main (...ild/../../tests/main.c:11)
+0x08048d75: _start (.../../../lib/user/entry.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-rm-parent -a dir-rm-parent -p tests/filesys/extended/tar -a tar -- -q  -f run dir-rm-parent < /dev/null 2> tests/filesys/extended/dir-rm-parent.errors > tests/filesys/extended/dir-rm-parent.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-rm-parent.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-rm-parent-persistence.errors > tests/filesys/extended/dir-rm-parent-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-rm-parent.ck tests/filesys/extended/dir-rm-parent tests/filesys/extended/dir-rm-parent.result
+FAIL tests/filesys/extended/dir-rm-parent
+Kernel panic in run: PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804a8a6 0x80480eb 0x8048944 0x8048975
+Translation of call stack:
+In kernel.o:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002f41e: mkdir (...../userprog/syscall.c:716)
+0xc002eba9: syscall_handler (...../userprog/syscall.c:192)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/extended/dir-rm-parent:
+0x0804a8a6: chdir (...../lib/user/syscall.c:137)
+0x080480eb: test_main (...tended/dir-rm-parent.c:12)
+0x08048944: main (...ild/../../tests/main.c:11)
+0x08048975: _start (.../../../lib/user/entry.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-rm-root -a dir-rm-root -p tests/filesys/extended/tar -a tar -- -q  -f run dir-rm-root < /dev/null 2> tests/filesys/extended/dir-rm-root.errors > tests/filesys/extended/dir-rm-root.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-rm-root.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-rm-root-persistence.errors > tests/filesys/extended/dir-rm-root-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-rm-root.ck tests/filesys/extended/dir-rm-root tests/filesys/extended/dir-rm-root.result
+pass tests/filesys/extended/dir-rm-root
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-rm-tree -a dir-rm-tree -p tests/filesys/extended/tar -a tar -- -q  -f run dir-rm-tree < /dev/null 2> tests/filesys/extended/dir-rm-tree.errors > tests/filesys/extended/dir-rm-tree.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-rm-tree.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-rm-tree-persistence.errors > tests/filesys/extended/dir-rm-tree-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-rm-tree.ck tests/filesys/extended/dir-rm-tree tests/filesys/extended/dir-rm-tree.result
+FAIL tests/filesys/extended/dir-rm-tree
+run: mkdir "/0/0": FAILED
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-rmdir -a dir-rmdir -p tests/filesys/extended/tar -a tar -- -q  -f run dir-rmdir < /dev/null 2> tests/filesys/extended/dir-rmdir.errors > tests/filesys/extended/dir-rmdir.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-rmdir.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-rmdir-persistence.errors > tests/filesys/extended/dir-rmdir-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-rmdir.ck tests/filesys/extended/dir-rmdir tests/filesys/extended/dir-rmdir.result
+FAIL tests/filesys/extended/dir-rmdir
+Kernel panic in run: PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804a83e 0x804811f 0x80488dc 0x804890d
+Translation of call stack:
+In kernel.o:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002f41e: mkdir (...../userprog/syscall.c:716)
+0xc002eba9: syscall_handler (...../userprog/syscall.c:192)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/extended/dir-rmdir:
+0x0804a83e: chdir (...../lib/user/syscall.c:137)
+0x0804811f: test_main (...s/extended/dir-rmdir.c:13)
+0x080488dc: main (...ild/../../tests/main.c:11)
+0x0804890d: _start (.../../../lib/user/entry.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-under-file -a dir-under-file -p tests/filesys/extended/tar -a tar -- -q  -f run dir-under-file < /dev/null 2> tests/filesys/extended/dir-under-file.errors > tests/filesys/extended/dir-under-file.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-under-file.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-under-file-persistence.errors > tests/filesys/extended/dir-under-file-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-under-file.ck tests/filesys/extended/dir-under-file tests/filesys/extended/dir-under-file.result
+pass tests/filesys/extended/dir-under-file
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 150 --qemu  --disk=tmp.dsk -p tests/filesys/extended/dir-vine -a dir-vine -p tests/filesys/extended/tar -a tar -- -q  -f run dir-vine < /dev/null 2> tests/filesys/extended/dir-vine.errors > tests/filesys/extended/dir-vine.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/dir-vine.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-vine-persistence.errors > tests/filesys/extended/dir-vine-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/dir-vine.ck tests/filesys/extended/dir-vine tests/filesys/extended/dir-vine.result
+FAIL tests/filesys/extended/dir-vine
+Kernel panic in run: PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804acf9 0x8048106 0x8048d97 0x8048dc8
+Translation of call stack:
+In kernel.o:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002f41e: mkdir (...../userprog/syscall.c:716)
+0xc002eba9: syscall_handler (...../userprog/syscall.c:192)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/extended/dir-vine:
+0x0804acf9: chdir (...../lib/user/syscall.c:137)
+0x08048106: test_main (...ys/extended/dir-vine.c:24)
+0x08048d97: main (...ild/../../tests/main.c:11)
+0x08048dc8: _start (.../../../lib/user/entry.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/grow-create -a grow-create -p tests/filesys/extended/tar -a tar -- -q  -f run grow-create < /dev/null 2> tests/filesys/extended/grow-create.errors > tests/filesys/extended/grow-create.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/grow-create.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/grow-create-persistence.errors > tests/filesys/extended/grow-create-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/grow-create.ck tests/filesys/extended/grow-create tests/filesys/extended/grow-create.result
+pass tests/filesys/extended/grow-create
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/grow-dir-lg -a grow-dir-lg -p tests/filesys/extended/tar -a tar -- -q  -f run grow-dir-lg < /dev/null 2> tests/filesys/extended/grow-dir-lg.errors > tests/filesys/extended/grow-dir-lg.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/grow-dir-lg.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/grow-dir-lg-persistence.errors > tests/filesys/extended/grow-dir-lg-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/grow-dir-lg.ck tests/filesys/extended/grow-dir-lg tests/filesys/extended/grow-dir-lg.result
+FAIL tests/filesys/extended/grow-dir-lg
+run: create "/x/file0": FAILED
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/grow-file-size -a grow-file-size -p tests/filesys/extended/tar -a tar -- -q  -f run grow-file-size < /dev/null 2> tests/filesys/extended/grow-file-size.errors > tests/filesys/extended/grow-file-size.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/grow-file-size.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/grow-file-size-persistence.errors > tests/filesys/extended/grow-file-size-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/grow-file-size.ck tests/filesys/extended/grow-file-size tests/filesys/extended/grow-file-size.result
+pass tests/filesys/extended/grow-file-size
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/grow-root-lg -a grow-root-lg -p tests/filesys/extended/tar -a tar -- -q  -f run grow-root-lg < /dev/null 2> tests/filesys/extended/grow-root-lg.errors > tests/filesys/extended/grow-root-lg.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/grow-root-lg.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/grow-root-lg-persistence.errors > tests/filesys/extended/grow-root-lg-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/grow-root-lg.ck tests/filesys/extended/grow-root-lg tests/filesys/extended/grow-root-lg.result
+pass tests/filesys/extended/grow-root-lg
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/grow-root-sm -a grow-root-sm -p tests/filesys/extended/tar -a tar -- -q  -f run grow-root-sm < /dev/null 2> tests/filesys/extended/grow-root-sm.errors > tests/filesys/extended/grow-root-sm.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/grow-root-sm.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/grow-root-sm-persistence.errors > tests/filesys/extended/grow-root-sm-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/grow-root-sm.ck tests/filesys/extended/grow-root-sm tests/filesys/extended/grow-root-sm.result
+pass tests/filesys/extended/grow-root-sm
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/grow-seq-lg -a grow-seq-lg -p tests/filesys/extended/tar -a tar -- -q  -f run grow-seq-lg < /dev/null 2> tests/filesys/extended/grow-seq-lg.errors > tests/filesys/extended/grow-seq-lg.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/grow-seq-lg.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/grow-seq-lg-persistence.errors > tests/filesys/extended/grow-seq-lg-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/grow-seq-lg.ck tests/filesys/extended/grow-seq-lg tests/filesys/extended/grow-seq-lg.result
+pass tests/filesys/extended/grow-seq-lg
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/grow-seq-sm -a grow-seq-sm -p tests/filesys/extended/tar -a tar -- -q  -f run grow-seq-sm < /dev/null 2> tests/filesys/extended/grow-seq-sm.errors > tests/filesys/extended/grow-seq-sm.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/grow-seq-sm.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/grow-seq-sm-persistence.errors > tests/filesys/extended/grow-seq-sm-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/grow-seq-sm.ck tests/filesys/extended/grow-seq-sm tests/filesys/extended/grow-seq-sm.result
+pass tests/filesys/extended/grow-seq-sm
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/grow-sparse -a grow-sparse -p tests/filesys/extended/tar -a tar -- -q  -f run grow-sparse < /dev/null 2> tests/filesys/extended/grow-sparse.errors > tests/filesys/extended/grow-sparse.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/grow-sparse.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/grow-sparse-persistence.errors > tests/filesys/extended/grow-sparse-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/grow-sparse.ck tests/filesys/extended/grow-sparse tests/filesys/extended/grow-sparse.result
+FAIL tests/filesys/extended/grow-sparse
+run: TIMEOUT after 61 seconds of wall-clock time - load average: 0.35, 0.66, 0.55
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/grow-tell -a grow-tell -p tests/filesys/extended/tar -a tar -- -q  -f run grow-tell < /dev/null 2> tests/filesys/extended/grow-tell.errors > tests/filesys/extended/grow-tell.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/grow-tell.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/grow-tell-persistence.errors > tests/filesys/extended/grow-tell-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/grow-tell.ck tests/filesys/extended/grow-tell tests/filesys/extended/grow-tell.result
+pass tests/filesys/extended/grow-tell
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/grow-two-files -a grow-two-files -p tests/filesys/extended/tar -a tar -- -q  -f run grow-two-files < /dev/null 2> tests/filesys/extended/grow-two-files.errors > tests/filesys/extended/grow-two-files.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/grow-two-files.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/grow-two-files-persistence.errors > tests/filesys/extended/grow-two-files-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/grow-two-files.ck tests/filesys/extended/grow-two-files tests/filesys/extended/grow-two-files.result
+pass tests/filesys/extended/grow-two-files
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p tests/filesys/extended/syn-rw -a syn-rw -p tests/filesys/extended/tar -a tar -p tests/filesys/extended/child-syn-rw -a child-syn-rw -- -q  -f run syn-rw < /dev/null 2> tests/filesys/extended/syn-rw.errors > tests/filesys/extended/syn-rw.output
+pintos -v -k -T 60  --qemu --disk=tmp.dsk -g fs.tar -a tests/filesys/extended/syn-rw.tar -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/syn-rw-persistence.errors > tests/filesys/extended/syn-rw-persistence.output
+rm -f tmp.dsk
+perl -I../.. ../../tests/filesys/extended/syn-rw.ck tests/filesys/extended/syn-rw tests/filesys/extended/syn-rw.result
+FAIL tests/filesys/extended/syn-rw
+run: TIMEOUT after 61 seconds of wall-clock time - load average: 1.20, 0.86, 0.63
+perl -I../.. ../../tests/filesys/extended/dir-empty-name-persistence.ck tests/filesys/extended/dir-empty-name-persistence tests/filesys/extended/dir-empty-name-persistence.result
+FAIL tests/filesys/extended/dir-empty-name-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/dir-mk-tree-persistence.ck tests/filesys/extended/dir-mk-tree-persistence tests/filesys/extended/dir-mk-tree-persistence.result
+FAIL tests/filesys/extended/dir-mk-tree-persistence
+Prerequisite test tests/filesys/extended/dir-mk-tree failed.
+perl -I../.. ../../tests/filesys/extended/dir-mkdir-persistence.ck tests/filesys/extended/dir-mkdir-persistence tests/filesys/extended/dir-mkdir-persistence.result
+FAIL tests/filesys/extended/dir-mkdir-persistence
+Prerequisite test tests/filesys/extended/dir-mkdir failed.
+perl -I../.. ../../tests/filesys/extended/dir-open-persistence.ck tests/filesys/extended/dir-open-persistence tests/filesys/extended/dir-open-persistence.result
+FAIL tests/filesys/extended/dir-open-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/dir-over-file-persistence.ck tests/filesys/extended/dir-over-file-persistence tests/filesys/extended/dir-over-file-persistence.result
+FAIL tests/filesys/extended/dir-over-file-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/dir-rm-cwd-persistence.ck tests/filesys/extended/dir-rm-cwd-persistence tests/filesys/extended/dir-rm-cwd-persistence.result
+FAIL tests/filesys/extended/dir-rm-cwd-persistence
+Prerequisite test tests/filesys/extended/dir-rm-cwd failed.
+perl -I../.. ../../tests/filesys/extended/dir-rm-parent-persistence.ck tests/filesys/extended/dir-rm-parent-persistence tests/filesys/extended/dir-rm-parent-persistence.result
+FAIL tests/filesys/extended/dir-rm-parent-persistence
+Prerequisite test tests/filesys/extended/dir-rm-parent failed.
+perl -I../.. ../../tests/filesys/extended/dir-rm-root-persistence.ck tests/filesys/extended/dir-rm-root-persistence tests/filesys/extended/dir-rm-root-persistence.result
+FAIL tests/filesys/extended/dir-rm-root-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/dir-rm-tree-persistence.ck tests/filesys/extended/dir-rm-tree-persistence tests/filesys/extended/dir-rm-tree-persistence.result
+FAIL tests/filesys/extended/dir-rm-tree-persistence
+Prerequisite test tests/filesys/extended/dir-rm-tree failed.
+perl -I../.. ../../tests/filesys/extended/dir-rmdir-persistence.ck tests/filesys/extended/dir-rmdir-persistence tests/filesys/extended/dir-rmdir-persistence.result
+FAIL tests/filesys/extended/dir-rmdir-persistence
+Prerequisite test tests/filesys/extended/dir-rmdir failed.
+perl -I../.. ../../tests/filesys/extended/dir-under-file-persistence.ck tests/filesys/extended/dir-under-file-persistence tests/filesys/extended/dir-under-file-persistence.result
+FAIL tests/filesys/extended/dir-under-file-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/dir-vine-persistence.ck tests/filesys/extended/dir-vine-persistence tests/filesys/extended/dir-vine-persistence.result
+FAIL tests/filesys/extended/dir-vine-persistence
+Prerequisite test tests/filesys/extended/dir-vine failed.
+perl -I../.. ../../tests/filesys/extended/grow-create-persistence.ck tests/filesys/extended/grow-create-persistence tests/filesys/extended/grow-create-persistence.result
+FAIL tests/filesys/extended/grow-create-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/grow-dir-lg-persistence.ck tests/filesys/extended/grow-dir-lg-persistence tests/filesys/extended/grow-dir-lg-persistence.result
+FAIL tests/filesys/extended/grow-dir-lg-persistence
+Prerequisite test tests/filesys/extended/grow-dir-lg failed.
+perl -I../.. ../../tests/filesys/extended/grow-file-size-persistence.ck tests/filesys/extended/grow-file-size-persistence tests/filesys/extended/grow-file-size-persistence.result
+FAIL tests/filesys/extended/grow-file-size-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/grow-root-lg-persistence.ck tests/filesys/extended/grow-root-lg-persistence tests/filesys/extended/grow-root-lg-persistence.result
+FAIL tests/filesys/extended/grow-root-lg-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/grow-root-sm-persistence.ck tests/filesys/extended/grow-root-sm-persistence tests/filesys/extended/grow-root-sm-persistence.result
+FAIL tests/filesys/extended/grow-root-sm-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/grow-seq-lg-persistence.ck tests/filesys/extended/grow-seq-lg-persistence tests/filesys/extended/grow-seq-lg-persistence.result
+FAIL tests/filesys/extended/grow-seq-lg-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/grow-seq-sm-persistence.ck tests/filesys/extended/grow-seq-sm-persistence tests/filesys/extended/grow-seq-sm-persistence.result
+FAIL tests/filesys/extended/grow-seq-sm-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/grow-sparse-persistence.ck tests/filesys/extended/grow-sparse-persistence tests/filesys/extended/grow-sparse-persistence.result
+FAIL tests/filesys/extended/grow-sparse-persistence
+Prerequisite test tests/filesys/extended/grow-sparse failed.
+perl -I../.. ../../tests/filesys/extended/grow-tell-persistence.ck tests/filesys/extended/grow-tell-persistence tests/filesys/extended/grow-tell-persistence.result
+FAIL tests/filesys/extended/grow-tell-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/grow-two-files-persistence.ck tests/filesys/extended/grow-two-files-persistence tests/filesys/extended/grow-two-files-persistence.result
+FAIL tests/filesys/extended/grow-two-files-persistence
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+perl -I../.. ../../tests/filesys/extended/syn-rw-persistence.ck tests/filesys/extended/syn-rw-persistence tests/filesys/extended/syn-rw-persistence.result
+FAIL tests/filesys/extended/syn-rw-persistence
+Prerequisite test tests/filesys/extended/syn-rw failed.
+../../tests/make-grade ../.. results ../../tests/filesys/Grading.no-vm | tee grade
+TOTAL TESTING SCORE: 53.1%
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+SUMMARY BY TEST SET
+
+Test Set                                      Pts Max  % Ttl  % Max
+--------------------------------------------- --- --- ------ ------
+tests/filesys/extended/Rubric.functionality    12/ 34  10.6%/ 30.0%
+tests/filesys/extended/Rubric.robustness        5/ 10   7.5%/ 15.0%
+tests/filesys/extended/Rubric.persistence       0/ 23   0.0%/ 20.0%
+tests/filesys/base/Rubric                      30/ 30  20.0%/ 20.0%
+tests/userprog/Rubric.functionality           108/108  10.0%/ 10.0%
+tests/userprog/Rubric.robustness               88/ 88   5.0%/  5.0%
+--------------------------------------------- --- --- ------ ------
+Total                                                  53.1%/100.0%
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+SUMMARY OF INDIVIDUAL TESTS
+
+Functionality of extended file system (tests/filesys/extended/Rubric.functionality):
+	- Test directory support.
+	  ** 0/ 1 tests/filesys/extended/dir-mkdir
+	  ** 0/ 3 tests/filesys/extended/dir-mk-tree
+
+	  ** 0/ 1 tests/filesys/extended/dir-rmdir
+	  ** 0/ 3 tests/filesys/extended/dir-rm-tree
+
+	  ** 0/ 5 tests/filesys/extended/dir-vine
+
+	- Test file growth.
+	     1/ 1 tests/filesys/extended/grow-create
+	     1/ 1 tests/filesys/extended/grow-seq-sm
+	     3/ 3 tests/filesys/extended/grow-seq-lg
+	  ** 0/ 3 tests/filesys/extended/grow-sparse
+	     3/ 3 tests/filesys/extended/grow-two-files
+	     1/ 1 tests/filesys/extended/grow-tell
+	     1/ 1 tests/filesys/extended/grow-file-size
+
+	- Test directory growth.
+	  ** 0/ 1 tests/filesys/extended/grow-dir-lg
+	     1/ 1 tests/filesys/extended/grow-root-sm
+	     1/ 1 tests/filesys/extended/grow-root-lg
+
+	- Test writing from multiple processes.
+	  ** 0/ 5 tests/filesys/extended/syn-rw
+
+	- Section summary.
+	      8/ 16 tests passed
+	     12/ 34 points subtotal
+
+Robustness of file system (tests/filesys/extended/Rubric.robustness):
+	     1/ 1 tests/filesys/extended/dir-empty-name
+	     1/ 1 tests/filesys/extended/dir-open
+	     1/ 1 tests/filesys/extended/dir-over-file
+	     1/ 1 tests/filesys/extended/dir-under-file
+
+	  ** 0/ 3 tests/filesys/extended/dir-rm-cwd
+	  ** 0/ 2 tests/filesys/extended/dir-rm-parent
+	     1/ 1 tests/filesys/extended/dir-rm-root
+
+	- Section summary.
+	      5/  7 tests passed
+	      5/ 10 points subtotal
+
+Persistence of file system (tests/filesys/extended/Rubric.persistence):
+	  ** 0/ 1 tests/filesys/extended/dir-empty-name-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-mk-tree-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-mkdir-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-open-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-over-file-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-rm-cwd-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-rm-parent-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-rm-root-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-rm-tree-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-rmdir-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-under-file-persistence
+	  ** 0/ 1 tests/filesys/extended/dir-vine-persistence
+	  ** 0/ 1 tests/filesys/extended/grow-create-persistence
+	  ** 0/ 1 tests/filesys/extended/grow-dir-lg-persistence
+	  ** 0/ 1 tests/filesys/extended/grow-file-size-persistence
+	  ** 0/ 1 tests/filesys/extended/grow-root-lg-persistence
+	  ** 0/ 1 tests/filesys/extended/grow-root-sm-persistence
+	  ** 0/ 1 tests/filesys/extended/grow-seq-lg-persistence
+	  ** 0/ 1 tests/filesys/extended/grow-seq-sm-persistence
+	  ** 0/ 1 tests/filesys/extended/grow-sparse-persistence
+	  ** 0/ 1 tests/filesys/extended/grow-tell-persistence
+	  ** 0/ 1 tests/filesys/extended/grow-two-files-persistence
+	  ** 0/ 1 tests/filesys/extended/syn-rw-persistence
+
+	- Section summary.
+	      0/ 23 tests passed
+	      0/ 23 points subtotal
+
+Functionality of base file system (tests/filesys/base/Rubric):
+	- Test basic support for small files.
+	     1/ 1 tests/filesys/base/sm-create
+	     2/ 2 tests/filesys/base/sm-full
+	     2/ 2 tests/filesys/base/sm-random
+	     2/ 2 tests/filesys/base/sm-seq-block
+	     3/ 3 tests/filesys/base/sm-seq-random
+
+	- Test basic support for large files.
+	     1/ 1 tests/filesys/base/lg-create
+	     2/ 2 tests/filesys/base/lg-full
+	     2/ 2 tests/filesys/base/lg-random
+	     2/ 2 tests/filesys/base/lg-seq-block
+	     3/ 3 tests/filesys/base/lg-seq-random
+
+	- Test synchronized multiprogram access to files.
+	     4/ 4 tests/filesys/base/syn-read
+	     4/ 4 tests/filesys/base/syn-write
+	     2/ 2 tests/filesys/base/syn-remove
+
+	- Section summary.
+	     13/ 13 tests passed
+	     30/ 30 points subtotal
+
+Functionality of system calls (tests/userprog/Rubric.functionality):
+	- Test argument passing on Pintos command line.
+	     3/ 3 tests/userprog/args-none
+	     3/ 3 tests/userprog/args-single
+	     3/ 3 tests/userprog/args-multiple
+	     3/ 3 tests/userprog/args-many
+	     3/ 3 tests/userprog/args-dbl-space
+
+	- Test "create" system call.
+	     3/ 3 tests/userprog/create-empty
+	     3/ 3 tests/userprog/create-long
+	     3/ 3 tests/userprog/create-normal
+	     3/ 3 tests/userprog/create-exists
+
+	- Test "open" system call.
+	     3/ 3 tests/userprog/open-missing
+	     3/ 3 tests/userprog/open-normal
+	     3/ 3 tests/userprog/open-twice
+
+	- Test "read" system call.
+	     3/ 3 tests/userprog/read-normal
+	     3/ 3 tests/userprog/read-zero
+
+	- Test "write" system call.
+	     3/ 3 tests/userprog/write-normal
+	     3/ 3 tests/userprog/write-zero
+
+	- Test "close" system call.
+	     3/ 3 tests/userprog/close-normal
+
+	- Test "exec" system call.
+	     5/ 5 tests/userprog/exec-once
+	     5/ 5 tests/userprog/exec-multiple
+	     5/ 5 tests/userprog/exec-arg
+
+	- Test "wait" system call.
+	     5/ 5 tests/userprog/wait-simple
+	     5/ 5 tests/userprog/wait-twice
+
+	- Test "exit" system call.
+	     5/ 5 tests/userprog/exit
+
+	- Test "halt" system call.
+	     3/ 3 tests/userprog/halt
+
+	- Test recursive execution of user programs.
+	    15/15 tests/userprog/multi-recurse
+
+	- Test read-only executable feature.
+	     3/ 3 tests/userprog/rox-simple
+	     3/ 3 tests/userprog/rox-child
+	     3/ 3 tests/userprog/rox-multichild
+
+	- Section summary.
+	     28/ 28 tests passed
+	    108/108 points subtotal
+
+Robustness of system calls (tests/userprog/Rubric.robustness):
+	- Test robustness of file descriptor handling.
+	     2/ 2 tests/userprog/close-stdin
+	     2/ 2 tests/userprog/close-stdout
+	     2/ 2 tests/userprog/close-bad-fd
+	     2/ 2 tests/userprog/close-twice
+	     2/ 2 tests/userprog/read-bad-fd
+	     2/ 2 tests/userprog/read-stdout
+	     2/ 2 tests/userprog/write-bad-fd
+	     2/ 2 tests/userprog/write-stdin
+	     2/ 2 tests/userprog/multi-child-fd
+
+	- Test robustness of pointer handling.
+	     3/ 3 tests/userprog/create-bad-ptr
+	     3/ 3 tests/userprog/exec-bad-ptr
+	     3/ 3 tests/userprog/open-bad-ptr
+	     3/ 3 tests/userprog/read-bad-ptr
+	     3/ 3 tests/userprog/write-bad-ptr
+
+	- Test robustness of buffer copying across page boundaries.
+	     3/ 3 tests/userprog/create-bound
+	     3/ 3 tests/userprog/open-boundary
+	     3/ 3 tests/userprog/read-boundary
+	     3/ 3 tests/userprog/write-boundary
+
+	- Test handling of null pointer and empty strings.
+	     2/ 2 tests/userprog/create-null
+	     2/ 2 tests/userprog/open-null
+	     2/ 2 tests/userprog/open-empty
+
+	- Test robustness of system call implementation.
+	     3/ 3 tests/userprog/sc-bad-arg
+	     3/ 3 tests/userprog/sc-bad-sp
+	     5/ 5 tests/userprog/sc-boundary
+	     5/ 5 tests/userprog/sc-boundary-2
+
+	- Test robustness of "exec" and "wait" system calls.
+	     5/ 5 tests/userprog/exec-missing
+	     5/ 5 tests/userprog/wait-bad-pid
+	     5/ 5 tests/userprog/wait-killed
+
+	- Test robustness of exception handling.
+	     1/ 1 tests/userprog/bad-read
+	     1/ 1 tests/userprog/bad-write
+	     1/ 1 tests/userprog/bad-jump
+	     1/ 1 tests/userprog/bad-read2
+	     1/ 1 tests/userprog/bad-write2
+	     1/ 1 tests/userprog/bad-jump2
+
+	- Section summary.
+	     34/ 34 tests passed
+	     88/ 88 points subtotal
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-mkdir FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804a878 0x8048124 0x8048916 0x8048947
+Translation of call stack:
+In kernel.o:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002f41e: mkdir (...../userprog/syscall.c:716)
+0xc002eba9: syscall_handler (...../userprog/syscall.c:192)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/extended/dir-mkdir:
+0x0804a878: chdir (...../lib/user/syscall.c:137)
+0x08048124: test_main (...s/extended/dir-mkdir.c:12)
+0x08048916: main (...ild/../../tests/main.c:11)
+0x08048947: _start (.../../../lib/user/entry.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/extended/dir-mkdir:
+
+Copying tests/filesys/extended/dir-mkdir to scratch partition...
+Copying tests/filesys/extended/tar to scratch partition...
+qemu -hda /tmp/fScLVmkUnn.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run dir-mkdir
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 1,008 sectors (504 kB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 160 sectors (80 kB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'dir-mkdir' into the file system...
+Putting 'tar' into the file system...
+Erasing ustar archive...
+Executing 'dir-mkdir':
+(dir-mkdir) begin
+(dir-mkdir) mkdir "a"
+(dir-mkdir) create "a/b"
+(dir-mkdir) chdir "a"
+Kernel PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804a878 0x8048124 0x8048916 0x8048947.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 95 ticks
+Thread: 36 idle ticks, 55 kernel ticks, 4 user ticks
+hdb1 (filesys): 63 reads, 358 writes
+hda2 (scratch): 159 reads, 2 writes
+Console: 1334 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-mk-tree FAILURE:
+
+run: mkdir "/0/0": FAILED
+
+OUTPUT FROM tests/filesys/extended/dir-mk-tree:
+
+Copying tests/filesys/extended/dir-mk-tree to scratch partition...
+Copying tests/filesys/extended/tar to scratch partition...
+qemu -hda /tmp/0bHyvX1cR6.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run dir-mk-tree
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 1,008 sectors (504 kB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 163 sectors (81 kB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'dir-mk-tree' into the file system...
+Putting 'tar' into the file system...
+Erasing ustar archive...
+Executing 'dir-mk-tree':
+(dir-mk-tree) begin
+(dir-mk-tree) creating /0/0/0/0 through /3/2/2/3...
+(dir-mk-tree) mkdir "/0/0": FAILED
+dir-mk-tree: exit(1)
+Execution of 'dir-mk-tree' complete.
+Timer: 94 ticks
+Thread: 34 idle ticks, 56 kernel ticks, 4 user ticks
+hdb1 (filesys): 64 reads, 361 writes
+hda2 (scratch): 162 reads, 2 writes
+Console: 1077 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-rmdir FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804a83e 0x804811f 0x80488dc 0x804890d
+Translation of call stack:
+In kernel.o:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002f41e: mkdir (...../userprog/syscall.c:716)
+0xc002eba9: syscall_handler (...../userprog/syscall.c:192)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/extended/dir-rmdir:
+0x0804a83e: chdir (...../lib/user/syscall.c:137)
+0x0804811f: test_main (...s/extended/dir-rmdir.c:13)
+0x080488dc: main (...ild/../../tests/main.c:11)
+0x0804890d: _start (.../../../lib/user/entry.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/extended/dir-rmdir:
+
+Copying tests/filesys/extended/dir-rmdir to scratch partition...
+Copying tests/filesys/extended/tar to scratch partition...
+qemu -hda /tmp/RBwt4N0M0d.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run dir-rmdir
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 1,008 sectors (504 kB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 160 sectors (80 kB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'dir-rmdir' into the file system...
+Putting 'tar' into the file system...
+Erasing ustar archive...
+Executing 'dir-rmdir':
+(dir-rmdir) begin
+(dir-rmdir) mkdir "a"
+(dir-rmdir) rmdir "a"
+(dir-rmdir) chdir "a" (must return false)
+Kernel PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804a83e 0x804811f 0x80488dc 0x804890d.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 91 ticks
+Thread: 36 idle ticks, 50 kernel ticks, 5 user ticks
+hdb1 (filesys): 63 reads, 354 writes
+hda2 (scratch): 159 reads, 2 writes
+Console: 1351 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-rm-tree FAILURE:
+
+run: mkdir "/0/0": FAILED
+
+OUTPUT FROM tests/filesys/extended/dir-rm-tree:
+
+Copying tests/filesys/extended/dir-rm-tree to scratch partition...
+Copying tests/filesys/extended/tar to scratch partition...
+qemu -hda /tmp/U5wGIshMrP.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run dir-rm-tree
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 1,008 sectors (504 kB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 166 sectors (83 kB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'dir-rm-tree' into the file system...
+Putting 'tar' into the file system...
+Erasing ustar archive...
+Executing 'dir-rm-tree':
+(dir-rm-tree) begin
+(dir-rm-tree) creating /0/0/0/0 through /3/2/2/3...
+(dir-rm-tree) mkdir "/0/0": FAILED
+dir-rm-tree: exit(1)
+Execution of 'dir-rm-tree' complete.
+Timer: 91 ticks
+Thread: 36 idle ticks, 50 kernel ticks, 5 user ticks
+hdb1 (filesys): 65 reads, 367 writes
+hda2 (scratch): 165 reads, 2 writes
+Console: 1077 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-vine FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804acf9 0x8048106 0x8048d97 0x8048dc8
+Translation of call stack:
+In kernel.o:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002f41e: mkdir (...../userprog/syscall.c:716)
+0xc002eba9: syscall_handler (...../userprog/syscall.c:192)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/extended/dir-vine:
+0x0804acf9: chdir (...../lib/user/syscall.c:137)
+0x08048106: test_main (...ys/extended/dir-vine.c:24)
+0x08048d97: main (...ild/../../tests/main.c:11)
+0x08048dc8: _start (.../../../lib/user/entry.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/extended/dir-vine:
+
+Copying tests/filesys/extended/dir-vine to scratch partition...
+Copying tests/filesys/extended/tar to scratch partition...
+qemu -hda /tmp/IUxOCTdgUf.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run dir-vine
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 1,008 sectors (504 kB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 165 sectors (82 kB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'dir-vine' into the file system...
+Putting 'tar' into the file system...
+Erasing ustar archive...
+Executing 'dir-vine':
+(dir-vine) begin
+(dir-vine) creating many levels of files and directories...
+Kernel PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804acf9 0x8048106 0x8048d97 0x8048dc8.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 94 ticks
+Thread: 33 idle ticks, 56 kernel ticks, 5 user ticks
+hdb1 (filesys): 66 reads, 364 writes
+hda2 (scratch): 164 reads, 2 writes
+Console: 1321 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-sparse FAILURE:
+
+run: TIMEOUT after 61 seconds of wall-clock time - load average: 0.35, 0.66, 0.55
+
+OUTPUT FROM tests/filesys/extended/grow-sparse:
+
+Copying tests/filesys/extended/grow-sparse to scratch partition...
+Copying tests/filesys/extended/tar to scratch partition...
+qemu -hda /tmp/w7eOiws9_w.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run grow-sparse
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 1,008 sectors (504 kB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 161 sectors (80 kB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'grow-sparse' into the file system...
+Putting 'tar' into the file system...
+Erasing ustar archive...
+Executing 'grow-sparse':
+(grow-sparse) begin
+(grow-sparse) create "testfile"
+(grow-sparse) open "testfile"
+(grow-sparse) seek "testfile"
+(grow-sparse) write "testfile"
+
+TIMEOUT after 61 seconds of wall-clock time - load average: 0.35, 0.66, 0.55
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-dir-lg FAILURE:
+
+run: create "/x/file0": FAILED
+
+OUTPUT FROM tests/filesys/extended/grow-dir-lg:
+
+Copying tests/filesys/extended/grow-dir-lg to scratch partition...
+Copying tests/filesys/extended/tar to scratch partition...
+qemu -hda /tmp/NeR3kxgc9S.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run grow-dir-lg
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  148,480,000 loops/s.
+hda: 1,008 sectors (504 kB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 161 sectors (80 kB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'grow-dir-lg' into the file system...
+Putting 'tar' into the file system...
+Erasing ustar archive...
+Executing 'grow-dir-lg':
+(grow-dir-lg) begin
+(grow-dir-lg) mkdir /x
+(grow-dir-lg) creating and checking "/x/file0"
+(grow-dir-lg) create "/x/file0": FAILED
+grow-dir-lg: exit(1)
+Execution of 'grow-dir-lg' complete.
+Timer: 103 ticks
+Thread: 33 idle ticks, 67 kernel ticks, 4 user ticks
+hdb1 (filesys): 63 reads, 357 writes
+hda2 (scratch): 160 reads, 2 writes
+Console: 1101 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/syn-rw FAILURE:
+
+run: TIMEOUT after 61 seconds of wall-clock time - load average: 1.20, 0.86, 0.63
+
+OUTPUT FROM tests/filesys/extended/syn-rw:
+
+Copying tests/filesys/extended/syn-rw to scratch partition...
+Copying tests/filesys/extended/tar to scratch partition...
+Copying tests/filesys/extended/child-syn-rw to scratch partition...
+qemu -hda /tmp/a_1nNedJBm.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run syn-rw
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 1,008 sectors (504 kB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 242 sectors (121 kB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'syn-rw' into the file system...
+Putting 'tar' into the file system...
+Putting 'child-syn-rw' into the file system...
+Erasing ustar archive...
+Executing 'syn-rw':
+(syn-rw) begin
+(syn-rw) create "logfile"
+(syn-rw) open "logfile"
+(syn-rw) exec child 1 of 4: "child-syn-rw 0"
+
+TIMEOUT after 61 seconds of wall-clock time - load average: 1.20, 0.86, 0.63
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-rm-cwd FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:733 in readdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f49e 0xc002ebc9 0xc0022a8d 0xc0022cb7 0x804ace5 0x80481a4 0x8048d44 0x8048d75
+Translation of call stack:
+In kernel.o:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002f49e: isdir (...../userprog/syscall.c:744)
+0xc002ebc9: syscall_handler (...../userprog/syscall.c:194)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/extended/dir-rm-cwd:
+0x0804ace5: readdir (...../lib/user/syscall.c:145)
+0x080481a4: test_main (.../extended/dir-rm-cwd.c:33)
+0x08048d44: main (...ild/../../tests/main.c:11)
+0x08048d75: _start (.../../../lib/user/entry.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/extended/dir-rm-cwd:
+
+Copying tests/filesys/extended/dir-rm-cwd to scratch partition...
+Copying tests/filesys/extended/tar to scratch partition...
+qemu -hda /tmp/RUsCFOqs0a.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run dir-rm-cwd
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 1,008 sectors (504 kB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 165 sectors (82 kB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'dir-rm-cwd' into the file system...
+Putting 'tar' into the file system...
+Erasing ustar archive...
+Executing 'dir-rm-cwd':
+(dir-rm-cwd) begin
+(dir-rm-cwd) open "/"
+(dir-rm-cwd) mkdir "a"
+(dir-rm-cwd) open "/a"
+(dir-rm-cwd) verify "/a" is empty
+Kernel PANIC at ../../userprog/syscall.c:733 in readdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f49e 0xc002ebc9 0xc0022a8d 0xc0022cb7 0x804ace5 0x80481a4 0x8048d44 0x8048d75.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 93 ticks
+Thread: 34 idle ticks, 53 kernel ticks, 6 user ticks
+hdb1 (filesys): 66 reads, 364 writes
+hda2 (scratch): 164 reads, 2 writes
+Console: 1373 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-rm-parent FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804a8a6 0x80480eb 0x8048944 0x8048975
+Translation of call stack:
+In kernel.o:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002f41e: mkdir (...../userprog/syscall.c:716)
+0xc002eba9: syscall_handler (...../userprog/syscall.c:192)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/extended/dir-rm-parent:
+0x0804a8a6: chdir (...../lib/user/syscall.c:137)
+0x080480eb: test_main (...tended/dir-rm-parent.c:12)
+0x08048944: main (...ild/../../tests/main.c:11)
+0x08048975: _start (.../../../lib/user/entry.c:7)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/extended/dir-rm-parent:
+
+Copying tests/filesys/extended/dir-rm-parent to scratch partition...
+Copying tests/filesys/extended/tar to scratch partition...
+qemu -hda /tmp/c7IFgV9xRD.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run dir-rm-parent
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 1,008 sectors (504 kB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 161 sectors (80 kB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'dir-rm-parent' into the file system...
+Putting 'tar' into the file system...
+Erasing ustar archive...
+Executing 'dir-rm-parent':
+(dir-rm-parent) begin
+(dir-rm-parent) mkdir "a"
+(dir-rm-parent) chdir "a"
+Kernel PANIC at ../../userprog/syscall.c:704 in chdir(): assertion `0' failed.
+Call stack: 0xc002aa21 0xc002f41e 0xc002eba9 0xc0022a8d 0xc0022cb7 0x804a8a6 0x80480eb 0x8048944 0x8048975.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 90 ticks
+Thread: 35 idle ticks, 51 kernel ticks, 4 user ticks
+hdb1 (filesys): 63 reads, 356 writes
+hda2 (scratch): 160 reads, 2 writes
+Console: 1333 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-empty-name-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/dir-empty-name-persistence:
+
+qemu -hda /tmp/bQEkFGQADy.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 77 ticks
+Thread: 31 idle ticks, 43 kernel ticks, 3 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-empty-name.tar out of /tmp/bQEkFGQADy.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-mk-tree-persistence FAILURE:
+
+Prerequisite test tests/filesys/extended/dir-mk-tree failed.
+
+OUTPUT FROM tests/filesys/extended/dir-mk-tree-persistence:
+
+qemu -hda /tmp/zmrHq4BcDX.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 76 ticks
+Thread: 31 idle ticks, 41 kernel ticks, 4 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-mk-tree.tar out of /tmp/zmrHq4BcDX.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-mkdir-persistence FAILURE:
+
+Prerequisite test tests/filesys/extended/dir-mkdir failed.
+
+OUTPUT FROM tests/filesys/extended/dir-mkdir-persistence:
+
+qemu -hda /tmp/y37on1Q8Tm.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 77 ticks
+Thread: 30 idle ticks, 42 kernel ticks, 5 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-mkdir.tar out of /tmp/y37on1Q8Tm.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-open-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/dir-open-persistence:
+
+qemu -hda /tmp/3YMazesaTh.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  6,547,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 63 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 3 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1107 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-open.tar out of /tmp/3YMazesaTh.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-over-file-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/dir-over-file-persistence:
+
+qemu -hda /tmp/GqapFQYsmT.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 77 ticks
+Thread: 30 idle ticks, 43 kernel ticks, 4 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-over-file.tar out of /tmp/GqapFQYsmT.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-rm-cwd-persistence FAILURE:
+
+Prerequisite test tests/filesys/extended/dir-rm-cwd failed.
+
+OUTPUT FROM tests/filesys/extended/dir-rm-cwd-persistence:
+
+qemu -hda /tmp/oeaxbmzvyD.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 76 ticks
+Thread: 31 idle ticks, 41 kernel ticks, 4 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-rm-cwd.tar out of /tmp/oeaxbmzvyD.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-rm-parent-persistence FAILURE:
+
+Prerequisite test tests/filesys/extended/dir-rm-parent failed.
+
+OUTPUT FROM tests/filesys/extended/dir-rm-parent-persistence:
+
+qemu -hda /tmp/yh8EQoXCg3.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  78,540,800 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 77 ticks
+Thread: 31 idle ticks, 42 kernel ticks, 4 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1108 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-rm-parent.tar out of /tmp/yh8EQoXCg3.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-rm-root-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/dir-rm-root-persistence:
+
+qemu -hda /tmp/hLqZ_h2JHx.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 75 ticks
+Thread: 31 idle ticks, 40 kernel ticks, 4 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-rm-root.tar out of /tmp/hLqZ_h2JHx.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-rm-tree-persistence FAILURE:
+
+Prerequisite test tests/filesys/extended/dir-rm-tree failed.
+
+OUTPUT FROM tests/filesys/extended/dir-rm-tree-persistence:
+
+qemu -hda /tmp/J1h5E7bz6_.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  103,116,800 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 78 ticks
+Thread: 30 idle ticks, 44 kernel ticks, 4 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-rm-tree.tar out of /tmp/J1h5E7bz6_.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-rmdir-persistence FAILURE:
+
+Prerequisite test tests/filesys/extended/dir-rmdir failed.
+
+OUTPUT FROM tests/filesys/extended/dir-rmdir-persistence:
+
+qemu -hda /tmp/J9R7dclM2Y.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 75 ticks
+Thread: 30 idle ticks, 42 kernel ticks, 3 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-rmdir.tar out of /tmp/J9R7dclM2Y.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-under-file-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/dir-under-file-persistence:
+
+qemu -hda /tmp/OYU5Cw1Zm_.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 77 ticks
+Thread: 30 idle ticks, 42 kernel ticks, 5 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-under-file.tar out of /tmp/OYU5Cw1Zm_.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/dir-vine-persistence FAILURE:
+
+Prerequisite test tests/filesys/extended/dir-vine failed.
+
+OUTPUT FROM tests/filesys/extended/dir-vine-persistence:
+
+qemu -hda /tmp/LfOIWHqAKF.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 75 ticks
+Thread: 31 idle ticks, 41 kernel ticks, 3 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/dir-vine.tar out of /tmp/LfOIWHqAKF.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-create-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/grow-create-persistence:
+
+qemu -hda /tmp/M8KTRs9El9.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  91,648,000 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 75 ticks
+Thread: 32 idle ticks, 40 kernel ticks, 3 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1108 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/grow-create.tar out of /tmp/M8KTRs9El9.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-dir-lg-persistence FAILURE:
+
+Prerequisite test tests/filesys/extended/grow-dir-lg failed.
+
+OUTPUT FROM tests/filesys/extended/grow-dir-lg-persistence:
+
+qemu -hda /tmp/LAjoAcu3MW.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 77 ticks
+Thread: 32 idle ticks, 43 kernel ticks, 2 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/grow-dir-lg.tar out of /tmp/LAjoAcu3MW.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-file-size-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/grow-file-size-persistence:
+
+qemu -hda /tmp/LxuauW1UyO.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 77 ticks
+Thread: 31 idle ticks, 42 kernel ticks, 4 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/grow-file-size.tar out of /tmp/LxuauW1UyO.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-root-lg-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/grow-root-lg-persistence:
+
+qemu -hda /tmp/ae1HDy5d7z.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 74 ticks
+Thread: 32 idle ticks, 39 kernel ticks, 3 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/grow-root-lg.tar out of /tmp/ae1HDy5d7z.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-root-sm-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/grow-root-sm-persistence:
+
+qemu -hda /tmp/UV1FtIyl6T.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 76 ticks
+Thread: 30 idle ticks, 40 kernel ticks, 6 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/grow-root-sm.tar out of /tmp/UV1FtIyl6T.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-seq-lg-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/grow-seq-lg-persistence:
+
+qemu -hda /tmp/1soSqFAahX.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 73 ticks
+Thread: 30 idle ticks, 40 kernel ticks, 3 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/grow-seq-lg.tar out of /tmp/1soSqFAahX.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-seq-sm-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/grow-seq-sm-persistence:
+
+qemu -hda /tmp/XPVjbMbWiv.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 74 ticks
+Thread: 30 idle ticks, 41 kernel ticks, 3 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/grow-seq-sm.tar out of /tmp/XPVjbMbWiv.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-sparse-persistence FAILURE:
+
+Prerequisite test tests/filesys/extended/grow-sparse failed.
+
+OUTPUT FROM tests/filesys/extended/grow-sparse-persistence:
+
+qemu -hda /tmp/hY4SMDHkys.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 74 ticks
+Thread: 30 idle ticks, 40 kernel ticks, 4 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/grow-sparse.tar out of /tmp/hY4SMDHkys.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-tell-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/grow-tell-persistence:
+
+qemu -hda /tmp/XAeaGpNF4W.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 77 ticks
+Thread: 31 idle ticks, 42 kernel ticks, 4 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/grow-tell.tar out of /tmp/XAeaGpNF4W.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/grow-two-files-persistence FAILURE:
+
+Kernel panic in file system extraction run: PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4
+Translation of call stack:
+0xc002aa21: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0030a85: inode_get_sector (.../../../filesys/inode.c:79)
+0xc002f5ec: inumber (...../userprog/syscall.c:771)
+0xc002ebe9: syscall_handler (...../userprog/syscall.c:196)
+0xc0022a8d: intr_handler (..../threads/interrupt.c:330)
+0xc0022cb7: intr_entry (threads/intr-stubs.S:38)
+0x0804b1ee: (unknown)
+0x0804826f: (unknown)
+0x080481d0: (unknown)
+0x080480cf: (unknown)
+0x08048cf4: (unknown)
+
+OUTPUT FROM tests/filesys/extended/grow-two-files-persistence:
+
+qemu -hda /tmp/7u_2ggIjPk.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 75 ticks
+Thread: 32 idle ticks, 41 kernel ticks, 2 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/grow-two-files.tar out of /tmp/7u_2ggIjPk.dsk...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/extended/syn-rw-persistence FAILURE:
+
+Prerequisite test tests/filesys/extended/syn-rw failed.
+
+OUTPUT FROM tests/filesys/extended/syn-rw-persistence:
+
+qemu -hda /tmp/HLrNBjJHZo.dsk -hdb tmp.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q run 'tar fs.tar /' append fs.tar
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  104,755,200 loops/s.
+hda: 3,024 sectors (1 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 233 sectors (116 kB), Pintos OS kernel (20)
+hda2: 2,048 sectors (1 MB), Pintos scratch (22)
+hdb: 5,040 sectors (2 MB), model "QM00002", serial "QEMU HARDDISK"
+hdb1: 4,096 sectors (2 MB), Pintos file system (21)
+filesys: using hdb1
+scratch: using hda2
+Boot complete.
+Executing 'tar fs.tar /':
+Kernel PANIC at ../../filesys/inode.c:78 in inode_get_sector(): assertion `inode->data.magic == INODE_MAGIC' failed.
+Call stack: 0xc002aa21 0xc0030a85 0xc002f5ec 0xc002ebe9 0xc0022a8d 0xc0022cb7 0x804b1ee 0x804826f 0x80481d0 0x80480cf 0x8048cf4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 75 ticks
+Thread: 31 idle ticks, 40 kernel ticks, 4 user ticks
+hdb1 (filesys): 48 reads, 7 writes
+hda2 (scratch): 0 reads, 0 writes
+Console: 1109 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+Copying tests/filesys/extended/syn-rw.tar out of /tmp/HLrNBjJHZo.dsk...
+make[1]: Leaving directory '/media/sf_term7/cs124/CS124-OS/src/filesys/build'
