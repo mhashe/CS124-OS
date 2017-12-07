@@ -67,17 +67,20 @@ static bool split_path_parent_name(const char *path, char ** parent_dir_name,
         end_of_parent--;
     }
 
+    if (end_of_parent == 0) {
+        if (*path == '/') {
+            end_of_parent++;
+        }
+        *name = (char *) path + end_of_parent;
+    } else {
+        *name = ((char *) path) + end_of_parent + 1;
+    }
+
     *parent_dir_name = malloc(end_of_parent + 1);
     if (*parent_dir_name == NULL) {
         return false;
     }
     strlcpy(*parent_dir_name, path, end_of_parent + 1);
-
-    if (end_of_parent == 0) {
-        *name = (char *) path;
-    } else {
-        *name = ((char *) path) + end_of_parent + 1;
-    }
 
     return true;
 }
@@ -167,6 +170,7 @@ struct file * filesys_open(const char *path) {
     /* If name is an absolute path, start looking from root. Else, look from 
     the current open directory. */
     if (path[0] == '/') {
+        // printf("Opening absolute path\n");
         dir = dir_open_root();
         path++;
     } else {
@@ -177,7 +181,7 @@ struct file * filesys_open(const char *path) {
         dir_lookup(dir, path, &inode);
     }
     dir_close(dir);
-    // printf("FOUND PATH %p, %d\n", inode, (inode != NULL));
+    // printf("FOUND PATH %d\n", (inode != NULL));
     // inode_check(inode);
 
     return file_open(inode);
