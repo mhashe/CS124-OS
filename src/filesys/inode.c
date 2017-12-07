@@ -18,16 +18,13 @@
 /*! On-disk inode.
     Must be exactly BLOCK_SECTOR_SIZE bytes long. */
 struct inode_disk {
-    volatile off_t length;                       /*!< File size in bytes. */
-    bool is_directory;             /*!< Whether inode represents a directory. */
+    volatile off_t length;           /*!< File size in bytes. */
+    bool is_directory;               /*!< If inode represents a directory. */
 
-    /* Multilevel indirection. */
-    block_sector_t double_indirect;
+    block_sector_t double_indirect;  /*!< Multilevel indirection. */
 
-    unsigned magic;                     /*!< Magic number. */
-    // TODO: we should actually make use of this number by asserting it in 
-    // different places
-    uint32_t unused[124];               /*!< Not used. */
+    unsigned magic;                  /*!< Magic number. */
+    uint32_t unused[124];            /*!< Not used. */
 };
 
 /*! Returns the number of sectors to allocate for an inode SIZE
@@ -46,10 +43,6 @@ struct inode {
     int deny_write_cnt;                 /*!< 0: writes ok, >0: deny writes. */
     struct lock extension_lock;         /*!< Lock to extend file. */
     struct inode_disk data;             /*!< Inode content. */
-    // TODO: remove this data attribute and set it to be a pointer to data that
-    // is read by the cache (and casted into inode_disk *) from the sector of
-    // inode_disk given by inode.sector ... Apparently this is already done? Why
-    // does lecture say we can remove this then? or can we?
 };
 
 
