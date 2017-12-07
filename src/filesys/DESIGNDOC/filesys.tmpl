@@ -8,15 +8,17 @@
 
 >> Fill in the names and email addresses of your group members.
 
-FirstName LastName <email@domain.example>
-FirstName LastName <email@domain.example>
-FirstName LastName <email@domain.example>
+Vaibhav Anand <vanand@caltech.edu>
+Nikhil  Gupta <nkgupta@caltech.edu>
+Michael Hashe <mhashe@caltech.edu>
 
 >> Specify how many late tokens you are using on this assignment:  
 
+0
+
 >> What is the Git repository and commit hash for your submission?
 
-   Repository URL:  
+    Repository URL:  https://github.com/MichaelHashe/CS124-OS
    commit ...
 
 ---- PRELIMINARIES ----
@@ -27,6 +29,8 @@ FirstName LastName <email@domain.example>
 >> Please cite any offline or online sources you consulted while
 >> preparing your submission, other than the Pintos documentation, course
 >> text, lecture notes, and course instructors.
+
+Stackover flow, wikipedia
 
 		     INDEXED AND EXTENSIBLE FILES
 		     ============================
@@ -107,6 +111,54 @@ FirstName LastName <email@domain.example>
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+/* Lock on accessing cache table. */
+struct lock cache_table_lock;
+
+/* Cache of data */
+static struct cache_entry sector_cache[CACHE_SIZE];
+
+/* Read-ahead queue, clock-like index. */
+static int read_ahead_buffer[CACHE_SIZE];
+volatile int read_ahead_head;   /* Index for reading from queue. */
+volatile int read_ahead_tail;   /* Index for writing to queue. */
+
+/* LRU cache. */
+static struct list cache_lru;
+
+
+enum lock_mode {
+    UNLOCK,                         /* No one occupies lock. */
+    READ_LOCK,                      /* Readers occupy lock. */
+    WRITE_LOCK                      /* Writer occupies lock. */
+};
+
+struct lru_entry {
+    block_sector_t sector;          /* Sector number. */
+
+    struct list_elem elem;          /* Required for list. */
+};
+
+struct cache_entry {
+    volatile int sector;            /* Sector number loaded into cache. */
+    bool access;                    /* Has sector been accessed. */
+    bool dirty;                     /* Has sector been written to. */
+    char data[BLOCK_SECTOR_SIZE];   /* Actual sector data. */
+
+    /* Implement read/write lock. */
+    struct lock cache_entry_lock;
+
+    struct condition readers;       /* Condvar for readers. */
+    struct condition writers;       /* Condvar for writers. */
+
+    /* Count of waiting processes. */
+    uint8_t reader_active;          /* Threads currently reading. */
+    uint8_t reader_waiting;         /* Threads waiting to read. */
+    /* Writer_active should only ever be one or zero. */
+    uint8_t writer_waiting;         /* Threads waiting to write. */
+
+    enum lock_mode mode;            /* Who currently holds lock. */
+};
+
 ---- ALGORITHMS ----
 
 >> C2: Describe how your cache replacement algorithm chooses a cache
@@ -114,7 +166,24 @@ FirstName LastName <email@domain.example>
 
 >> C3: Describe your implementation of write-behind.
 
+Write behind is a kernel thread that gets started on system init. The thread
+goes through the whole cache table and writes each sector (if it is dirty) to
+disk, clearing its dirty bit. It does this while holding the cache table lock.
+This was necessary because the system was deadlocking without the thread holding
+it. Furthermore, it isn't an issue because nothing else will block on getting
+the cache table lock while holding the cache slot lock. When it finds a dirty
+sector, it obtains that cache slot's lock (possibly blocking on it), writes it
+to disk, and then releases the lock. After it has gone through the whole table,
+it releases the cache table lock and then sleeps.
+
 >> C4: Describe your implementation of read-ahead.
+
+The read ahead implementation is very similar to the write behind
+implementation. It reads ahead the whole queue all at once, while holding the
+cache table lock. It checks to see if the sector has already been loaded into
+the cache. If it has, then it does nothing for that slot. If it hasn't, it tries
+loading it into the cache, evicting something if necessary. After it goes
+through the whole queue, it releases the cache table lock and sleeps.
 
 ---- SYNCHRONIZATION ----
 
