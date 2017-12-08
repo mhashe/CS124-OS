@@ -188,6 +188,10 @@ void recalculate_priority(struct thread *t) {
     ASSERT(is_thread(t));
     struct list_elem *e, *f;
 
+    /* This has led to some weird concurrency issues, so we lock it down. */
+    enum intr_level old_level;
+    old_level = intr_disable();
+
     int max = t->priority_org;
 
     for (e = list_begin(&(t->locks)); 
@@ -211,6 +215,7 @@ void recalculate_priority(struct thread *t) {
 
     ASSERT(max >= t->priority_org);
 
+    intr_set_level(old_level);
 }
 
 /*! Initializes the threading system by transforming the code

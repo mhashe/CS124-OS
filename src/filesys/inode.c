@@ -645,25 +645,6 @@ void inode_decr_count(struct inode *inode) {
     ASSERT(inode->file_count >= 0);
 }
 
-void inode_incr_open_count(struct inode *inode) {
-    ASSERT(inode != NULL);
-
-    inode->open_cnt++;
-}
-
-void inode_decr_open_count(struct inode *inode) {
-    ASSERT(inode != NULL);
-
-    inode->open_cnt--;
-
-    /* Just to make sure rest of code functions properly. */
-    ASSERT(inode->open_cnt >= 0);
-}
-
-bool inode_is_open(struct inode *inode) {
-    return inode->open_cnt > 0;
-}
-
 int inode_num_files(struct inode *inode) {
     ASSERT(inode != NULL);
     ASSERT(inode->file_count >= 0);
