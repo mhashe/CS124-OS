@@ -114,6 +114,11 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
     struct inode *parent_inode = file_get_inode(parent_dir_file);
     block_sector_t parent_sector = inode_get_sector(parent_inode);
 
+    /* If inode has been removed, can't create files. */
+    if (inode_is_removed(parent_inode)) {
+        return false;
+    }
+
     /* Get directory struct corresponding to parent directory. */
     struct dir * parent_dir = dir_open(parent_inode);
 
@@ -238,6 +243,13 @@ bool filesys_remove(const char *path) {
 
     /* Parent directory has one fewer file. */
     inode_decr_count(parent_inode);
+
+    /* Child directory is gone, and shouldn't have . or .. files. */
+    struct dir *child_dir = dir_open(child_inode);
+    dir_remove(child_dir, ".");
+    dir_remove(child_dir, "..");
+    dir_close(child_dir);
+    inode_remove(child_inode);
 
     return success;
 }

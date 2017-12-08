@@ -26,6 +26,7 @@ off_t inode_length(const struct inode *);
 bool inode_is_directory(struct inode *inode);
 block_sector_t inode_get_sector(struct inode *inode);
 void inode_check(struct inode *inode);
+bool inode_is_removed(struct inode *inode);
 
 void inode_incr_count(struct inode *inode);
 void inode_decr_count(struct inode *inode);

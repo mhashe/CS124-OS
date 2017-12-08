@@ -494,6 +494,13 @@ void inode_remove(struct inode *inode) {
     inode->removed = true;
 }
 
+/* Tells if an inode has been removed. */
+bool inode_is_removed(struct inode *inode) {
+    ASSERT(inode != NULL);
+
+    return inode->removed;
+}
+
 /*! Reads SIZE bytes from INODE into BUFFER, starting at position OFFSET.
    Returns the number of bytes actually read, which may be less
    than SIZE if an error occurs or end of file is reached. */
