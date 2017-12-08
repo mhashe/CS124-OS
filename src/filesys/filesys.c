@@ -221,6 +221,10 @@ bool filesys_remove(const char *path) {
     struct inode* parent_inode = file_get_inode(file);
     struct inode *child_inode = file_get_inode(filesys_open(path));
 
+    if (inode_is_open(child_inode)) {
+        return false;
+    }
+
     // printf("NAME: %s, %d, %d\n", path, inode_num_files(parent_inode), inode_num_files(child_inode));
     /* Can only delete file if empty. */
     if (inode_num_files(child_inode)) {
