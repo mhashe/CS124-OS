@@ -82,7 +82,7 @@ static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx) {
     *dir_idx %= NUM_ENTRIES_IN_INDIRECT;
 }
 
-/* Extends a file (as represented by an inode_disk *) to cnt bytes. */
+/* Extends a file (as represented by an inode_disk *) by cnt bytes. */
 static bool inode_extend_file(struct inode_disk *data, size_t cnt) {
     ASSERT(data != NULL);
     ASSERT(data->magic == INODE_MAGIC);
