@@ -71,6 +71,11 @@ The "extension_lock" field as added to inode to implement file extensibility.
 >> A2: What is the maximum size of a file supported by your inode
 >> structure?  Show your work.
 
+Since we are using only a single double indirection block, this references 512
+single indirection blocks. Each of these reference 512 direct blocks. Each
+director block references 1 sector, which can hold 512 bytes. As such, a single
+double indirection block can hold a file upto 512*512*512 = 128 MiB long.
+
 ---- SYNCHRONIZATION ----
 
 >> A3: Explain how your code avoids a race if two processes attempt to
