@@ -44,7 +44,7 @@ struct inode {
     struct lock extension_lock;         /*!< Lock to extend file. */
     struct inode_disk data;             /*!< Inode content. */
 
-    int file_count;                     /*!< Count of files / subsdirectories. */
+    int file_count;                     /*!< Count of files/subsdirectories. */
 };
 
 
@@ -57,9 +57,9 @@ static void print_inode_allocation(struct inode_disk *data);
 static struct list open_inodes;
 
 
-
 void inode_check(struct inode *inode) {
-    printf("CHECK: %d, %d\n", inode->data.is_directory, inode->data.magic == INODE_MAGIC);
+    printf("CHECK: %d, %d\n", inode->data.is_directory, 
+                              inode->data.magic == INODE_MAGIC);
 }
 
 bool inode_is_directory(struct inode *inode) {
@@ -82,7 +82,7 @@ static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx) {
     *dir_idx %= NUM_ENTRIES_IN_INDIRECT;
 }
 
-
+/* Extends a file (as represented by an inode_disk *) to cnt bytes. */
 static bool inode_extend_file(struct inode_disk *data, size_t cnt) {
     ASSERT(data != NULL);
     ASSERT(data->magic == INODE_MAGIC);
@@ -254,7 +254,6 @@ static block_sector_t byte_to_sector(const struct inode *inode, off_t pos) {
     return sector;
 }
 
-
 /* Essentially a function for debugging purposes. Prints all sectors of a file 
 that the inode links to. */
 static void print_inode_allocation(struct inode_disk *data) {
@@ -285,7 +284,6 @@ static void print_inode_allocation(struct inode_disk *data) {
         ind++;
     }
 }
-
 
 /*! Initializes an inode with LENGTH bytes of data and
     writes the new inode to sector SECTOR on the file system
