@@ -99,6 +99,7 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
     if (!split_path_parent_name(path, &parent_dir_name, &name, is_directory)) {
         return false;
     }
+    // printf("DIRECT: %s %s\n", parent_dir_name, name);
 
     // printf("Parent directory: %s, name: %s\n", parent_dir_name, name);
 
@@ -143,6 +144,11 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
         dir_close(new_dir);
     }
 
+    /* Mark parent directory as having a new file. */
+    if (success) {
+        inode_incr_count(parent_inode);
+    }
+
     // printf("Done?...\n");
     if (!success && inode_sector != 0) 
         free_map_release(inode_sector, 1);
@@ -150,6 +156,7 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
     // printf("Dir close?\n");
     dir_close(parent_dir);
 
+    // printf("SIZE: %d %d\n", inode_num_files(parent_inode), inode_num_files(inode_open(inode_sector)));
     // printf("!FILESYS CREATE\n");
     return success;
 }
@@ -204,10 +211,29 @@ bool filesys_remove(const char *path) {
         return false;
     }
 
-    struct dir *dir = dir_open(file_get_inode(file));
+    struct file *rem_file = filesys_open(path);
+    if (rem_file == NULL) {
+        // printf("WAAAAT?\n");
+        return false;
+    }
 
+    /* Will need to access inodes for both parent and child. */
+    struct inode* parent_inode = file_get_inode(file);
+    struct inode *child_inode = file_get_inode(filesys_open(path));
+
+    // printf("NAME: %s, %d, %d\n", path, inode_num_files(parent_inode), inode_num_files(child_inode));
+    /* Can only delete file if empty. */
+    if (inode_num_files(child_inode)) {
+        // printf("NUM: %d\n", inode_num_files(child_inode));
+        return false;
+    }
+
+    struct dir *dir = dir_open(parent_inode);
     bool success = dir != NULL && dir_remove(dir, name);
     dir_close(dir);
+
+    /* Parent directory has one fewer file. */
+    inode_decr_count(parent_inode);
 
     return success;
 }

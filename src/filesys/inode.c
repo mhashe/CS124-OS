@@ -43,6 +43,8 @@ struct inode {
     int deny_write_cnt;                 /*!< 0: writes ok, >0: deny writes. */
     struct lock extension_lock;         /*!< Lock to extend file. */
     struct inode_disk data;             /*!< Inode content. */
+
+    int file_count;                     /*!< Count of files / subsdirectories. */
 };
 
 
@@ -403,6 +405,7 @@ struct inode * inode_open(block_sector_t sector) {
     inode->open_cnt = 1;
     inode->deny_write_cnt = 0;
     inode->removed = false;
+    inode->file_count = 0;
     lock_init(&inode->extension_lock);
     cache_read(inode->sector, &inode->data, BLOCK_SECTOR_SIZE, 0);
     ASSERT(inode->data.magic == INODE_MAGIC);
@@ -618,5 +621,27 @@ off_t inode_length(const struct inode *inode) {
     ASSERT(inode->data.magic == INODE_MAGIC);
 
     return inode->data.length;
+}
+
+void inode_incr_count(struct inode *inode) {
+    ASSERT(inode != NULL);
+
+    inode->file_count++;
+}
+
+void inode_decr_count(struct inode *inode) {
+    ASSERT(inode != NULL);
+
+    inode->file_count--;
+
+    /* Just to make sure rest of code functions properly. */
+    ASSERT(inode->file_count >= 0);
+}
+
+int inode_num_files(struct inode *inode) {
+    ASSERT(inode != NULL);
+    ASSERT(inode->file_count >= 0);
+
+    return inode->file_count;
 }
 

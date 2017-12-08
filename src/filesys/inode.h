@@ -27,4 +27,8 @@ bool inode_is_directory(struct inode *inode);
 block_sector_t inode_get_sector(struct inode *inode);
 void inode_check(struct inode *inode);
 
+void inode_incr_count(struct inode *inode);
+void inode_decr_count(struct inode *inode);
+int inode_num_files(struct inode *inode);
+
 #endif /* filesys/inode.h */
