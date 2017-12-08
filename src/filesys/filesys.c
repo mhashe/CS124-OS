@@ -194,6 +194,21 @@ struct file * filesys_open(const char *path) {
     return file_open(inode);
 }
 
+struct dir * filesys_get_parent(const char *path) {
+    /* Get parent directory and name of file/directory to be removed at  
+    path. */
+    char *parent_dir_name;
+    char *name;
+    split_path_parent_name(path, &parent_dir_name, &name, true);
+    struct file * file = filesys_open(parent_dir_name);
+    if (file == NULL) {
+        return false;
+    }
+
+    struct inode* parent_inode = file_get_inode(file);
+    return dir_open(parent_inode);
+}
+
 /*! Deletes the file named NAME.  Returns true if successful, false on failure.
     Fails if no file named NAME exists, or if an internal memory allocation
     fails. */
@@ -220,10 +235,6 @@ bool filesys_remove(const char *path) {
     /* Will need to access inodes for both parent and child. */
     struct inode* parent_inode = file_get_inode(file);
     struct inode *child_inode = file_get_inode(filesys_open(path));
-
-    if (inode_is_open(child_inode)) {
-        return false;
-    }
 
     // printf("NAME: %s, %d, %d\n", path, inode_num_files(parent_inode), inode_num_files(child_inode));
     /* Can only delete file if empty. */

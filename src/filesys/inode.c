@@ -5,6 +5,7 @@
 #include <string.h>
 #include <bitmap.h>
 #include "filesys/filesys.h"
+#include "filesys/directory.h"
 #include "filesys/cache.h"
 #include "filesys/free-map.h"
 #include "threads/malloc.h"
@@ -51,6 +52,7 @@ struct inode {
 static void indices_from_offset(off_t pos, size_t *dir_idx, size_t *ind_idx);
 static bool inode_extend_file(struct inode_disk *data, size_t cnt);
 static void print_inode_allocation(struct inode_disk *data);
+
 
 /*! List of open inodes, so that opening a single inode twice
     returns the same `struct inode'. */
@@ -638,21 +640,6 @@ void inode_decr_count(struct inode *inode) {
     ASSERT(inode->file_count >= 0);
 }
 
-void inode_incr_open_count(struct inode *inode) {
-    ASSERT(inode != NULL);
-
-    inode->open_cnt++;
-}
-
-void inode_decr_open_count(struct inode *inode) {
-    ASSERT(inode != NULL);
-
-    inode->open_cnt--;
-
-    /* Just to make sure rest of code functions properly. */
-    ASSERT(inode->open_cnt >= 0);
-}
-
 bool inode_is_open(struct inode *inode) {
     return inode->open_cnt > 0;
 }
@@ -663,4 +650,35 @@ int inode_num_files(struct inode *inode) {
 
     return inode->file_count;
 }
+
+// void inode_incr_count_recur(const char *path) {
+//     inode_change_count_recur(filesys_get_parent(path), 1);
+// }
+// void inode_dec_count_recur(const char *path) {
+//     inode_change_count_recur(filesys_get_parent(path), -1);
+// }
+
+void inode_incr_count_recur(const char *path) {
+    inode_change_count_recur(filesys_get_parent(path), 1);
+}
+void inode_dec_count_recur(const char *path) {
+    inode_change_count_recur(filesys_get_parent(path), -1);
+}
+
+void inode_change_count_recur(struct dir *parent_dir, int change_open) {
+    ASSERT(parent_dir != NULL);
+
+    if (dir_get_inode(parent_dir)->sector == ROOT_DIR_SECTOR) {
+        return;
+    }
+    dir_get_inode(parent_dir)->open_cnt += change_open;
+
+    struct inode *up_parent;
+
+    char parent_link[] = "..";
+    dir_lookup(parent_dir, parent_link, &up_parent);
+
+    inode_change_count_recur(dir_open(up_parent), change_open);
+}
+
 

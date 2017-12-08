@@ -25,6 +25,7 @@
 
 #ifdef FILESYS
 #include "filesys/filesys.h"
+#include "filesys/directory.h"
 #endif
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
@@ -414,6 +415,9 @@ tid_t thread_create(const char *name, int priority, thread_func *function,
 
 #ifdef FILESYS
     t->cur_directory = thread_current()->cur_directory;
+
+    inode_change_count_recur(
+        dir_open(inode_open(thread_current()->cur_directory)), 1);
 #endif
 
     /* Stack frame for kernel_thread(). */

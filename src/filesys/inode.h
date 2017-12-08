@@ -31,8 +31,9 @@ void inode_incr_count(struct inode *inode);
 void inode_decr_count(struct inode *inode);
 int inode_num_files(struct inode *inode);
 
-void inode_incr_open_count(struct inode *inode);
-void inode_decr_open_count(struct inode *inode);
 bool inode_is_open(struct inode *inode);
+void inode_incr_count_recur(const char *path);
+void inode_dec_count_recur(const char *path);
+void inode_change_count_recur(struct dir *parent_dir, int change_open);
 
 #endif /* filesys/inode.h */
