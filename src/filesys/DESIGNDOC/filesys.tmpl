@@ -62,6 +62,8 @@ struct inode {
     int deny_write_cnt;                 /*!< 0: writes ok, >0: deny writes. */
     struct lock extension_lock;         /*!< Lock to extend file. */
     struct inode_disk data;             /*!< Inode content. */
+
+    int file_count;                     /*!< Count of files/subsdirectories. */
 };
 
 The "extension_lock" field as added to inode to implement file extensibility.
