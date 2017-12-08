@@ -90,7 +90,6 @@ static bool split_path_parent_name(const char *path, char ** parent_dir_name,
     or if internal memory allocation fails. */
 bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
     block_sector_t inode_sector = 0;
-    // printf("FILESYS CREATE! %s\n", path);
 
     /* Get parent directory and name of file/directory to be created at  
     path. */
@@ -99,9 +98,6 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
     if (!split_path_parent_name(path, &parent_dir_name, &name, is_directory)) {
         return false;
     }
-    // printf("DIRECT: %s %s\n", parent_dir_name, name);
-
-    // printf("Parent directory: %s, name: %s\n", parent_dir_name, name);
 
     /* Get file corresponding to parent directory. */
     struct file *parent_dir_file = filesys_open((const char *) parent_dir_name);
@@ -128,7 +124,6 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
         return false;
     }
 
-    // printf("Creating new thing...\n");
     /* Create new file/directory inside its parent directory. */
     bool success = (parent_dir != NULL &&
                     free_map_allocate_single(&inode_sector) &&
@@ -154,15 +149,11 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
         inode_incr_count(parent_inode);
     }
 
-    // printf("Done?...\n");
     if (!success && inode_sector != 0) 
         free_map_release(inode_sector, 1);
 
-    // printf("Dir close?\n");
     dir_close(parent_dir);
 
-    // printf("SIZE: %d %d\n", inode_num_files(parent_inode), inode_num_files(inode_open(inode_sector)));
-    // printf("!FILESYS CREATE\n");
     return success;
 }
 
@@ -170,11 +161,11 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
     or a null pointer otherwise.  Fails if no file named NAME exists,
     or if an internal memory allocation fails. */
 struct file * filesys_open(const char *path) {
-    // printf("OPENING PATH: %s!\n", path);
     struct inode *inode = NULL;
     struct dir *dir;
 
-    // TODO: comment. edge case
+    /* If path is empty, just return the current directory. 
+    Treat as an empty relative path. */
     if (path[0] == '\0') {
         return file_open(inode_open(thread_current()->cur_directory));
     }
@@ -182,7 +173,6 @@ struct file * filesys_open(const char *path) {
     /* If name is an absolute path, start looking from root. Else, look from 
     the current open directory. */
     if (path[0] == '/') {
-        // printf("Opening absolute path\n");
         dir = dir_open_root();
         path++;
     } else {
@@ -193,9 +183,6 @@ struct file * filesys_open(const char *path) {
         dir_lookup(dir, path, &inode);
     }
     dir_close(dir);
-    // printf("FOUND PATH %d\n", (inode != NULL));
-    // inode_check(inode);
-
     return file_open(inode);
 }
 
@@ -218,7 +205,6 @@ bool filesys_remove(const char *path) {
 
     struct file *rem_file = filesys_open(path);
     if (rem_file == NULL) {
-        // printf("WAAAAT?\n");
         return false;
     }
 
@@ -226,10 +212,8 @@ bool filesys_remove(const char *path) {
     struct inode* parent_inode = file_get_inode(file);
     struct inode *child_inode = file_get_inode(filesys_open(path));
 
-    // printf("NAME: %s, %d, %d\n", path, inode_num_files(parent_inode), inode_num_files(child_inode));
     /* Can only delete file if empty. */
     if (inode_num_files(child_inode)) {
-        // printf("NUM: %d\n", inode_num_files(child_inode));
         return false;
     }
 

@@ -137,10 +137,23 @@ The "is_directory" field was added to inode_disk to implement subdirectories.
 It allows filesys functions to navigate the filesystem by knowing if a 
 inode represents a file or a directory.
 
+Also, "current_dir" was added to the threads struct and it has type 
+block_sector_t. It represents the sector of the current working directory 
+for the process.
+
 ---- ALGORITHMS ----
 
 >> B2: Describe your code for traversing a user-specified path.  How
 >> do traversals of absolute and relative paths differ?
+
+An absolute path is recognized by the first character in the path 
+being '\'. Otherwise, it is treated as a relative path.
+
+If the path is relative, the path is recursively searched (delimited by '\' 
+character) starting from the current working directory until the last 
+element (file or folder) is reached. The same process is done if the path is 
+absolute, except the absolute path is used instead of relative path.
+
 
 ---- SYNCHRONIZATION ----
 
@@ -149,15 +162,23 @@ inode represents a file or a directory.
 >> should succeed, as should only one of two simultaneous attempts to
 >> create a file with the same name, and so on.
 
+                                                                                TODO
+
 >> B5: Does your implementation allow a directory to be removed if it
 >> is open by a process or if it is in use as a process's current
 >> working directory?  If so, what happens to that process's future
 >> file system operations?  If not, how do you prevent it?
 
+
+
 ---- RATIONALE ----
 
 >> B6: Explain why you chose to represent the current directory of a
 >> process the way you did.
+
+We put the sector the current directory of a processs with the 
+"current_dir" field in the thread's struct. This way, it was attached to 
+the process (by being in threads).
 
 
 			     BUFFER CACHE
