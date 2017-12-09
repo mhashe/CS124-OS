@@ -507,6 +507,13 @@ off_t inode_read_at(struct inode *inode, void *buffer_, off_t size, off_t offset
         if (chunk_size <= 0)
             break;
 
+        /* Don't read from an invalid sector. */
+        if ((int)sector_idx == CACHE_SECTOR_EMPTY) {
+            size -= chunk_size;
+            offset += chunk_size;
+            continue;
+        } 
+
         cache_read(sector_idx, buffer + bytes_read, chunk_size, sector_ofs);
       
         /* Advance. */
