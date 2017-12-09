@@ -64,6 +64,7 @@ struct inode {
     struct inode_disk data;             /*!< Inode content. */
 
     int file_count;                     /*!< Count of files/subsdirectories. */
+    struct lock dir_lock;               /*!< Lock to modify directory. */
 };
 
 The "extension_lock" field as added to inode to implement file extensibility.
@@ -94,7 +95,10 @@ extended it.
 >> nonzero data, A is not allowed to see all zeros.  Explain how your
 >> code avoids this race.
 
-Why is this only an end-of-file condition? Isn't this a read/write lock?        TODO
+It doesn't (hence why syn_rw fails). By the point in our development where we
+started considering this issue, we were too far along to accomodate the design
+changes that this would require. The current behavior is to allow such reads,
+which (presumably) return zeros.
 
 >> A5: Explain how your synchronization design provides "fairness".
 >> File access is "fair" if readers cannot indefinitely block writers
@@ -175,7 +179,7 @@ absolute, except the absolute path is used instead of relative path.
 
 Each inode contains a dir_lock; this is locked before any create or remove
 operations. This lock is acquired before any checks on the existence of a file
-is performed.
+is performed, so only one creation / deletion proceeds.
 
 >> B5: Does your implementation allow a directory to be removed if it
 >> is open by a process or if it is in use as a process's current
