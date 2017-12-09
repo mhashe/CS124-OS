@@ -32,4 +32,7 @@ void inode_incr_count(struct inode *inode);
 void inode_decr_count(struct inode *inode);
 int inode_num_files(struct inode *inode);
 
+void directory_lock(struct inode *inode);
+void directory_release(struct inode *inode);
+
 #endif /* filesys/inode.h */

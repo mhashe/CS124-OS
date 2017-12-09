@@ -45,6 +45,7 @@ struct inode {
     struct inode_disk data;             /*!< Inode content. */
 
     int file_count;                     /*!< Count of files/subsdirectories. */
+    struct lock dir_lock;               /*!< Lock to modify directory. */
 };
 
 
@@ -385,6 +386,7 @@ struct inode * inode_open(block_sector_t sector) {
     inode->removed = false;
     inode->file_count = 0;
     lock_init(&inode->extension_lock);
+    lock_init(&inode->dir_lock);
     cache_read(inode->sector, &inode->data, BLOCK_SECTOR_SIZE, 0);
     ASSERT(inode->data.magic == INODE_MAGIC);
     return inode;
@@ -624,5 +626,24 @@ int inode_num_files(struct inode *inode) {
     ASSERT(inode->file_count >= 0);
 
     return inode->file_count;
+}
+
+/* Acquire the directory lock before modifying. */
+void directory_lock(struct inode *inode) {
+    ASSERT(inode != NULL);
+
+    /* We already locked it, no problem. */
+    if (lock_held_by_current_thread(&inode->dir_lock)) {
+        return;
+    }
+
+    lock_acquire(&inode->dir_lock);
+}
+
+/* Release lock after modifying. */
+void directory_release(struct inode *inode) {
+    ASSERT(inode != NULL);
+
+    lock_release(&inode->dir_lock);
 }
 

@@ -115,6 +115,9 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
         return false;
     }
 
+    /* Only allow one process to create a file at a time. */
+    directory_lock(parent_inode);
+
     /* Get directory struct corresponding to parent directory. */
     struct dir * parent_dir = dir_open(parent_inode);
 
@@ -153,6 +156,7 @@ bool filesys_create(const char *path, off_t initial_size, bool is_directory) {
         free_map_release(inode_sector, 1);
 
     dir_close(parent_dir);
+    directory_release(parent_inode);
 
     return success;
 }
@@ -210,7 +214,12 @@ bool filesys_remove(const char *path) {
 
     /* Will need to access inodes for both parent and child. */
     struct inode* parent_inode = file_get_inode(file);
+    
+    /* But, only allow modification of inode if we have the directory lock. */
+    directory_lock(parent_inode);
+    
     struct inode *child_inode = file_get_inode(filesys_open(path));
+    
 
     /* Can only delete file if empty. */
     if (inode_num_files(child_inode)) {
@@ -231,6 +240,7 @@ bool filesys_remove(const char *path) {
     dir_close(child_dir);
     inode_remove(child_inode);
 
+    directory_release(parent_inode);
     return success;
 }
 

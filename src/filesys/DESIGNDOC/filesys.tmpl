@@ -103,7 +103,11 @@ Why is this only an end-of-file condition? Isn't this a read/write lock?        
 >> processes writing to a file cannot prevent another process forever
 >> from reading the file.
 
-Why is this only an end-of-file condition? Isn't this a read/write lock?        TODO
+We implement a read / write lock, and switch it between readers and writers in
+a series of rounds. In particular, readers are allowed to start reading until
+a writer is blocked; once all current readers finish, the writer is allowed to
+write. After the writer finishes, it allows readers to begin reading (or
+another writer to write, if no readers are waiting).
 
 ---- RATIONALE ----
 
@@ -169,14 +173,17 @@ absolute, except the absolute path is used instead of relative path.
 >> should succeed, as should only one of two simultaneous attempts to
 >> create a file with the same name, and so on.
 
-                                                                                TODO
+Each inode contains a dir_lock; this is locked before any create or remove
+operations. This lock is acquired before any checks on the existence of a file
+is performed.
 
 >> B5: Does your implementation allow a directory to be removed if it
 >> is open by a process or if it is in use as a process's current
 >> working directory?  If so, what happens to that process's future
 >> file system operations?  If not, how do you prevent it?
 
-
+Yes. After deletion, a flag is marked signifying that the directory has been
+deleted. This is checked before any new files are allowed to be created.
 
 ---- RATIONALE ----
 
