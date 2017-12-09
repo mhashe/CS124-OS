@@ -535,11 +535,11 @@ off_t inode_write_at(struct inode *inode, const void *buffer_, off_t size,
 
    /* Note that this condition doesn’t guarentee a new sector is needed,
     but in case it isn’t inode_extend_file(). */
-    if (write_position >= inode->data.length) {
+    if (write_position > inode->data.length) {
         /* Get the lock and then check again that we are extending. */
         lock_acquire(&inode->extension_lock);
 
-        if (write_position >= inode->data.length) {
+        if (write_position > inode->data.length) {
             /* We are, so extend the file. */
             inode_extend_file(&inode->data, write_position-inode->data.length);
         }
