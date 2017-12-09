@@ -62,6 +62,9 @@ fixedp_from_int(LOAD_AVG_PERIOD - TIMER_FREQ), fixedp_from_int(LOAD_AVG_PERIOD))
 /* Max number of pages for each thread. */
 #define MAX_PAGES ((1 << 23) >> PGBITS) /* 8 MB / PGSIZE */
 
+/* Max lock donation recursion depth. */
+#define DONATION_DEPTH 8
+
 /*! List of all processes.  Processes are added to this list
   when they are first scheduled and removed when they exit. */
 struct list all_list;
@@ -240,7 +243,7 @@ void sort_ready_list(void);
 void print_ready_queue(void);
 void print_all_priorities(void);
 
-void recalculate_priority(struct thread *t);
+void recalculate_priority(struct thread *t, int depth);
 
 bool thread_queue_compare(const struct list_elem *a,
                              const struct list_elem *b,

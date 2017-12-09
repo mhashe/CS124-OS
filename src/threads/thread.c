@@ -184,13 +184,14 @@ static inline struct thread * thread_get_ready_max(void) {
 }
 
 /*! Recalculates priority of thread for priority mode, not mlfqs. */
-void recalculate_priority(struct thread *t) {
+void recalculate_priority(struct thread *t, int depth) {
     ASSERT(is_thread(t));
     struct list_elem *e, *f;
 
-    /* This has led to some weird concurrency issues, so we lock it down. */
-    enum intr_level old_level;
-    old_level = intr_disable();
+    /* Cap depth at DONATION_DEPTH. */
+    if (depth >= DONATION_DEPTH) {
+    	return;
+    }
 
     int max = t->priority_org;
 
@@ -210,12 +211,10 @@ void recalculate_priority(struct thread *t) {
     t->priority = max;
 
     if (t->blocked_lock && t->blocked_lock->holder) { 
-        recalculate_priority(t->blocked_lock->holder);
+        recalculate_priority(t->blocked_lock->holder, depth + 1);
     }
 
     ASSERT(max >= t->priority_org);
-
-    intr_set_level(old_level);
 }
 
 /*! Initializes the threading system by transforming the code
@@ -628,7 +627,7 @@ void thread_set_priority(int new_priority) {
     /* Lower base priority, recalculate overall priority. */
     int old_priority = thread_current()->priority;
     thread_current()->priority_org = new_priority;
-    recalculate_priority(thread_current());
+    recalculate_priority(thread_current(), 0);
 
     if (new_priority < old_priority)
         thread_defer_to_max_priority();

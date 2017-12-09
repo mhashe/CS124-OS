@@ -218,7 +218,7 @@ void lock_acquire(struct lock *lock) {
         list_push_back(&lock->semaphore.waiters, &thread_current()->elem);
         thread_current()->blocked_lock = lock;
 
-        recalculate_priority(lock->holder);
+        recalculate_priority(lock->holder, 0);
 
         sema_down(&lock->semaphore);
     }
