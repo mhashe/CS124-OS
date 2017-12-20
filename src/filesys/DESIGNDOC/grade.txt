@@ -1,0 +1,52 @@
+CS124 Project 6 - File Systems
+
+
+
+Team: AGH
+
+Graded By: Michael Goulet
+
+
+
+Days Late: 0
+
+Tokens Used: 0
+
+
+
+Raw Score: 83/100
+
+Final Score: 83/100
+
+
+
+Correctness: 50/65
+
+  Flaky tests:
+
+    - dir-rm-tree
+
+    - grow-file-size
+
+    - syn-rw
+
+    - dir-rm-cwd
+
+    - dir-rm-parent
+
+    - dir-rm-root
+
+    (and associated persistence tests.)
+
+
+
+Design Document / Code Inspection / Git Usage: 33/35
+
+  * Nice git comments.
+
+-2: Your function comments are a bit poor. /* Comment */
+
+    is not a comment... Some of your functions are well
+
+    commented but lack a header, or vice versa.
+
